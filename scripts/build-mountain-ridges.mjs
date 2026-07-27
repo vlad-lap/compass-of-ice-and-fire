@@ -1,0 +1,222 @@
+import polygonClipping from 'polygon-clipping';
+import { lineInPolygon } from './point-in-polygon.mjs';
+
+const { intersection, union, difference } = polygonClipping;
+
+const BASE_NORMAL_LENGTH = 0.5;
+const TAPER_LENGTH_RATIO = 1.25;
+const LIGHT_NORMAL_RATIO = 0.75;
+const LIGHT_DIRECTION = normalize([-1, 1]);
+
+function getNormalLength(size) {
+    return BASE_NORMAL_LENGTH / Math.sqrt(size ?? 1);
+}
+
+function roundMultiPolygon(coordinates) {
+    const COORDINATE_PRECISION = 1e9;
+    
+    return coordinates.map(polygon =>
+        polygon.map(ring =>
+            ring.map(([lon, lat]) => [
+                Math.round(lon * COORDINATE_PRECISION) / COORDINATE_PRECISION,
+                Math.round(lat * COORDINATE_PRECISION) / COORDINATE_PRECISION,
+            ]),
+        ),
+    );
+}
+
+function unionAll(geometries) {
+    if (!geometries.length) {
+        return [];
+    }
+    const merged = roundMultiPolygon(union(...geometries));
+    return roundMultiPolygon(union(merged));
+}
+
+function subtract(a, b) {
+    return [a[0] - b[0], a[1] - b[1]];
+}
+
+function add(a, b) {
+    return [a[0] + b[0], a[1] + b[1]];
+}
+
+function scale(v, amount) {
+    return [v[0] * amount, v[1] * amount];
+}
+
+function dot(a, b) {
+    return a[0] * b[0] + a[1] * b[1];
+}
+
+function normalize(v) {
+    const length = Math.hypot(v[0], v[1]);
+    return length === 0 ? [0, 0] : [v[0] / length, v[1] / length];
+}
+
+function perpendicular(v) {
+    return [-v[1], v[0]];
+}
+
+function getTangent(points, index) {
+    const previous = points[Math.max(index - 1, 0)];
+    const next = points[Math.min(index + 1, points.length - 1)];
+    return normalize(subtract(next, previous));
+}
+
+function getCumulativeDistances(points) {
+    const distances = [0];
+    for (let i = 1; i < points.length; i++) {
+        distances.push(distances[i - 1] + Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1]));
+    }
+    return distances;
+}
+
+function getTaperFactors(points, taperLength) {
+    const cumulativeDistances = getCumulativeDistances(points);
+    const totalLength = cumulativeDistances[cumulativeDistances.length - 1];
+
+    return cumulativeDistances.map(distance => {
+        const distanceFromNearestEnd = Math.min(distance, totalLength - distance);
+        return Math.min(distanceFromNearestEnd / taperLength, 1);
+    });
+}
+
+function getLightSign(lineString) {
+    const overallTangent = normalize(subtract(lineString[lineString.length - 1], lineString[0]));
+    const perpendicularVector = perpendicular(overallTangent);
+    return dot(perpendicularVector, LIGHT_DIRECTION) >= 0 ? 1 : -1;
+}
+
+function segmentIntersection(p1, p2, p3, p4) {
+    const d1x = p2[0] - p1[0];
+    const d1y = p2[1] - p1[1];
+    const d2x = p4[0] - p3[0];
+    const d2y = p4[1] - p3[1];
+
+    const denominator = d1x * d2y - d1y * d2x;
+    if (denominator === 0) {
+        return null;
+    }
+
+    const t = ((p3[0] - p1[0]) * d2y - (p3[1] - p1[1]) * d2x) / denominator;
+    const u = ((p3[0] - p1[0]) * d1y - (p3[1] - p1[1]) * d1x) / denominator;
+    if (t < 0 || t > 1 || u < 0 || u > 1) {
+        return null;
+    }
+
+    return [p1[0] + t * d1x, p1[1] + t * d1y];
+}
+
+function trimFoldedOffsets(points, offsetPoints) {
+    const trimmed = [...offsetPoints];
+
+    for (let i = 0; i < points.length - 1; i++) {
+        const crossing = segmentIntersection(points[i], trimmed[i], points[i + 1], trimmed[i + 1]);
+        if (crossing) {
+            trimmed[i] = crossing;
+            trimmed[i + 1] = crossing;
+        }
+    }
+
+    return trimmed;
+}
+
+function buildRidgeSide(points, normals, taperFactors, sign, length) {
+    const offsetPoints = points.map((point, index) =>
+        add(point, scale(normals[index], sign * length * taperFactors[index])),
+    );
+    const trimmedOffsetPoints = trimFoldedOffsets(points, offsetPoints);
+    return [...points, ...trimmedOffsetPoints.reverse(), points[0]];
+}
+
+function buildRidgePolygons(lineString, normalLength) {
+    const lightSign = getLightSign(lineString);
+    const lightNormals = lineString.map((point, index) =>
+        scale(perpendicular(getTangent(lineString, index)), lightSign),
+    );
+    const taperFactors = getTaperFactors(lineString, normalLength * TAPER_LENGTH_RATIO);
+
+    return {
+        light: buildRidgeSide(lineString, lightNormals, taperFactors, 1, normalLength * LIGHT_NORMAL_RATIO),
+        dark: buildRidgeSide(lineString, lightNormals, taperFactors, -1, normalLength),
+    };
+}
+
+function findContainingLandmass(lineString, landmasses) {
+    const lineGeometry = { type: 'LineString', coordinates: lineString };
+    return landmasses.find(landmass => lineInPolygon(lineGeometry, landmass.geometry));
+}
+
+function clipPolygonToLandmass(polygon, landmass) {
+    if (!landmass) {
+        return [polygon];
+    }
+    return roundMultiPolygon(intersection(polygon, landmass.geometry.coordinates));
+}
+
+function buildRidgeFeature(feature, shade, segments) {
+    const clippedPolygons = segments.flatMap(({ ring, landmass }) => clipPolygonToLandmass([ring], landmass));
+    const coordinates = unionAll(clippedPolygons);
+
+    return {
+        type: 'Feature',
+        properties: { ...feature.properties, shade },
+        geometry: { type: 'MultiPolygon', coordinates },
+    };
+}
+
+function subtractOverlap(feature, otherFeature) {
+    if (!feature.geometry.coordinates.length || !otherFeature.geometry.coordinates.length) {
+        return feature;
+    }
+
+    return {
+        ...feature,
+        geometry: {
+            ...feature.geometry,
+            coordinates: roundMultiPolygon(difference(feature.geometry.coordinates, otherFeature.geometry.coordinates)),
+        },
+    };
+}
+
+function buildRidgeFeatures(feature, landmasses) {
+    const normalLength = getNormalLength(feature.properties.size);
+    const lineStrings = feature.geometry.coordinates;
+    const segments = lineStrings.map(lineString => ({
+        ridge: buildRidgePolygons(lineString, normalLength),
+        landmass: findContainingLandmass(lineString, landmasses),
+    }));
+
+    const light = buildRidgeFeature(feature, 'light', segments.map(({ ridge, landmass }) => ({ ring: ridge.light, landmass })));
+    const dark = buildRidgeFeature(feature, 'dark', segments.map(({ ridge, landmass }) => ({ ring: ridge.dark, landmass })));
+
+    return [light, subtractOverlap(dark, light)];
+}
+
+export function buildMountainRidges(mountains, continents, islands) {
+    const landmasses = [...continents.features, ...islands.features];
+    const features = mountains.features.flatMap(feature => buildRidgeFeatures(feature, landmasses));
+    return { type: 'FeatureCollection', features };
+}
+
+export function buildMountainUnion(mountainRidges) {
+    const groups = new Map();
+
+    for (const feature of mountainRidges.features) {
+        const { shade, ...properties } = feature.properties;
+        if (!groups.has(properties.id)) {
+            groups.set(properties.id, { properties, geometries: [] });
+        }
+        groups.get(properties.id).geometries.push(feature.geometry.coordinates);
+    }
+
+    return {
+        type: 'FeatureCollection',
+        features: [...groups.values()].map(({ properties, geometries }) => ({
+            type: 'Feature',
+            properties,
+            geometry: { type: 'MultiPolygon', coordinates: unionAll(geometries) },
+        })),
+    };
+}

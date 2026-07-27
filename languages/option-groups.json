@@ -23,6 +23,10 @@
         "en": "Other",
         "ru": "Прочее"
     },
+    "roads": {
+        "en": "Roads",
+        "ru": "Дороги"
+    },
     "kingdoms": {
         "en": "Kingdoms",
         "ru": "Королевства"

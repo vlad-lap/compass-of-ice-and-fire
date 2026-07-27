@@ -31,7 +31,6 @@ import { Feature, FeatureCollection, MultiPolygon, Polygon, Position } from 'geo
 import { GEODATA_URLS } from '../../constants';
 import {
     INITIAL_MAP_CENTER,
-    MOUNTAIN_PATTERN_ID,
     SELECTABLE_LAYER_IDS,
     TOUCH_HIT_RADIUS_PX,
     ZoomLevel,
@@ -68,10 +67,12 @@ import {
     SEARCH_HIGHLIGHT_CIRCLE_PAINT,
     SEARCH_HIGHLIGHT_LINE_LAYOUT,
     SEARCH_HIGHLIGHT_LINE_PAINT,
+    SEARCH_HIGHLIGHT_POLYGON_PAINT,
+    VOLCANOES_PAINT,
+    VOLCANOES_SMOKE_PAINT,
 } from './configs';
 import {
     buildMaskPolygon,
-    generateMountainPattern,
     getGeometryPositions,
     HighlightableGeometry,
 } from '../../utils';
@@ -160,22 +161,22 @@ export class MapPageComponent {
     protected readonly polygonTypes: PolygonGeodataType[] = [
         'continents',
         'lands',
-        'lakes',
         'seas',
         'shores',
+        'lakes',
         'islands',
-        'steppes',
+        'snow',
         'deserts',
-        'mountains',
+        'wastelands',
         'swamps',
+        'mountains',
         'forests',
     ];
     protected readonly lineTypes: LineGeodataType[] = ['kingdomBorders', 'rivers', 'roads'];
 
     protected readonly labeledTypes: GeodataType[] = [
         'lands',
-        'mountains',
-        'steppes',
+        'snow',
         'deserts',
         'swamps',
         'seas',
@@ -196,6 +197,10 @@ export class MapPageComponent {
         GeodataState.labelPoints('kingdoms'),
     );
 
+    protected readonly mountainsLabelPoints = this.store.selectSignal(
+        GeodataState.labelPoints('mountains'),
+    );
+
     protected readonly polygonsPaint = POLYGONS_PAINT;
 
     protected readonly linesLayout = LINES_LAYOUT;
@@ -206,16 +211,18 @@ export class MapPageComponent {
     protected readonly pointsPaint = POINTS_PAINT;
     protected readonly pointsShadow = POINTS_SHADOW;
 
+    protected readonly volcanoesPaint = VOLCANOES_PAINT;
+    protected readonly volcanoesSmokePaint = VOLCANOES_SMOKE_PAINT;
+
     protected readonly locationTiers: LocationTier[] = ['primary', 'secondary', 'tertiary'];
     protected readonly locationsFilter = LOCATIONS_FILTER;
     protected readonly locationsMinZoom = LOCATIONS_MIN_ZOOM;
 
-    protected readonly labelLayout = computed<GeodataDict<SymbolLayerSpecification['layout']>>(
-        () =>
-            mapValues(LABEL_LAYOUT, layout => this.getLocalizedLabelLayout(layout)),
+    protected readonly labelLayout = computed<GeodataDict<SymbolLayerSpecification['layout']>>(() =>
+        mapValues(LABEL_LAYOUT, layout => this.getLocalizedLabelLayout(layout)),
     );
-    protected readonly defaultLabelLayout = computed<SymbolLayerSpecification['layout']>(
-        () => this.getLocalizedLabelLayout(DEFAULT_LABEL_LAYOUT)
+    protected readonly defaultLabelLayout = computed<SymbolLayerSpecification['layout']>(() =>
+        this.getLocalizedLabelLayout(DEFAULT_LABEL_LAYOUT),
     );
     protected readonly labelPaint = LABEL_PAINT;
     protected readonly labelsMinZoom = LABELS_MIN_ZOOM;
@@ -241,6 +248,8 @@ export class MapPageComponent {
     protected readonly searchHighPointLayout = computed<CircleLayerSpecification['layout']>(() => ({
         visibility: this.searchHighlightLayerType() === 'point' ? 'visible' : 'none',
     }));
+
+    protected readonly searchHighlightPolygonPaint = SEARCH_HIGHLIGHT_POLYGON_PAINT;
     protected readonly searchHighlightLinePaint = SEARCH_HIGHLIGHT_LINE_PAINT;
     protected readonly searchHighlightPointPaint = SEARCH_HIGHLIGHT_CIRCLE_PAINT;
 
@@ -269,7 +278,6 @@ export class MapPageComponent {
 
     onMapLoad(map: Map): void {
         map.touchZoomRotate.disableRotation();
-        map.addImage(MOUNTAIN_PATTERN_ID, generateMountainPattern());
 
         const feature = this.searchHighlightFeature();
         if (feature) {
@@ -291,7 +299,9 @@ export class MapPageComponent {
             return;
         }
 
-        this.cursorStyle.set('pointer');
+        if (this.hasCard(feature)) {
+            this.cursorStyle.set('pointer');
+        }
         this.showTooltip(target, feature, lngLat);
     }
 
@@ -345,21 +355,23 @@ export class MapPageComponent {
         this.dialog.open(AboutDialogComponent);
     }
 
-    private zoomToFeature({ geometry }: Feature): void {
+    private zoomToFeature(feature: Feature): void {
         const mapInstance = this.map().mapInstance;
 
         if (!mapInstance) {
             return;
         }
 
-        const bounds = getGeometryPositions(geometry as HighlightableGeometry).reduce(
+        const bounds = getGeometryPositions(feature.geometry as HighlightableGeometry).reduce(
             (initialBounds, position) => initialBounds.extend(position as LngLatLike),
             new LngLatBounds(),
         );
+
+        const verticalOffset = this.hasCard(feature) ? -55 : 0;
         mapInstance.fitBounds(bounds, {
             maxZoom: ZoomLevel.High + 0.5,
             padding: 60,
-            offset: [0, -55],
+            offset: [0, verticalOffset],
         });
     }
 
@@ -376,8 +388,8 @@ export class MapPageComponent {
         return layerTypes[geometryType];
     }
 
-    private hasCard({ properties, geometry }: Feature): boolean {
-        return geometry.type === 'Point' || properties.id === 'the-wall';
+    private hasCard({ properties }: Feature): boolean {
+        return !!properties.description;
     }
 
     private openCard(feature: Feature): void {
@@ -442,7 +454,9 @@ export class MapPageComponent {
         return this.tooltipRef.location.nativeElement;
     }
 
-    private getLocalizedLabelLayout(layout: SymbolLayerSpecification['layout']): SymbolLayerSpecification['layout'] {
+    private getLocalizedLabelLayout(
+        layout: SymbolLayerSpecification['layout'],
+    ): SymbolLayerSpecification['layout'] {
         const language = this.language();
         return {
             ...layout,

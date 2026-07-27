@@ -22,10 +22,16 @@ export function getCentralPoint(geometry: Polygon | MultiPolygon): Position {
         case 'Polygon':
             return ringCentroid(geometry.coordinates[0]);
         case 'MultiPolygon': {
-            const largestPolygon = geometry.coordinates.reduce((acc, polygon) =>
-                polygon[0].length > acc[0].length ? polygon : acc,
+            const weightedCentroids = geometry.coordinates.map(([outerRing]) => ({
+                centroid: ringCentroid(outerRing),
+                area: ringArea(outerRing),
+            }));
+            const totalArea = weightedCentroids.reduce((sum, { area }) => sum + area, 0);
+            const [totalLon, totalLat] = weightedCentroids.reduce(
+                ([lon, lat], { centroid: [posLon, posLat], area }) => [lon + posLon * area, lat + posLat * area],
+                [0, 0],
             );
-            return ringCentroid(largestPolygon[0]);
+            return [totalLon / totalArea, totalLat / totalArea];
         }
     }
 }
@@ -36,6 +42,16 @@ export function ringCentroid(ring: Position[]): Position {
         [0, 0],
     );
     return [totalLon / ring.length, totalLat / ring.length];
+}
+
+function ringArea(ring: Position[]): number {
+    let sum = 0;
+    for (let i = 0; i < ring.length - 1; i++) {
+        const [lon1, lat1] = ring[i];
+        const [lon2, lat2] = ring[i + 1];
+        sum += lon1 * lat2 - lon2 * lat1;
+    }
+    return Math.abs(sum) / 2;
 }
 
 export function buildMaskPolygon(hole: Polygon | MultiPolygon, bounds: [Position, Position]): Polygon {

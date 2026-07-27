@@ -19,11 +19,11 @@ import {
     WHITE,
     LocationRadius,
     MapBounds,
-    MOUNTAIN_PATTERN_ID,
     RED,
     ZoomLevel,
     GREY,
     LIGHT_GREY,
+    MOUNTAIN_COLORS,
 } from './constants';
 import { GeodataDict, LocationDict } from '../../models';
 
@@ -80,6 +80,19 @@ export const GRADIENT_PAINT: RasterLayerSpecification['paint'] = {
     'raster-fade-duration': 0,
 };
 
+const RIDGES_HEIGHT_FILTER: Record<string, ExpressionSpecification[]> = {
+    light: [
+        ['all', ['==', ['get', 'shade'], 'light'], ['==', ['get', 'size'], 1]],
+        ['all', ['==', ['get', 'shade'], 'light'], ['==', ['get', 'size'], 2]],
+        ['all', ['==', ['get', 'shade'], 'light'], ['==', ['get', 'size'], 3]],
+    ],
+    dark: [
+        ['all', ['==', ['get', 'shade'], 'dark'], ['==', ['get', 'size'], 1]],
+        ['all', ['==', ['get', 'shade'], 'dark'], ['==', ['get', 'size'], 2]],
+        ['all', ['==', ['get', 'shade'], 'dark'], ['==', ['get', 'size'], 3]],
+    ],
+};
+
 export const POLYGONS_PAINT: GeodataDict<FillLayerSpecification['paint']> = {
     continents: {
         'fill-color': LandscapeColor.Land,
@@ -88,26 +101,58 @@ export const POLYGONS_PAINT: GeodataDict<FillLayerSpecification['paint']> = {
         'fill-color': LandscapeColor.Land,
     },
     mountains: {
-        'fill-pattern': MOUNTAIN_PATTERN_ID,
-        'fill-opacity': 0.05,
+        'fill-opacity': 0,
+    },
+    mountainRidges: {
+        'fill-color': [
+            'case',
+
+            RIDGES_HEIGHT_FILTER.light[0],
+            MOUNTAIN_COLORS.light[0],
+            RIDGES_HEIGHT_FILTER.light[1],
+            MOUNTAIN_COLORS.light[1],
+            RIDGES_HEIGHT_FILTER.light[2],
+            MOUNTAIN_COLORS.light[2],
+
+            RIDGES_HEIGHT_FILTER.dark[0],
+            MOUNTAIN_COLORS.dark[0],
+            RIDGES_HEIGHT_FILTER.dark[1],
+            MOUNTAIN_COLORS.dark[1],
+            RIDGES_HEIGHT_FILTER.dark[2],
+            MOUNTAIN_COLORS.dark[2],
+
+            'transparent',
+        ],
+        'fill-opacity': ['match', ['get', 'size'], 1, 0.4, 0.6],
     },
     forests: {
         'fill-color': LandscapeColor.Forest,
         'fill-opacity': 0.35,
     },
-    steppes: {
-        'fill-opacity': 0,
+    snow: {
+        'fill-color': LandscapeColor.Snow,
+        'fill-opacity': 0.8,
     },
     deserts: {
         'fill-color': LandscapeColor.Desert,
-        'fill-opacity': 0.45,
+        'fill-opacity': 0.8,
+    },
+    wastelands: {
+        'fill-color': LandscapeColor.Wasteland,
+        'fill-opacity': 0.7,
     },
     swamps: {
         'fill-color': LandscapeColor.Swamp,
         'fill-opacity': 0.5,
     },
     lakes: {
-        'fill-color': LandscapeColor.Water,
+        'fill-color': [
+            'match',
+            ['get', 'variant'],
+            'red',
+            LandscapeColor.RedLake,
+            LandscapeColor.Water,
+        ],
     },
     seas: {
         'fill-opacity': 0,
@@ -223,12 +268,25 @@ export const POINTS_SHADOW: CircleLayerSpecification['paint'] = {
     'circle-translate': [1.5, 1.5],
 };
 
+export const VOLCANOES_PAINT: CircleLayerSpecification['paint'] = {
+    'circle-radius': LocationRadius.MD,
+    'circle-color': LandscapeColor.Volcano,
+};
+
+export const VOLCANOES_SMOKE_PAINT: CircleLayerSpecification['paint'] = {
+    'circle-radius': ['match', ['get', 'smokeRadius'], 0, 7, 1, 9, 2, 11, 9],
+    'circle-color': BLACK,
+    'circle-opacity': 0.3,
+    'circle-blur': 0.8,
+    'circle-translate': [3, -3],
+};
+
 export const LABELS_MIN_ZOOM: GeodataDict<ZoomLevel> = {
+    kingdoms: ZoomLevel.Initial,
     shores: ZoomLevel.Medium,
     lands: ZoomLevel.Low,
     mountains: ZoomLevel.Medium,
     forests: ZoomLevel.Medium,
-    steppes: ZoomLevel.Low,
     swamps: ZoomLevel.Low,
     deserts: ZoomLevel.Low,
     islands: ZoomLevel.Medium,
@@ -343,16 +401,24 @@ export const LABEL_PAINT: Partial<GeodataDict<SymbolLayerSpecification['paint']>
     kingdoms: DEFAULT_LABEL_PAINT,
     lands: DEFAULT_LABEL_PAINT,
     shores: DEFAULT_LABEL_PAINT,
-    continents: DEFAULT_LAND_LABEL_PAINT,
+    continents: DEFAULT_LABEL_PAINT,
     islands: DEFAULT_LAND_LABEL_PAINT,
     forests: DEFAULT_LAND_LABEL_PAINT,
-    steppes: DEFAULT_LAND_LABEL_PAINT,
     swamps: DEFAULT_LAND_LABEL_PAINT,
-    lakes: DEFAULT_WATER_LABEL_PAINT,
+    lakes: {
+        ...DEFAULT_LABEL_PAINT,
+        'text-color': [
+            'match',
+            ['get', 'variant'],
+            'red',
+            LabelColor.RedLake,
+            LabelColor.Water,
+        ],
+    },
     seas: DEFAULT_WATER_LABEL_PAINT,
     rivers: DEFAULT_WATER_LABEL_PAINT,
     mountains: { ...DEFAULT_LABEL_PAINT, 'text-color': LabelColor.Mountain },
-    deserts: { ...DEFAULT_LABEL_PAINT, 'text-color': LabelColor.Mountain },
+    deserts: { ...DEFAULT_LABEL_PAINT, 'text-color': LabelColor.Desert },
     roads: { ...DEFAULT_LABEL_PAINT, 'text-color': LabelColor.Road },
     wall: { ...DEFAULT_LABEL_PAINT, 'text-color': LabelColor.Wall },
     locations: {
@@ -371,6 +437,13 @@ export const SEARCH_HIGHLIGHT_LINE_LAYOUT: LineLayerSpecification['layout'] = {
     'line-cap': 'round',
     'line-join': 'round',
 }
+
+export const SEARCH_HIGHLIGHT_POLYGON_PAINT: LineLayerSpecification['paint'] = {
+    'line-width': 2,
+    'line-color': RED,
+    'line-opacity': 0.7,
+    'line-dasharray': [1, 1],
+};
 
 export const SEARCH_HIGHLIGHT_LINE_PAINT: LineLayerSpecification['paint'] = {
     'line-width': 9,

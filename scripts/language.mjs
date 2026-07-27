@@ -3,6 +3,7 @@ import { fileURLToPath } from 'url';
 import { AVAILABLE_LANGUAGES, DEFAULT_LANGUAGE } from './constants.mjs';
 import { readJSON, writeJSON } from './json-utils.mjs';
 import { mapGeodata } from './geodata-utils.mjs';
+import { getConsolePrefix } from './console-utils.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA = join(__dirname, '..', 'data');
@@ -69,6 +70,8 @@ export function syncDescriptions(dataItems) {
                 ? join(DATA, dictFileName)
                 : join(LANGUAGES, lang, dictFileName);
         writeJSON(dictPath, descriptionsDict);
-        console.log(`[${lang}] ${dictFileName}: ${Object.keys(descriptionsDict).length} items`);
+
+        const prefix = getConsolePrefix(lang, dictFileName);
+        console.log(`${prefix} ${Object.keys(descriptionsDict).length} items`);
     });
 }
