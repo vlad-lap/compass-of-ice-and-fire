@@ -5,16 +5,18 @@ export type PolygonGeodataType =
     | 'shores'
     | 'islands'
     | 'mountains'
+    | 'mountainRidges'
     | 'forests'
+    | 'snow'
     | 'deserts'
-    | 'steppes'
+    | 'wastelands'
     | 'swamps'
     | 'lakes'
     | 'seas';
 
 export type LineGeodataType = 'rivers' | 'kingdomBorders' | 'roads' | 'wall';
 
-export type PointGeodataType = 'locations';
+export type PointGeodataType = 'locations' | 'volcanoes';
 
 export type GeodataType = PolygonGeodataType | LineGeodataType | PointGeodataType;
 

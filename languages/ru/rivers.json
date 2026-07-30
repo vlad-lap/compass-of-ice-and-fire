@@ -3,6 +3,7 @@
   "green-fork": "Зелёный Зубец",
   "blue-fork": "Синий Зубец",
   "red-fork": "Красный Зубец",
+  "the-trident": "Трезубец",
   "fever": "Горячка",
   "white-knife": "Белый Нож",
   "last-river": "Последняя река",
@@ -19,7 +20,7 @@
   "wendwater": "Путеводная",
   "antler": "Олений Рог",
   "milkwater": "Молочная",
-  "skahazadban": "Скахазадхан",
+  "skahazadhan": "Скахазадхан",
   "worm-river": "Червь",
   "volaena": "Волэйна",
   "rhoyne": "Ройна",
@@ -29,5 +30,7 @@
   "upper-rhoyne": "Верхняя Ройна",
   "noyne": "Нойна",
   "qhoyne": "Койна",
-  "darkwash": "Темноводная"
+  "darkwater": "Темноводная",
+  "broken-branch": "Сломанная ветвь",
+  "tumblestone": "Камнегонка"
 }

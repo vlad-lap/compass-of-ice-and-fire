@@ -4,16 +4,13 @@
 
 Compass of Ice and Fire is an unofficial, non-commercial fan project. It is not affiliated with or endorsed by George R. R. Martin, HBO, or any other rights holders.
 
-## Data Attribution
+## Map Data Sources
 
-This project uses map data based on the fan-made Westeros GeoJSON project created by **cadaei**, **theMountainGoat**, and **Tear**, with copyright attributed to **George R. R. Martin**.
+The geographic data included in this project has been independently created for Compass of Ice and Fire.
 
-The original data has been modified for use in this project, including filtering, processing, assigning stable feature identifiers, and other transformations.
+The map has been manually recreated in QGIS using *The Lands of Ice and Fire* by George R. R. Martin and Jonathan Roberts as the primary cartographic reference. Additional published reference materials were consulted to verify the geography and locations.
 
-The original dataset is licensed under the **Creative Commons Attribution–NonCommercial–ShareAlike 3.0 Unported (CC BY-NC-SA 3.0)** license.
-
-- Source: https://github.com/mapbox/GOT-Inspired-Map
-- License: https://creativecommons.org/licenses/by-nc-sa/3.0/
+No third-party GeoJSON datasets are included or redistributed as part of this project.
 
 ## Data Processing
 
@@ -33,7 +30,7 @@ npm start        # build geodata + serve
 npm run build    # build geodata + production build
 ```
 
-Geodata is preprocessed from `vendors/` into `geodata/` by `scripts/build-geodata.mjs` before every serve/build.
+Geodata is preprocessed from `qgis/` into `geodata/` by `scripts/build-geodata.mjs` before every serve/build.
 
 ## License
 

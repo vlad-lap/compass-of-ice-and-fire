@@ -1,10 +1,10 @@
 import { LngLatLike } from 'maplibre-gl';
 
 export enum MapBounds {
-    North = 43,
-    South = -42,
+    North = 48.8,
+    South = -39.3,
     East = 92,
-    West = -10,
+    West = -7.1,
 }
 
 export const INITIAL_MAP_CENTER: LngLatLike = [15, 10];
@@ -21,6 +21,7 @@ export const GREY = '#7b766f';
 export const LIGHT_GREY = '#b0aaa2';
 export const WHITE = '#faf7ef';
 export const RED = '#ff3b30';
+export const ORANGE = '#ffa80d';
 
 export enum LandscapeColor {
     Land = '#d2fade',
@@ -28,19 +29,30 @@ export enum LandscapeColor {
     Forest = '#93cba2',
     Swamp = '#bae8d6',
     Desert = '#f4efe5',
-    Road = '#ffa80d',
+    Snow = '#ffffff',
+    Road = ORANGE,
     Wall = WHITE,
     KingdomBorder = GREY,
+    Volcano = ORANGE,
+    Wasteland = '#dedede',
+    RedLake = '#f8c1c1',
 }
+
+export const MOUNTAIN_COLORS = {
+    light: ['#eeeff1', '#eceef0', '#e8eaec', '#e4e6e8'],
+    dark: ['#e6e8ea', '#dee1e4', '#d4d7da', '#c8ccd0'],
+};
 
 export enum LabelColor {
     Land = '#12875f',
     Water = '#1a6b8a',
-    Mountain = '#5a4208',
+    Mountain = GREY,
+    Desert = '#5a4208',
     Road = '#bd7c05',
     Wall = BLACK,
     Location = BLACK,
     Ruin = GREY,
+    RedLake = '#9c2b2b',
 }
 
 export enum LocationRadius {
@@ -50,8 +62,6 @@ export enum LocationRadius {
 }
 
 export const TOUCH_HIT_RADIUS_PX = 15;
-
-export const MOUNTAIN_PATTERN_ID = 'mountain-pattern';
 
 export const SELECTABLE_LAYER_IDS = [
     'primary-point',

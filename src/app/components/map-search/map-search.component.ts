@@ -53,7 +53,6 @@ const OPTIONS_GROUP_ORDER: OptionGroup[] = [
     'mountains',
     'forests',
     'shores',
-    'steppes',
     'swamps',
     'deserts',
 ];

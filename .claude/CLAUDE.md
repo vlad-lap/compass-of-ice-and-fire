@@ -56,7 +56,7 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 
 ## Geodata Build Pipeline
 
-- Raw source data lives in `vendors/`, processed output goes to `geodata/`
+- Raw source data lives in `qgis/`, processed output goes to `geodata/`
 - `scripts/build-geodata.mjs` runs before every serve/build (`npm start` / `npm run build`)
 - To regenerate manually: `npm run build-geodata`
 - `got_political_borders.geojson` is derived at build time: kingdom polygon segments where both endpoints are coastline vertices (shared with continents/islands) are dropped, leaving only land-land political borders

@@ -34,6 +34,8 @@
     [maxZoom]="9"
     [maxBounds]="maxBounds"
     [dragRotate]="false"
+    [pitchWithRotate]="false"
+    [touchPitch]="false"
     [cursorStyle]="cursorStyle()"
     (mapLoad)="onMapLoad($event)"
     (mapClick)="onMapClick($event)"
@@ -52,6 +54,39 @@
             [paint]="polygonsPaint[polygonType]"
         />
     }
+
+    <mgl-geojson-source
+        id="mountain-ridges"
+        data="geodata/got_mountain_ridges.geojson"
+    />
+    <mgl-layer
+        id="mountain-ridges-fill"
+        type="fill"
+        source="mountain-ridges"
+        before="forests-fill"
+        [paint]="polygonsPaint.mountainRidges"
+    />
+
+    <mgl-geojson-source
+        id="volcanoes"
+        data="geodata/got_volcanoes.geojson"
+    />
+    <mgl-layer
+        id="volcanoes-circle"
+        type="circle"
+        source="volcanoes"
+        before="volcanoes-smoke-circle"
+        [paint]="volcanoesPaint"
+        [minzoom]="ZoomLevel.Medium"
+    />
+    <mgl-layer
+        id="volcanoes-smoke-circle"
+        before="primary-point-shadow"
+        type="circle"
+        source="volcanoes"
+        [paint]="volcanoesSmokePaint"
+        [minzoom]="ZoomLevel.Medium"
+    />
 
     @for (lineType of lineTypes; track lineType) {
         <mgl-geojson-source
@@ -132,8 +167,22 @@
         source="kingdoms-label-points"
         [layout]="labelLayout().kingdoms"
         [paint]="labelPaint.kingdoms"
-        [minzoom]="ZoomLevel.Low"
+        [minzoom]="labelsMinZoom.kingdoms"
         [maxzoom]="ZoomLevel.Medium"
+        before="lands-label"
+    />
+
+    <mgl-geojson-source
+        id="mountains-label-points"
+        [data]="mountainsLabelPoints()"
+    />
+    <mgl-layer
+        id="mountains-label"
+        type="symbol"
+        source="mountains-label-points"
+        [layout]="defaultLabelLayout()"
+        [paint]="labelPaint.mountains"
+        [minzoom]="labelsMinZoom.mountains"
         before="lands-label"
     />
 
@@ -207,6 +256,14 @@
     <mgl-geojson-source
         id="search-highlight"
         [data]="searchHighlight()"
+    />
+    <mgl-layer
+        id="search-highlight-polygon"
+        type="line"
+        source="search-highlight"
+        before="dim-overlay-layer"
+        [paint]="searchHighlightPolygonPaint"
+        [layout]="searchHighlightPolygonLayout()"
     />
     <mgl-layer
         id="search-highlight-line"

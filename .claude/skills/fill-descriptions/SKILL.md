@@ -57,10 +57,10 @@ console.log('stale ru:', staleRu.length, staleRu);
 Examples:
 
 Winterfell:
-"Winterfell is the ancestral seat of House Stark and the largest castle in the North. Built around natural hot springs, it has served as the political and cultural center of the region for thousands of years."
+"The ancestral seat of House Stark and the largest castle in the North. Built around natural hot springs, it has served as the political and cultural center of the region for thousands of years."
 
 The Twins:
-"The Twins are a pair of fortified castles belonging to House Frey, connected by a bridge spanning the Green Fork of the Trident. The crossing is one of the most strategically important river crossings in Westeros and has shaped the influence of House Frey."
+"A pair of fortified castles belonging to House Frey, connected by a bridge spanning the Green Fork of the Trident. The crossing is one of the most strategically important river crossings in Westeros and has shaped the influence of House Frey."
 
 If a feature is extremely minor with almost no canonical information, give a one-sentence description instead of fabricating details.
 
@@ -96,6 +96,25 @@ The card already displays the location's name, so don't open the description by 
   - "Bitterbridge, once called Stonebridge, is the seat of House Caswell..., its name commemorating a battle..." → leave untouched. (Swapping in "Stonebridge is the seat of... its name commemorating..." would make "its name" wrongly refer to the old name.)
   - The tell: "called"/"also called"/"known as" alone → current epithet, trim the primary name out. "once"/"formerly"/"previously" + "called"/"known as" → former name, leave the primary name alone.
 - Apply all of the above identically to `description_ru` — the same logic, just in Russian.
+
+## Style: don't calque English syntax in `description_ru`
+
+Beyond wrong terminology, literal English sentence structure forced into Russian is its own class of bug — grammatically parseable but reads like a translation, not something a native speaker would write. It's easy to miss because the sentence still "reads fine" in isolation; that's exactly how these shipped undetected across two separate audit passes.
+
+**Most important, and the single most common cause: check gender/number agreement after trimming the name (see "don't repeat the name" above).** Removing the leading "[Name] is..." can orphan every pronoun/participle later in the sentence that was implicitly agreeing with the *removed* name's gender rather than whatever noun is actually left in the text. Confirmed real bugs of this exact shape:
+- `the-wall`: trimmed to open with "Массивное **укрепление**..." (neuter), but a later "**она** стоит" (feminine) silently assumed the removed "Стена" — fixed to "**оно** стоит" to agree with "укрепление", the noun actually present.
+- `ruin-ghoyan-drohe`: "...место каналов и фонтанов, прежде чем **был сожжён**..." — masculine participle with no masculine noun anywhere nearby (silently assuming an unstated "город"). Fixed by switching to active voice: "...пока во время Ройнарских войн его не сожгли валирийские драконы."
+- Same pattern also hit `castle-shadow-tower`, `castle-sunspear`, `castle-flints-finger`, `castle-casterly-rock`, `castle-the-bloody-gate`, `castle-castle-black`, `ruin-oros`, `ruin-tyria` — a leading participle or a pronoun several clauses later agreeing with a noun that isn't actually the one stated (often because the entry's generic-type noun switches gender between sentences, e.g. "Резиденция" (f) in sentence one vs. pronouns later written for an implied "замок" (m) that's never actually named).
+- **The check**: whenever you write or touch a `description_ru`, trace every он/она/оно/который/-ая/-ое and every passive participle back to the specific noun it's agreeing with *in the text as written* — not what you meant to refer to. If the nearest antecedent is the wrong gender/number, either fix the pronoun/participle or restructure with an explicit noun (sometimes the cleanest fix is switching a leading participial clause to a finite active-voice clause, as in the Ghoyan Drohe example).
+
+Other confirmed calque patterns:
+- **Passive-agent placement**: don't shove the instrumental agent to the end of the clause after other adverbials, mimicking English "was X-ed ... [by Y]" word order — Russian naturally puts the agent right after the verb. E.g. "были оттеснены на юг, в Речные земли, Королями Зимы" → "были оттеснены Королями Зимы на юг, в Речные земли."
+- **"через + noun" causal calque**: English "through/by X" (marriage, a pact, intermarriage) rendered as "через X" is a calque — use "в результате X" / "благодаря X" / "из-за X" instead ("через брак" → "в результате брака"; "через смешанные браки" → "в результате смешанных браков"; "через соглашение" → "в результате соглашения").
+- **"чтобы быть X-ан" (passive purpose infinitive)**: calques English "close enough to have been devastated" — use a modal instead: "мог быть уничтожен", not "чтобы быть уничтоженным".
+- **"среди + institution name"**: calques English "known among the Night's Watch" — use "в X" ("в Ночном Дозоре", not "среди Ночного Дозора").
+- **Split fixed collocations**: don't wedge a word into the middle of a set phrase to mimic English order (e.g. "держать в заложниках" shouldn't become "держать в городе в заложниках" — keep the collocation intact and place the other modifier elsewhere).
+- **Case-government errors**: check that a noun following a governing word/participle is in the case that word actually requires (e.g. "права [кого?]" needs genitive — "права Рейниры", not dative "права Рейнире").
+- **Watch for knock-on breakage when fixing one of the above.** Confirmed case: fixing `town-kayce`'s agent-placement calque by moving the agent earlier in the sentence accidentally left a later "который" (relative pronoun, meant to refer to the agent) adjacent to a *different* noun instead — creating a new, worse ambiguity than the one being fixed. Before finalizing any word-order change, re-read the rest of the sentence for pronouns or relative clauses whose correct attachment depends on the original order.
 
 ## Proper nouns in `description_ru` — verify, don't calque
 

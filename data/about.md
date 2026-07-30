@@ -12,12 +12,6 @@ The map is created with [MapLibre GL JS](https://maplibre.org/).
 
 ### Map Data
 
-The map data is based on the GeoJSON project created by **cadaei**, **theMountainGoat**, and **Tear**, with copyright attributed to **George R. R. Martin**.
+The map data has been independently created for Compass of Ice and Fire.
 
-The original data has been modified for this project, including filtering, processing, assigning stable feature identifiers, and other transformations required for rendering.
-
-The original dataset is licensed under the **Creative Commons Attribution–NonCommercial–ShareAlike 3.0 Unported (CC BY-NC-SA 3.0)** license.
-
-Source: https://github.com/mapbox/GOT-Inspired-Map
-
-License: https://creativecommons.org/licenses/by-nc-sa/3.0/
+Geographic features have been manually drawn using *The Lands of Ice and Fire* by George R. R. Martin and Jonathan Roberts as the primary cartographic reference, together with other published reference materials from the world of *A Song of Ice and Fire*.
