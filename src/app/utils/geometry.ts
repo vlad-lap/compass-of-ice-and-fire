@@ -1,4 +1,11 @@
-import { LineString, MultiLineString, MultiPolygon, Point, Polygon, Position } from 'geojson';
+import {
+    LineString,
+    MultiLineString,
+    MultiPolygon,
+    Point,
+    Polygon,
+    Position,
+} from 'geojson';
 import { flatten, flattenDepth } from 'lodash';
 
 export type HighlightableGeometry = Polygon | MultiPolygon | LineString | MultiLineString | Point;

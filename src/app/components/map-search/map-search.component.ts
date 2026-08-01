@@ -159,14 +159,11 @@ export class MapSearchComponent implements OnInit {
         this.setTitle(value);
     }
 
-    reset(): void {
-        this.resetSearch.emit();
-        this.setUrl(null);
-        this.setTitle(null);
-
-        if (this.hasHover) {
-            this.searchInput().nativeElement.focus();
+    clear(event: MouseEvent): void {
+        if (!this.hasHover) {
+            event.stopPropagation();
         }
+        this.searchControl.reset('');
     }
 
     private search(value: FeatureData): void {
@@ -174,6 +171,12 @@ export class MapSearchComponent implements OnInit {
         this.applySearch.emit(value);
         this.setUrl(value);
         this.setTitle(value);
+    }
+
+    private reset(): void {
+        this.resetSearch.emit();
+        this.setUrl(null);
+        this.setTitle(null);
     }
 
     private setUrl(value: FeatureData): void {

@@ -19,7 +19,7 @@
             <button
                 matIconButton
                 [aria-label]="ui.clear"
-                (click)="$event.stopPropagation(); searchControl.reset('')"
+                (click)="clear($event)"
             >
                 <mat-icon>close</mat-icon>
             </button>
