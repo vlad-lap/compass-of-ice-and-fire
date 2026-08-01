@@ -368,6 +368,12 @@ export const LABEL_LAYOUT: Partial<GeodataDict<SymbolLayerSpecification['layout'
         'text-variable-anchor': ['bottom', 'top', 'left', 'right'],
         'text-justify': 'auto',
     },
+    lands: {
+        ...DEFAULT_LABEL_LAYOUT,
+        'text-size': FontSize.MD,
+        'text-variable-anchor': ['bottom', 'top', 'left', 'right'],
+        'text-justify': 'auto',
+    },
     rivers: DEFAULT_LINE_LABEL_LAYOUT,
     roads: {
         ...DEFAULT_LINE_LABEL_LAYOUT,

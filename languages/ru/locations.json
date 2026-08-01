@@ -1,5 +1,4 @@
 {
-  "town-ebonhead": "Эбеновая Голова",
   "city-kings-landing": "Королевская Гавань",
   "castle-hayford-castle": "Хейфорд",
   "castle-rosby": "Росби",
@@ -227,5 +226,7 @@
   "town-last-lament": "Прощальный Плач",
   "town-hesh": "Хеш",
   "town-kosrak": "Козрак",
-  "town-lhazosh": "Лхазош"
+  "town-lhazosh": "Лхазош",
+  "town-ebonhead": "Эбеновая Голова",
+  "other-ruby-ford": "Рубиновый брод"
 }

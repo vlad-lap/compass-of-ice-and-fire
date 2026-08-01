@@ -177,7 +177,6 @@ export class MapPageComponent {
     protected readonly lineTypes: LineGeodataType[] = ['kingdomBorders', 'rivers', 'roads'];
 
     protected readonly labeledTypes: GeodataType[] = [
-        'lands',
         'snow',
         'deserts',
         'swamps',
@@ -265,7 +264,6 @@ export class MapPageComponent {
     private popup: Popup;
     private tooltipRef: ComponentRef<TooltipComponent>;
     private bottomSheetRef: MatBottomSheetRef;
-    private zoomingPolygon: Feature;
 
     constructor(
         private store: Store,
@@ -345,10 +343,14 @@ export class MapPageComponent {
     }
 
     onMapClick({ target, point: { x, y } }: MapMouseEvent): void {
+        const hitRadius = this.hasHover
+            ? 2
+            : TOUCH_HIT_RADIUS_PX;
+
         const [feature] = target.queryRenderedFeatures(
             [
-                [x - TOUCH_HIT_RADIUS_PX, y - TOUCH_HIT_RADIUS_PX],
-                [x + TOUCH_HIT_RADIUS_PX, y + TOUCH_HIT_RADIUS_PX],
+                [x - hitRadius, y - hitRadius],
+                [x + hitRadius, y + hitRadius],
             ],
             { layers: SELECTABLE_LAYER_IDS },
         );
@@ -388,21 +390,6 @@ export class MapPageComponent {
         this.dialog.open(AboutDialogComponent);
     }
 
-    onZoomEnd(): void {
-        if (!this.zoomingPolygon) {
-            return;
-        }
-
-        const map = this.map().mapInstance;
-        const zoom = map.getZoom();
-
-        if (zoom > ZoomLevel.Low && zoom < ZoomLevel.Medium) {
-            map.flyTo({ zoom: ZoomLevel.Medium, duration: ZOOM_DURATION });
-        }
-
-        this.zoomingPolygon = null;
-    }
-
     private zoomToFeature(feature: Feature): void {
         const mapInstance = this.map().mapInstance;
 
@@ -419,10 +406,6 @@ export class MapPageComponent {
 
         const isPolygon =
             feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon';
-
-        if (isPolygon) {
-            this.zoomingPolygon = feature;
-        }
 
         mapInstance.fitBounds(bounds, {
             maxZoom: ZoomLevel.High + 0.5,

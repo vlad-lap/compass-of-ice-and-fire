@@ -2,7 +2,6 @@
 "type": "FeatureCollection",
 "name": "got_locations",
 "features": [
-{ "type": "Feature", "properties": { "id": 257, "name": "Ebonhead", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 30.325895946531837, -37.101406718753466 ] } },
 { "type": "Feature", "properties": { "id": 1, "name": "King's Landing", "size": 5, "confirmed": 1, "type": "City" }, "geometry": { "type": "Point", "coordinates": [ 18.432066083848635, 3.736014024094777 ] } },
 { "type": "Feature", "properties": { "id": 2, "name": "Hayford Castle", "size": 3, "confirmed": 0, "type": "Castle" }, "geometry": { "type": "Point", "coordinates": [ 18.306671191450057, 4.783014234685957 ] } },
 { "type": "Feature", "properties": { "id": 3, "name": "Rosby", "size": 3, "confirmed": 1, "type": "Castle" }, "geometry": { "type": "Point", "coordinates": [ 19.111838395272535, 4.56899438074251 ] } },
@@ -237,6 +236,8 @@
 { "type": "Feature", "properties": { "id": 253, "name": "Last Lament", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 25.70975885445101, -22.964836270737745 ] } },
 { "type": "Feature", "properties": { "id": 254, "name": "Hesh", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 70.253460687353211, -6.3457908994991 ] } },
 { "type": "Feature", "properties": { "id": 255, "name": "Kosrak", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 75.145166778855568, -6.38030898683833 ] } },
-{ "type": "Feature", "properties": { "id": 256, "name": "Lhazosh", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 72.275234374365269, -9.102306731303367 ] } }
+{ "type": "Feature", "properties": { "id": 256, "name": "Lhazosh", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 72.275234374365269, -9.102306731303367 ] } },
+{ "type": "Feature", "properties": { "id": 257, "name": "Ebonhead", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 30.325895946531837, -37.101406718753466 ] } },
+{ "type": "Feature", "properties": { "id": 258, "name": "Ruby Ford", "size": 1, "confirmed": 1, "type": "Other" }, "geometry": { "type": "Point", "coordinates": [ 16.91131001884365, 9.873462228858168 ] } }
 ]
 }

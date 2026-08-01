@@ -59,7 +59,6 @@
     (mapDblClick)="onMapDoubleClick($event)"
     (mapDragStart)="onMapDragStart()"
     (mapDragEnd)="onMapDragEnd()"
-    (zoomEnd)="onZoomEnd()"
 >
     @for (polygonType of polygonTypes; track polygonType) {
         <mgl-geojson-source
@@ -202,7 +201,7 @@
         [layout]="labelLayout().lands"
         [paint]="labelPaint.lands"
         [minzoom]="labelsMinZoom.lands"
-        before="primary-point-label"
+        before="mountains-label"
     />
 
     <mgl-geojson-source
@@ -216,7 +215,7 @@
         [layout]="defaultLabelLayout()"
         [paint]="labelPaint.mountains"
         [minzoom]="labelsMinZoom.mountains"
-        before="lands-label"
+        before="primary-point-label"
     />
 
     <mgl-geojson-source

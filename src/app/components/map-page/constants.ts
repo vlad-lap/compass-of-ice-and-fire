@@ -12,7 +12,7 @@ export const INITIAL_MAP_CENTER: LngLatLike = [15, 10];
 export enum ZoomLevel {
     Initial = 3.4,
     Low = 3.9,
-    Medium = 4.9,
+    Medium = 4.6,
     High = 5.9,
 }
 
@@ -28,7 +28,7 @@ export const ORANGE = '#ffa80d';
 
 export enum LandscapeColor {
     Land = '#d2fade',
-    Water = '#90d9ed',
+    Water = '#97e3f8',
     Forest = '#93cba2',
     Swamp = '#bae8d6',
     Desert = '#f4efe5',
@@ -80,7 +80,7 @@ export enum FontStyle {
 }
 
 export enum FontSize {
-    SM = 9,
+    SM = 10,
     MD = 12,
     LG = 14,
     XL = 18,
