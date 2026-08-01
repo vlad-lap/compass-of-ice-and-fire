@@ -16,7 +16,6 @@ export enum ZoomLevel {
     High = 5.9,
 }
 
-export const ZOOM_INTERVAL = 500;
 export const ZOOM_DURATION = 300;
 export const ZOOM_STEP = 0.5;
 

@@ -265,6 +265,7 @@ export class MapPageComponent {
     private popup: Popup;
     private tooltipRef: ComponentRef<TooltipComponent>;
     private bottomSheetRef: MatBottomSheetRef;
+    private zoomingPolygon: Feature;
 
     constructor(
         private store: Store,
@@ -387,6 +388,21 @@ export class MapPageComponent {
         this.dialog.open(AboutDialogComponent);
     }
 
+    onZoomEnd(): void {
+        if (!this.zoomingPolygon) {
+            return;
+        }
+
+        const map = this.map().mapInstance;
+        const zoom = map.getZoom();
+
+        if (zoom > ZoomLevel.Low && zoom < ZoomLevel.Medium) {
+            map.flyTo({ zoom: ZoomLevel.Medium, duration: ZOOM_DURATION });
+        }
+
+        this.zoomingPolygon = null;
+    }
+
     private zoomToFeature(feature: Feature): void {
         const mapInstance = this.map().mapInstance;
 
@@ -399,22 +415,20 @@ export class MapPageComponent {
             new LngLatBounds(),
         );
 
-        const duration = 500;
-
         const verticalOffset = this.hasCard(feature) ? -55 : 0;
+
+        const isPolygon =
+            feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon';
+
+        if (isPolygon) {
+            this.zoomingPolygon = feature;
+        }
+
         mapInstance.fitBounds(bounds, {
             maxZoom: ZoomLevel.High + 0.5,
-            padding: feature.geometry.type === 'Point' ? 60 : 0,
+            padding: isPolygon ? 5 : 60,
             offset: [0, verticalOffset],
-            duration,
         });
-
-        setTimeout(() => {
-            const zoom = mapInstance.getZoom();
-            if  (zoom > ZoomLevel.Low && zoom < ZoomLevel.Medium) {
-                mapInstance.flyTo({ zoom: ZoomLevel.Medium });
-            }
-        }, duration);
     }
 
     private getHighlightLayerType(
