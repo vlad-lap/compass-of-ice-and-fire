@@ -400,7 +400,7 @@ const DEFAULT_WATER_LABEL_PAINT: SymbolLayerSpecification['paint'] = {
 export const LABEL_PAINT: Partial<GeodataDict<SymbolLayerSpecification['paint']>> = {
     kingdoms: DEFAULT_LABEL_PAINT,
     lands: DEFAULT_LABEL_PAINT,
-    shores: DEFAULT_LABEL_PAINT,
+    shores: DEFAULT_LAND_LABEL_PAINT,
     continents: DEFAULT_LABEL_PAINT,
     islands: DEFAULT_LAND_LABEL_PAINT,
     forests: DEFAULT_LAND_LABEL_PAINT,

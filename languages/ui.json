@@ -11,6 +11,14 @@
         "en": "Clear",
         "ru": "Очистить"
     },
+    "zoomIn": {
+        "en": "Zoom in",
+        "ru": "Приблизить"
+    },
+    "zoomOut": {
+        "en": "Zoom out",
+        "ru": "Отдалить"
+    },
     "resetMapView": {
         "en": "Reset map view",
         "ru": "Вернуться к исходному виду"

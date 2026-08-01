@@ -33,6 +33,8 @@ import {
     INITIAL_MAP_CENTER,
     SELECTABLE_LAYER_IDS,
     TOUCH_HIT_RADIUS_PX,
+    ZOOM_DURATION,
+    ZOOM_STEP,
     ZoomLevel,
 } from './constants';
 import {
@@ -197,6 +199,10 @@ export class MapPageComponent {
         GeodataState.labelPoints('kingdoms'),
     );
 
+    protected readonly landsLabelPoints = this.store.selectSignal(
+        GeodataState.labelPoints('lands'),
+    );
+
     protected readonly mountainsLabelPoints = this.store.selectSignal(
         GeodataState.labelPoints('mountains'),
     );
@@ -285,6 +291,22 @@ export class MapPageComponent {
         }
     }
 
+    zoomIn(): void {
+        const map = this.map().mapInstance;
+        map.easeTo({
+            zoom: map.getZoom() + ZOOM_STEP,
+            duration: ZOOM_DURATION,
+        });
+    }
+
+    zoomOut(): void {
+        const map = this.map().mapInstance;
+        map.easeTo({
+            zoom: map.getZoom() - ZOOM_STEP,
+            duration: ZOOM_DURATION,
+        });
+    }
+
     resetMapView(): void {
         this.map().mapInstance.flyTo({ center: INITIAL_MAP_CENTER, zoom: ZoomLevel.Initial });
     }
@@ -337,6 +359,16 @@ export class MapPageComponent {
         this.searchComponent().setSelectedId(feature.properties.id);
     }
 
+    onMapDoubleClick({ lngLat }: MapMouseEvent): void {
+        const map = this.map().mapInstance;
+        map.flyTo({
+            center: lngLat,
+            zoom: map.getZoom() + ZOOM_STEP,
+            duration: ZOOM_DURATION,
+        });
+    }
+
+
     search({ id }: FeatureData): void {
         const feature = this.store.selectSnapshot(GeodataState.byId(id));
         if (!feature) {
@@ -367,12 +399,22 @@ export class MapPageComponent {
             new LngLatBounds(),
         );
 
+        const duration = 500;
+
         const verticalOffset = this.hasCard(feature) ? -55 : 0;
         mapInstance.fitBounds(bounds, {
             maxZoom: ZoomLevel.High + 0.5,
-            padding: 60,
+            padding: feature.geometry.type === 'Point' ? 60 : 0,
             offset: [0, verticalOffset],
+            duration,
         });
+
+        setTimeout(() => {
+            const zoom = mapInstance.getZoom();
+            if  (zoom > ZoomLevel.Low && zoom < ZoomLevel.Medium) {
+                mapInstance.flyTo({ zoom: ZoomLevel.Medium });
+            }
+        }, duration);
     }
 
     private getHighlightLayerType(

@@ -100,6 +100,8 @@ export class MapSearchComponent implements OnInit {
             map(options => omitBy(options, isEmpty)),
         );
 
+    private readonly hasHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
     constructor(
         private store: Store,
         private location: Location,
@@ -157,17 +159,21 @@ export class MapSearchComponent implements OnInit {
         this.setTitle(value);
     }
 
+    reset(): void {
+        this.resetSearch.emit();
+        this.setUrl(null);
+        this.setTitle(null);
+
+        if (this.hasHover) {
+            this.searchInput().nativeElement.focus();
+        }
+    }
+
     private search(value: FeatureData): void {
         queueMicrotask(() => this.searchInput().nativeElement.blur());
         this.applySearch.emit(value);
         this.setUrl(value);
         this.setTitle(value);
-    }
-
-    private reset(): void {
-        this.resetSearch.emit();
-        this.setUrl(null);
-        this.setTitle(null);
     }
 
     private setUrl(value: FeatureData): void {

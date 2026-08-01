@@ -1,4 +1,5 @@
 {
+  "town-ebonhead": "Эбеновая Голова",
   "city-kings-landing": "Королевская Гавань",
   "castle-hayford-castle": "Хейфорд",
   "castle-rosby": "Росби",
@@ -191,8 +192,8 @@
   "city-volantis": "Волантис",
   "city-mantarys": "Мантарис",
   "ruin-oros": "Орос",
-  "city-elyria": "Элирия",
-  "city-tolos": "Толос",
+  "town-elyria": "Элирия",
+  "town-tolos": "Толос",
   "ruin-ghozai": "Гозай",
   "ruin-velos": "Велос",
   "city-astapor": "Астапор",
@@ -200,7 +201,7 @@
   "city-meereen": "Миэрин",
   "city-vaes-dothrak": "Ваэс Дотрак",
   "ruin-old-ghis": "Старый Гис",
-  "city-new-ghis": "Новый Гис",
+  "town-new-ghis": "Новый Гис",
   "ruin-zamettar": "Заметтар",
   "ruin-yeen": "Йин",
   "ruin-gogossos": "Гогоссос",
@@ -218,5 +219,13 @@
   "ruin-valyria": "Валирия",
   "city-qarth": "Кварт",
   "town-lord-hewetts-town": "Город лорда Хьюэтта",
-  "castle-casterly-rock": "Утёс Кастерли"
+  "castle-casterly-rock": "Утёс Кастерли",
+  "ruin-hardhome": "Суровый Дом",
+  "castle-mormont-keep": "Усадьба Мормонтов",
+  "castle-driftmark": "Дрифтмарк",
+  "city-lotus-point": "Лотосовый Мыс",
+  "town-last-lament": "Прощальный Плач",
+  "town-hesh": "Хеш",
+  "town-kosrak": "Козрак",
+  "town-lhazosh": "Лхазош"
 }
