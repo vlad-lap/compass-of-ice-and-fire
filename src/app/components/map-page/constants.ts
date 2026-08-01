@@ -30,7 +30,7 @@ export enum LandscapeColor {
     Land = '#d2fade',
     Water = '#97e3f8',
     Forest = '#93cba2',
-    Swamp = '#bae8d6',
+    Swamp = '#cdf38a',
     Desert = '#f4efe5',
     Snow = '#ffffff',
     Road = ORANGE,

@@ -164,15 +164,15 @@ export class MapPageComponent {
         'continents',
         'lands',
         'seas',
-        'shores',
-        'lakes',
         'islands',
+        'shores',
         'snow',
         'deserts',
         'wastelands',
         'swamps',
         'mountains',
         'forests',
+        'lakes',
     ];
     protected readonly lineTypes: LineGeodataType[] = ['kingdomBorders', 'rivers', 'roads'];
 
@@ -181,10 +181,10 @@ export class MapPageComponent {
         'deserts',
         'swamps',
         'seas',
+        'islands',
         'shores',
         'forests',
         'lakes',
-        'islands',
         'rivers',
         'roads',
         'wall',
@@ -343,9 +343,7 @@ export class MapPageComponent {
     }
 
     onMapClick({ target, point: { x, y } }: MapMouseEvent): void {
-        const hitRadius = this.hasHover
-            ? 2
-            : TOUCH_HIT_RADIUS_PX;
+        const hitRadius = this.hasHover ? 2 : TOUCH_HIT_RADIUS_PX;
 
         const [feature] = target.queryRenderedFeatures(
             [
@@ -370,7 +368,6 @@ export class MapPageComponent {
             duration: ZOOM_DURATION,
         });
     }
-
 
     search({ id }: FeatureData): void {
         const feature = this.store.selectSnapshot(GeodataState.byId(id));

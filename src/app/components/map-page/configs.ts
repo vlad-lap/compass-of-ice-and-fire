@@ -143,7 +143,7 @@ export const POLYGONS_PAINT: GeodataDict<FillLayerSpecification['paint']> = {
     },
     swamps: {
         'fill-color': LandscapeColor.Swamp,
-        'fill-opacity': 0.5,
+        'fill-opacity': 0.35,
     },
     lakes: {
         'fill-color': [
@@ -373,6 +373,10 @@ export const LABEL_LAYOUT: Partial<GeodataDict<SymbolLayerSpecification['layout'
         'text-size': FontSize.MD,
         'text-variable-anchor': ['bottom', 'top', 'left', 'right'],
         'text-justify': 'auto',
+    },
+    mountains: {
+        ...DEFAULT_LABEL_LAYOUT,
+        'text-size': FontSize.MD,
     },
     rivers: DEFAULT_LINE_LABEL_LAYOUT,
     roads: {
