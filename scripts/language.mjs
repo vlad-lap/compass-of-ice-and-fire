@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url';
 import { AVAILABLE_LANGUAGES, DEFAULT_LANGUAGE } from './constants.mjs';
 import { readJSON, writeJSON } from './json-utils.mjs';
 import { mapGeodata } from './geodata-utils.mjs';
-import { getConsolePrefix } from './console-utils.mjs';
+import { getConsolePrefix, getConsoleStats } from './console-utils.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA = join(__dirname, '..', 'data');
@@ -72,6 +72,8 @@ export function syncDescriptions(dataItems) {
         writeJSON(dictPath, descriptionsDict);
 
         const prefix = getConsolePrefix(lang, dictFileName);
-        console.log(`${prefix} ${Object.keys(descriptionsDict).length} items`);
+        const all = Object.entries(descriptionsDict);
+        const filled = all.filter(([_, description]) => !!description);
+        console.log(`${prefix} ${getConsoleStats(filled.length, all.length)}`);
     });
 }

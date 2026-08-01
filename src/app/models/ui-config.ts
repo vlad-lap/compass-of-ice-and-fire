@@ -1,6 +1,8 @@
 export interface UiConfig<T> {
     searchPlaceholder: T;
     namePlaceholder: T;
+    zoomIn: T;
+    zoomOut: T;
     resetMapView: T;
     about: T;
     showOnMap: T;

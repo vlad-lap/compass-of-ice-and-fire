@@ -11,10 +11,14 @@ export const INITIAL_MAP_CENTER: LngLatLike = [15, 10];
 
 export enum ZoomLevel {
     Initial = 3.4,
-    Low = 4,
-    Medium = 5,
-    High = 6,
+    Low = 3.9,
+    Medium = 4.9,
+    High = 5.9,
 }
+
+export const ZOOM_INTERVAL = 500;
+export const ZOOM_DURATION = 300;
+export const ZOOM_STEP = 0.5;
 
 export const BLACK = '#333333';
 export const GREY = '#7b766f';
@@ -39,8 +43,8 @@ export enum LandscapeColor {
 }
 
 export const MOUNTAIN_COLORS = {
-    light: ['#eeeff1', '#eceef0', '#e8eaec', '#e4e6e8'],
-    dark: ['#e6e8ea', '#dee1e4', '#d4d7da', '#c8ccd0'],
+    light: ['#eeeff1', '#eceef0', '#e8eaec'],
+    dark: ['#e6e8ea', '#dee1e4', '#d4d7da'],
 };
 
 export enum LabelColor {
