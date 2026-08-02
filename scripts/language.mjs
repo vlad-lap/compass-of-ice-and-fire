@@ -4,6 +4,7 @@ import { AVAILABLE_LANGUAGES, DEFAULT_LANGUAGE } from './constants.mjs';
 import { readJSON, writeJSON } from './json-utils.mjs';
 import { mapGeodata } from './geodata-utils.mjs';
 import { getConsolePrefix, getConsoleStats } from './console-utils.mjs';
+import _ from 'lodash';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA = join(__dirname, '..', 'data');
@@ -16,11 +17,13 @@ export function addFeatureLanguageProperties(feature, namesFileName) {
             const namesDict = readJSON(join(LANGUAGES, lang, namesFileName));
             const typesDict = readJSON(join(LANGUAGES, lang, 'types.json'));
             const descriptionsDict = readJSON(join(LANGUAGES, lang, 'descriptions.json'));
+            const nameVariantsDict = readJSON(join(LANGUAGES, lang, 'name-variants.json'));
 
             return {
                 ...props,
                 [`name_${lang}`]: namesDict[feature.properties.id] ?? null,
                 [`description_${lang}`]: descriptionsDict[feature.properties.id] ?? null,
+                [`nameVariant_${lang}`]: nameVariantsDict[feature.properties.id] ?? null,
                 ...(feature.properties.type
                     ? { [`type_${lang}`]: typesDict[feature.properties.type] ?? null }
                     : {}
@@ -52,10 +55,10 @@ export function syncLanguageDict(dataItems, fileName) {
     });
 }
 
-export function syncDescriptions(dataItems) {
+export function syncDictionary(dataItems, key, keepNulls = true) {
     AVAILABLE_LANGUAGES.forEach(lang => {
-        const descriptionKey = lang === DEFAULT_LANGUAGE ? 'description' : `description_${lang}`;
-        const descriptionsDict = dataItems
+        const descriptionKey = lang === DEFAULT_LANGUAGE ? key : `${key}_${lang}`;
+        const dict = dataItems
             .filter(({ name }) => !!name)
             .reduce(
                 (dict, dataItem) => ({
@@ -64,15 +67,21 @@ export function syncDescriptions(dataItems) {
                 }),
                 {},
             );
-        const dictFileName = 'descriptions.json';
+        const dictFileNames = {
+            description: 'descriptions.json',
+            nameVariant: 'name-variants.json',
+        };
+        const dictFileName = dictFileNames[key];
         const dictPath =
             lang === DEFAULT_LANGUAGE
                 ? join(DATA, dictFileName)
                 : join(LANGUAGES, lang, dictFileName);
-        writeJSON(dictPath, descriptionsDict);
+
+        const syncedDict = keepNulls ? dict : _.omitBy(dict, _.isNil);
+        writeJSON(dictPath, syncedDict);
 
         const prefix = getConsolePrefix(lang, dictFileName);
-        const all = Object.entries(descriptionsDict);
+        const all = Object.entries(syncedDict);
         const filled = all.filter(([_, description]) => !!description);
         console.log(`${prefix} ${getConsoleStats(filled.length, all.length)}`);
     });

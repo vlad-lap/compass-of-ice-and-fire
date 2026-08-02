@@ -82,14 +82,14 @@ export const GRADIENT_PAINT: RasterLayerSpecification['paint'] = {
 
 const RIDGES_HEIGHT_FILTER: Record<string, ExpressionSpecification[]> = {
     light: [
-        ['all', ['==', ['get', 'shade'], 'light'], ['==', ['get', 'size'], 1]],
-        ['all', ['==', ['get', 'shade'], 'light'], ['==', ['get', 'size'], 2]],
-        ['all', ['==', ['get', 'shade'], 'light'], ['==', ['get', 'size'], 3]],
+        ['all', ['==', ['get', 'shade'], 'light'], ['==', ['get', 'height'], 1]],
+        ['all', ['==', ['get', 'shade'], 'light'], ['==', ['get', 'height'], 2]],
+        ['all', ['==', ['get', 'shade'], 'light'], ['==', ['get', 'height'], 3]],
     ],
     dark: [
-        ['all', ['==', ['get', 'shade'], 'dark'], ['==', ['get', 'size'], 1]],
-        ['all', ['==', ['get', 'shade'], 'dark'], ['==', ['get', 'size'], 2]],
-        ['all', ['==', ['get', 'shade'], 'dark'], ['==', ['get', 'size'], 3]],
+        ['all', ['==', ['get', 'shade'], 'dark'], ['==', ['get', 'height'], 1]],
+        ['all', ['==', ['get', 'shade'], 'dark'], ['==', ['get', 'height'], 2]],
+        ['all', ['==', ['get', 'shade'], 'dark'], ['==', ['get', 'height'], 3]],
     ],
 };
 
@@ -133,6 +133,9 @@ export const POLYGONS_PAINT: GeodataDict<FillLayerSpecification['paint']> = {
         'fill-color': LandscapeColor.Snow,
         'fill-opacity': 0.8,
     },
+    steppes: {
+        'fill-opacity': 0,
+    },
     deserts: {
         'fill-color': LandscapeColor.Desert,
         'fill-opacity': 0.8,
@@ -158,6 +161,9 @@ export const POLYGONS_PAINT: GeodataDict<FillLayerSpecification['paint']> = {
         'fill-opacity': 0,
     },
     shores: {
+        'fill-opacity': 0,
+    },
+    vales: {
         'fill-opacity': 0,
     },
     lands: {
@@ -226,6 +232,11 @@ export const LOCATION_LABELS_FILTER: LocationDict<ExpressionSpecification> = {
 };
 
 export const LOCATIONS_MIN_ZOOM: LocationDict<ZoomLevel> = {
+    secondary: ZoomLevel.Low,
+    tertiary: ZoomLevel.High,
+};
+
+export const LOCATION_LABELS_MIN_ZOOM: LocationDict<ZoomLevel> = {
     secondary: ZoomLevel.Medium,
     tertiary: ZoomLevel.High,
 };
@@ -284,9 +295,10 @@ export const VOLCANOES_SMOKE_PAINT: CircleLayerSpecification['paint'] = {
 export const LABELS_MIN_ZOOM: GeodataDict<ZoomLevel> = {
     kingdoms: ZoomLevel.Initial,
     shores: ZoomLevel.Medium,
+    vales: ZoomLevel.Medium,
     lands: ZoomLevel.Low,
-    mountains: ZoomLevel.Medium,
-    forests: ZoomLevel.Medium,
+    mountains: ZoomLevel.Low,
+    forests: ZoomLevel.Low,
     swamps: ZoomLevel.Low,
     deserts: ZoomLevel.Low,
     islands: ZoomLevel.Medium,
@@ -308,7 +320,7 @@ export const DEFAULT_LABEL_LAYOUT: SymbolLayerSpecification['layout'] = {
         3,
         FontSize.MD,
         4,
-        FontSize.MD,
+        FontSize.LG,
         5,
         FontSize.LG,
         FontSize.MD,
@@ -370,13 +382,8 @@ export const LABEL_LAYOUT: Partial<GeodataDict<SymbolLayerSpecification['layout'
     },
     lands: {
         ...DEFAULT_LABEL_LAYOUT,
-        'text-size': FontSize.MD,
         'text-variable-anchor': ['bottom', 'top', 'left', 'right'],
         'text-justify': 'auto',
-    },
-    mountains: {
-        ...DEFAULT_LABEL_LAYOUT,
-        'text-size': FontSize.MD,
     },
     rivers: DEFAULT_LINE_LABEL_LAYOUT,
     roads: {
@@ -411,19 +418,15 @@ export const LABEL_PAINT: Partial<GeodataDict<SymbolLayerSpecification['paint']>
     kingdoms: DEFAULT_LABEL_PAINT,
     lands: DEFAULT_LABEL_PAINT,
     shores: DEFAULT_LAND_LABEL_PAINT,
+    vales: DEFAULT_LAND_LABEL_PAINT,
     continents: DEFAULT_LABEL_PAINT,
     islands: DEFAULT_LAND_LABEL_PAINT,
     forests: DEFAULT_LAND_LABEL_PAINT,
+    steppes: DEFAULT_LAND_LABEL_PAINT,
     swamps: DEFAULT_LAND_LABEL_PAINT,
     lakes: {
         ...DEFAULT_LABEL_PAINT,
-        'text-color': [
-            'match',
-            ['get', 'variant'],
-            'red',
-            LabelColor.RedLake,
-            LabelColor.Water,
-        ],
+        'text-color': ['match', ['get', 'variant'], 'red', LabelColor.RedLake, LabelColor.Water],
     },
     seas: DEFAULT_WATER_LABEL_PAINT,
     rivers: DEFAULT_WATER_LABEL_PAINT,
@@ -433,13 +436,7 @@ export const LABEL_PAINT: Partial<GeodataDict<SymbolLayerSpecification['paint']>
     wall: { ...DEFAULT_LABEL_PAINT, 'text-color': LabelColor.Wall },
     locations: {
         ...DEFAULT_LABEL_PAINT,
-        'text-color': [
-            'match',
-            ['get', 'type'],
-            'Ruin',
-            LabelColor.Ruin,
-            LabelColor.Location,
-        ],
+        'text-color': ['match', ['get', 'type'], 'Ruin', LabelColor.Ruin, LabelColor.Location],
     },
 };
 

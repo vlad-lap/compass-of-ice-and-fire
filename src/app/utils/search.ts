@@ -17,7 +17,12 @@ function buildSearchKeys(name: string): string[] {
         return [];
     }
     const normalized = name.toLowerCase().trim();
-    return uniq([normalized, normalized.replace(/'/g, ''), normalized.replace(/-/g, ' ')]);
+    return uniq([
+        normalized,
+        normalized.replace(/'/g, ''),
+        normalized.replace(/-/g, ' '),
+        normalized.replace(/\(/g, '').replace(/\)/g, ''),
+    ]);
 }
 
 function buildLocalizedSearchKeys(feature: FeatureData): string[] {

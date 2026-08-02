@@ -13,8 +13,11 @@ export interface LocationData extends FeatureData {
     islandId?: string;
     kingdomId?: string;
     regionId?: string;
+    landscapeId?: string;
     description?: string;
     description_ru?: string;
+    nameVariant?: string;
+    nameVariant_ru?: string;
 }
 
 export type LocationType = 'cities' | 'towns' | 'settlements' | 'castles' | 'ruins' | 'other';

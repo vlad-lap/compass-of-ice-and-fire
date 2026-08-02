@@ -13,7 +13,7 @@ export class AreaPipe implements PipeTransform {
     transform(location: LocationData): string[] {
         const areaKeys: (keyof LocationData)[] = [
             'islandId',
-            'regionId',
+            location.regionId ? 'regionId' : 'landscapeId',
             'kingdomId',
             !location.kingdomId || location.id === 'the-wall' ? 'continentId' : null,
         ];

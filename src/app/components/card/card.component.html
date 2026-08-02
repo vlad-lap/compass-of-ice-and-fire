@@ -1,7 +1,12 @@
 @let ui = coreUi();
 
 <div class="card-header">
-    <h3>{{ data | localize: 'name' }}</h3>
+    <div class="card-title">
+        <h3>{{ data | localize: 'name' }}</h3>
+        @if (data.nameVariant) {
+            <div class="name-variant">{{ data | localize: 'nameVariant' }}</div>
+        }
+    </div>
     <button
         matIconButton
         [aria-label]="ui.showOnMap"

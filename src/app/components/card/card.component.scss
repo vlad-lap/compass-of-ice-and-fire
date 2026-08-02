@@ -11,15 +11,23 @@
 .card-header {
     display: flex;
     gap: 4px;
-    align-items: center;
+    align-items: start;
     margin: {
         bottom: 12px;
         left: 12px;
     }
 
+    .card-title {
+        flex-grow: 1;
+        margin-top: 8px;
+    }
+
     h3 {
         margin: 0;
-        flex-grow: 1;
+    }
+
+    .name-variant {
+        color: variables.$grey;
     }
 
     .mat-icon.share-icon {

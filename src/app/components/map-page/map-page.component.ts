@@ -59,6 +59,7 @@ import {
     LINES_PAINT,
     LINES_SHADOW,
     LOCATION_LABELS_FILTER,
+    LOCATION_LABELS_MIN_ZOOM,
     LOCATIONS_FILTER,
     LOCATIONS_MIN_ZOOM,
     MAP_BOUNDS,
@@ -166,7 +167,9 @@ export class MapPageComponent {
         'seas',
         'islands',
         'shores',
+        'vales',
         'snow',
+        'steppes',
         'deserts',
         'wastelands',
         'swamps',
@@ -178,11 +181,13 @@ export class MapPageComponent {
 
     protected readonly labeledTypes: GeodataType[] = [
         'snow',
+        'steppes',
         'deserts',
         'swamps',
         'seas',
         'islands',
         'shores',
+        'vales',
         'forests',
         'lakes',
         'rivers',
@@ -222,6 +227,7 @@ export class MapPageComponent {
     protected readonly locationTiers: LocationTier[] = ['primary', 'secondary', 'tertiary'];
     protected readonly locationsFilter = LOCATIONS_FILTER;
     protected readonly locationsMinZoom = LOCATIONS_MIN_ZOOM;
+    protected readonly locationLabelsMinZoom = LOCATION_LABELS_MIN_ZOOM;
 
     protected readonly labelLayout = computed<GeodataDict<SymbolLayerSpecification['layout']>>(() =>
         mapValues(LABEL_LAYOUT, layout => this.getLocalizedLabelLayout(layout)),
