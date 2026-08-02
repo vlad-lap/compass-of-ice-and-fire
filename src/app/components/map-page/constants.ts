@@ -25,6 +25,7 @@ export const LIGHT_GREY = '#b0aaa2';
 export const WHITE = '#faf7ef';
 export const RED = '#ff3b30';
 export const ORANGE = '#ffa80d';
+export const BROWN = '#6d4106';
 
 export enum LandscapeColor {
     Land = '#d2fade',
@@ -37,20 +38,17 @@ export enum LandscapeColor {
     Wall = WHITE,
     KingdomBorder = GREY,
     Volcano = ORANGE,
-    Wasteland = '#dedede',
+    Wasteland = '#e8e8e8',
     RedLake = '#f8c1c1',
 }
 
-export const MOUNTAIN_COLORS = {
-    light: ['#eeeff1', '#eceef0', '#e8eaec'],
-    dark: ['#e6e8ea', '#dee1e4', '#d4d7da'],
-};
+export const MOUNTAIN_COLORS = ['#e6e8ea', '#dee1e4', '#d4d7da'];
 
 export enum LabelColor {
     Land = '#12875f',
     Water = '#1a6b8a',
-    Mountain = GREY,
-    Desert = '#5a4208',
+    Mountain = BROWN,
+    Desert = BROWN,
     Road = '#bd7c05',
     Wall = BLACK,
     Location = BLACK,
