@@ -80,19 +80,6 @@ export const GRADIENT_PAINT: RasterLayerSpecification['paint'] = {
     'raster-fade-duration': 0,
 };
 
-const RIDGES_HEIGHT_FILTER: Record<string, ExpressionSpecification[]> = {
-    light: [
-        ['all', ['==', ['get', 'shade'], 'light'], ['==', ['get', 'height'], 1]],
-        ['all', ['==', ['get', 'shade'], 'light'], ['==', ['get', 'height'], 2]],
-        ['all', ['==', ['get', 'shade'], 'light'], ['==', ['get', 'height'], 3]],
-    ],
-    dark: [
-        ['all', ['==', ['get', 'shade'], 'dark'], ['==', ['get', 'height'], 1]],
-        ['all', ['==', ['get', 'shade'], 'dark'], ['==', ['get', 'height'], 2]],
-        ['all', ['==', ['get', 'shade'], 'dark'], ['==', ['get', 'height'], 3]],
-    ],
-};
-
 export const POLYGONS_PAINT: GeodataDict<FillLayerSpecification['paint']> = {
     continents: {
         'fill-color': LandscapeColor.Land,
@@ -105,25 +92,17 @@ export const POLYGONS_PAINT: GeodataDict<FillLayerSpecification['paint']> = {
     },
     mountainRidges: {
         'fill-color': [
-            'case',
-
-            RIDGES_HEIGHT_FILTER.light[0],
-            MOUNTAIN_COLORS.light[0],
-            RIDGES_HEIGHT_FILTER.light[1],
-            MOUNTAIN_COLORS.light[1],
-            RIDGES_HEIGHT_FILTER.light[2],
-            MOUNTAIN_COLORS.light[2],
-
-            RIDGES_HEIGHT_FILTER.dark[0],
-            MOUNTAIN_COLORS.dark[0],
-            RIDGES_HEIGHT_FILTER.dark[1],
-            MOUNTAIN_COLORS.dark[1],
-            RIDGES_HEIGHT_FILTER.dark[2],
-            MOUNTAIN_COLORS.dark[2],
-
+            'match',
+            ['get', 'height'],
+            1,
+            MOUNTAIN_COLORS[0],
+            2,
+            MOUNTAIN_COLORS[1],
+            3,
+            MOUNTAIN_COLORS[2],
             'transparent',
         ],
-        'fill-opacity': ['match', ['get', 'height'], 1, 0.4, 0.6],
+        'fill-opacity': ['match', ['get', 'shade'], 'light', 0, 0.4],
     },
     forests: {
         'fill-color': LandscapeColor.Forest,
@@ -131,22 +110,22 @@ export const POLYGONS_PAINT: GeodataDict<FillLayerSpecification['paint']> = {
     },
     snow: {
         'fill-color': LandscapeColor.Snow,
-        'fill-opacity': 0.8,
+        'fill-opacity': 0.5,
     },
     steppes: {
         'fill-opacity': 0,
     },
     deserts: {
         'fill-color': LandscapeColor.Desert,
-        'fill-opacity': 0.8,
+        'fill-opacity': 0.5,
     },
     wastelands: {
         'fill-color': LandscapeColor.Wasteland,
-        'fill-opacity': 0.7,
+        'fill-opacity': 0.5,
     },
     swamps: {
         'fill-color': LandscapeColor.Swamp,
-        'fill-opacity': 0.35,
+        'fill-opacity': 0.3,
     },
     lakes: {
         'fill-color': [
@@ -282,12 +261,13 @@ export const POINTS_SHADOW: CircleLayerSpecification['paint'] = {
 export const VOLCANOES_PAINT: CircleLayerSpecification['paint'] = {
     'circle-radius': LocationRadius.MD,
     'circle-color': LandscapeColor.Volcano,
+    'circle-opacity': 0.5,
 };
 
 export const VOLCANOES_SMOKE_PAINT: CircleLayerSpecification['paint'] = {
     'circle-radius': ['match', ['get', 'smokeRadius'], 0, 7, 1, 9, 2, 11, 9],
     'circle-color': BLACK,
-    'circle-opacity': 0.3,
+    'circle-opacity': 0.2,
     'circle-blur': 0.8,
     'circle-translate': [3, -3],
 };
