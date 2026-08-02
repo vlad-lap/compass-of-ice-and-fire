@@ -8,8 +8,8 @@ const TAPER_LENGTH_RATIO = 1.25;
 const LIGHT_NORMAL_RATIO = 0.75;
 const LIGHT_DIRECTION = normalize([-1, 1]);
 
-function getNormalLength(size) {
-    return BASE_NORMAL_LENGTH / Math.sqrt(size ?? 1);
+function getNormalLength(height) {
+    return BASE_NORMAL_LENGTH / Math.sqrt(height ?? 1);
 }
 
 function roundMultiPolygon(coordinates) {
@@ -181,7 +181,7 @@ function subtractOverlap(feature, otherFeature) {
 }
 
 function buildRidgeFeatures(feature, landmasses) {
-    const normalLength = getNormalLength(feature.properties.size);
+    const normalLength = getNormalLength(feature.properties.height);
     const lineStrings = feature.geometry.coordinates;
     const segments = lineStrings.map(lineString => ({
         ridge: buildRidgePolygons(lineString, normalLength),
