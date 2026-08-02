@@ -14,6 +14,11 @@
     font-size: 11px;
     line-height: 14px;
     color: variables.$grey;
+
+    &.name-variant {
+        margin-bottom: 8px;
+        font-weight: bold;
+    }
 }
 
 .bullet {

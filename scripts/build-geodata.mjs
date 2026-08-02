@@ -7,7 +7,11 @@ import { generateIds } from './generate-ids.mjs';
 import { buildKingdomBorders } from './build-kingdom-borders.mjs';
 import { buildMountainRidges, buildMountainUnion } from './build-mountain-ridges.mjs';
 import { readJSON, writeJSON } from './json-utils.mjs';
-import { addLanguageProperties, syncDescriptions, syncLanguageDict } from './language.mjs';
+import {
+    addLanguageProperties,
+    syncDictionary,
+    syncLanguageDict,
+} from './language.mjs';
 import { getConsolePrefix, getConsoleStats } from './console-utils.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -131,12 +135,21 @@ function splitAndProcess(fileName, languageFileName) {
         const [name, extension] = fileName.split('.');
         writeGeoJSON(`${name}_${type.toLowerCase()}.${extension}`, collection);
     }
+
+    return byType;
 }
 
-splitAndProcess('got_landscape.geojson', 'landscape.json');
-splitAndProcess('got_regions.geojson', 'regions.json');
+const landscape = splitAndProcess('got_landscape.geojson', 'landscape.json');
+const { land } = splitAndProcess('got_regions.geojson', 'regions.json');
+
+function getContainingLandscapeId(feature) {
+    return Object.values(landscape)
+        .map(collection => getContainingPolygonId(feature, collection))
+        .find(Boolean);
+}
 
 const descriptions = readJSON(join(DATA, 'descriptions.json'));
+const nameVariants = readJSON(join(DATA, 'name-variants.json'));
 
 const theWall = processGeoJSON('got_wall.geojson', 'the-wall.json', {
     mapFn: feature => ({
@@ -145,7 +158,8 @@ const theWall = processGeoJSON('got_wall.geojson', 'the-wall.json', {
             ...feature.properties,
             continentId: getLocationContinentId(feature, continents, islands),
             kingdomId: getContainingPolygonId(feature, kingdoms),
-            regionId: getContainingPolygonId(feature, namedRegions),
+            regionId: getContainingPolygonId(feature, land),
+            landscapeId: getContainingLandscapeId(feature),
             islandId: getContainingPolygonId(feature, islands),
             description: descriptions[feature.properties.id] ?? null,
         },
@@ -159,15 +173,19 @@ const locations = processGeoJSON('got_locations.geojson', 'locations.json', {
             ...feature.properties,
             continentId: getLocationContinentId(feature, continents, islands),
             kingdomId: getContainingPolygonId(feature, kingdoms),
-            regionId: getContainingPolygonId(feature, namedRegions),
+            regionId: getContainingPolygonId(feature, land),
+            landscapeId: getContainingLandscapeId(feature),
             islandId: getContainingPolygonId(feature, islands),
             description: descriptions[feature.properties.id] ?? null,
+            nameVariant: nameVariants[feature.properties.id] ?? null,
         },
     }),
 });
 
 const wallData = getFeatureProperties(theWall);
 const locationsData = getFeatureProperties(locations);
-syncDescriptions([...wallData, ...locationsData])
+syncDictionary([...wallData, ...locationsData], 'description');
+syncDictionary(locationsData, 'nameVariant', false);
+
 
 

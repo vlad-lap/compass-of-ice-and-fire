@@ -5,6 +5,10 @@
 <div class="tooltip">
     <h5 class="tooltip-title">{{ (locationData | localize: 'name') || ui.namePlaceholder }}</h5>
 
+    @if (locationData.nameVariant) {
+            <div class="tooltip-subtitle name-variant">{{ locationData | localize: 'nameVariant' }}</div>
+    }
+
     <div class="tooltip-subtitle">
         @if (locationData.type) {
             <span>{{ locationData | localize: 'type' }}</span>

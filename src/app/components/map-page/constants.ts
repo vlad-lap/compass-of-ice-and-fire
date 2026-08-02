@@ -59,8 +59,8 @@ export enum LabelColor {
 }
 
 export enum LocationRadius {
-    SM = 2,
-    MD = 3,
+    SM = 1.5,
+    MD = 2.5,
     LG = 4,
 }
 

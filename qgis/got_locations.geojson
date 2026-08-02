@@ -248,7 +248,7 @@
 { "type": "Feature", "properties": { "id": 265, "name": "Yalli Qamayi (Sathar)", "size": 3, "confirmed": 1, "type": "Ruin" }, "geometry": { "type": "Point", "coordinates": [ 66.396779457561905, 3.152098807020986 ] } },
 { "type": "Feature", "properties": { "id": 266, "name": "Vaes Leqse (Gornath)", "size": 3, "confirmed": 1, "type": "Ruin" }, "geometry": { "type": "Point", "coordinates": [ 65.901345007252033, 5.618283810535254 ] } },
 { "type": "Feature", "properties": { "id": 267, "name": "Vaes Athjikhari (Sallosh)", "size": 3, "confirmed": 1, "type": "Ruin" }, "geometry": { "type": "Point", "coordinates": [ 64.462961835502355, 7.336352599014023 ] } },
-{ "type": "Feature", "properties": { "id": 268, "name": "Vaes Diaf (Hazdahn No)", "size": 3, "confirmed": 1, "type": "Ruin" }, "geometry": { "type": "Point", "coordinates": [ 64.991256889324006, -0.752333014960959 ] } },
+{ "type": "Feature", "properties": { "id": 268, "name": "Vaes Diaf (Hazdahn Mo)", "size": 3, "confirmed": 1, "type": "Ruin" }, "geometry": { "type": "Point", "coordinates": [ 64.991256889324006, -0.752333014960959 ] } },
 { "type": "Feature", "properties": { "id": 269, "name": "Krazaaj Has (Ghardaq)", "size": 3, "confirmed": 1, "type": "Ruin" }, "geometry": { "type": "Point", "coordinates": [ 73.088821411766574, -2.801141143857481 ] } },
 { "type": "Feature", "properties": { "id": 270, "name": "Vaes Mejhah", "size": 3, "confirmed": 1, "type": "Ruin" }, "geometry": { "type": "Point", "coordinates": [ 75.370700887937346, -2.437105896686267 ] } },
 { "type": "Feature", "properties": { "id": 271, "name": "Vaes Efe", "size": 3, "confirmed": 1, "type": "Ruin" }, "geometry": { "type": "Point", "coordinates": [ 76.900092871479814, -0.56920552781692 ] } },
