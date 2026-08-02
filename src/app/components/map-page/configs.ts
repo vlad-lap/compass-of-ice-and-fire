@@ -123,7 +123,7 @@ export const POLYGONS_PAINT: GeodataDict<FillLayerSpecification['paint']> = {
 
             'transparent',
         ],
-        'fill-opacity': ['match', ['get', 'size'], 1, 0.4, 0.6],
+        'fill-opacity': ['match', ['get', 'height'], 1, 0.4, 0.6],
     },
     forests: {
         'fill-color': LandscapeColor.Forest,
