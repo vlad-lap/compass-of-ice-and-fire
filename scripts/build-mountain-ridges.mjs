@@ -7,6 +7,7 @@ const BASE_NORMAL_LENGTH = 1;
 const TAPER_LENGTH_RATIO = 1.25;
 const LIGHT_NORMAL_RATIO = 0.5;
 const LIGHT_DIRECTION = normalize([-1, 1]);
+const BBOX_MARGIN = 1e-6;
 
 function getNormalLength(height) {
     return BASE_NORMAL_LENGTH / Math.sqrt(height ?? 1);
@@ -148,11 +149,76 @@ function findContainingLandmass(lineString, landmasses) {
     return landmasses.find(landmass => lineInPolygon(lineGeometry, landmass.geometry));
 }
 
+function getBoundingBox(points) {
+    let minLon = Infinity, minLat = Infinity, maxLon = -Infinity, maxLat = -Infinity;
+    for (const [lon, lat] of points) {
+        minLon = Math.min(minLon, lon);
+        minLat = Math.min(minLat, lat);
+        maxLon = Math.max(maxLon, lon);
+        maxLat = Math.max(maxLat, lat);
+    }
+    return {
+        minLon: minLon - BBOX_MARGIN,
+        minLat: minLat - BBOX_MARGIN,
+        maxLon: maxLon + BBOX_MARGIN,
+        maxLat: maxLat + BBOX_MARGIN,
+    };
+}
+
+function intersectVerticalEdge(a, b, lon) {
+    const t = (lon - a[0]) / (b[0] - a[0]);
+    return [lon, a[1] + t * (b[1] - a[1])];
+}
+
+function intersectHorizontalEdge(a, b, lat) {
+    const t = (lat - a[1]) / (b[1] - a[1]);
+    return [a[0] + t * (b[0] - a[0]), lat];
+}
+
+function clipPointsAgainstEdge(points, isInside, intersectEdge) {
+    const output = [];
+    for (let i = 0; i < points.length; i++) {
+        const current = points[i];
+        const previous = points[(i - 1 + points.length) % points.length];
+        const currentInside = isInside(current);
+
+        if (currentInside !== isInside(previous)) {
+            output.push(intersectEdge(previous, current));
+        }
+        if (currentInside) {
+            output.push(current);
+        }
+    }
+    return output;
+}
+
+function clipRingToBbox(ring, bbox) {
+    let points = ring.slice(0, -1);
+    points = clipPointsAgainstEdge(points, ([lon]) => lon >= bbox.minLon, (a, b) => intersectVerticalEdge(a, b, bbox.minLon));
+    points = clipPointsAgainstEdge(points, ([lon]) => lon <= bbox.maxLon, (a, b) => intersectVerticalEdge(a, b, bbox.maxLon));
+    points = clipPointsAgainstEdge(points, ([, lat]) => lat >= bbox.minLat, (a, b) => intersectHorizontalEdge(a, b, bbox.minLat));
+    points = clipPointsAgainstEdge(points, ([, lat]) => lat <= bbox.maxLat, (a, b) => intersectHorizontalEdge(a, b, bbox.maxLat));
+
+    return points.length < 3 ? null : [...points, points[0]];
+}
+
+function cropPolygonToBbox(rings, bbox) {
+    const croppedRings = rings.map(ring => clipRingToBbox(ring, bbox)).filter(Boolean);
+    return croppedRings.length ? croppedRings : null;
+}
+
+function cropGeometryToBbox(geometry, bbox) {
+    const polygons = geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates;
+    return polygons.map(rings => cropPolygonToBbox(rings, bbox)).filter(Boolean);
+}
+
 function clipPolygonToLandmass(polygon, landmass) {
     if (!landmass) {
         return [polygon];
     }
-    return roundMultiPolygon(intersection(polygon, landmass.geometry.coordinates));
+    const bbox = getBoundingBox(polygon.flat());
+    const croppedLandmass = cropGeometryToBbox(landmass.geometry, bbox);
+    return roundMultiPolygon(intersection(polygon, croppedLandmass));
 }
 
 function buildRidgeFeature(feature, shade, segments) {
