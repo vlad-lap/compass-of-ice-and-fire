@@ -192,7 +192,7 @@
 { "type": "Feature", "properties": { "id": 207, "name": "Volon Therys", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 41.942362017793918, -8.972116302273609 ] } },
 { "type": "Feature", "properties": { "id": 208, "name": "Sar Mell", "size": 3, "confirmed": 1, "type": "Ruin" }, "geometry": { "type": "Point", "coordinates": [ 42.356144379666382, -8.431016290594229 ] } },
 { "type": "Feature", "properties": { "id": 209, "name": "Volantis", "size": 5, "confirmed": 1, "type": "City" }, "geometry": { "type": "Point", "coordinates": [ 43.793650442282157, -9.585068848239823 ] } },
-{ "type": "Feature", "properties": { "id": 210, "name": null, "size": 1, "confirmed": 1, "type": "Other" }, "geometry": { "type": "Point", "coordinates": [ 47.173987528944288, -8.954258480319467 ] } },
+{ "type": "Feature", "properties": { "id": 210, "name": null, "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 47.173987528944288, -8.954258480319467 ] } },
 { "type": "Feature", "properties": { "id": 211, "name": null, "size": 3, "confirmed": 1, "type": "Ruin" }, "geometry": { "type": "Point", "coordinates": [ 50.364680588206028, -8.111251841220437 ] } },
 { "type": "Feature", "properties": { "id": 212, "name": "Mantarys", "size": 5, "confirmed": 1, "type": "City" }, "geometry": { "type": "Point", "coordinates": [ 52.97594512793156, -8.343274382348957 ] } },
 { "type": "Feature", "properties": { "id": 213, "name": null, "size": 3, "confirmed": 1, "type": "Ruin" }, "geometry": { "type": "Point", "coordinates": [ 48.885400330233892, -13.567358542712498 ] } },
