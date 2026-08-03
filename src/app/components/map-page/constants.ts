@@ -31,18 +31,20 @@ export enum LandscapeColor {
     Land = '#d2fade',
     Water = '#97e3f8',
     Forest = '#93cba2',
-    Swamp = '#cdf38a',
+    ForestNorth = '#93cbc4',
+    ForestSouth = '#a1cb93',
+    Swamp = '#d7f6a1',
     Desert = '#f4efe5',
     Snow = '#ffffff',
     Road = ORANGE,
     Wall = WHITE,
     KingdomBorder = GREY,
     Volcano = ORANGE,
-    Wasteland = '#e8e8e8',
+    Wasteland = '#f5f4f4',
     RedLake = '#f8c1c1',
 }
 
-export const MOUNTAIN_COLORS = ['#e6e8ea', '#dee1e4', '#d4d7da'];
+export const MOUNTAIN_COLORS = ['#e9e7dd', '#deddd4', '#cccfca'];
 
 export enum LabelColor {
     Land = '#12875f',
