@@ -102,7 +102,7 @@ export const POLYGONS_PAINT: GeodataDict<FillLayerSpecification['paint']> = {
             MOUNTAIN_COLORS[2],
             'transparent',
         ],
-        'fill-opacity': ['match', ['get', 'shade'], 'light', 0, 0.4],
+        'fill-opacity': ['match', ['get', 'shade'], 'light', 0, 0.35],
     },
     forests: {
         'fill-color': LandscapeColor.Forest,
@@ -125,15 +125,21 @@ export const POLYGONS_PAINT: GeodataDict<FillLayerSpecification['paint']> = {
     },
     swamps: {
         'fill-color': LandscapeColor.Swamp,
-        'fill-opacity': 0.3,
+        'fill-opacity': [
+            'step',
+            ['zoom'],
+            0,
+            ZoomLevel.Low,
+            0.3
+        ],
     },
     lakes: {
         'fill-color': [
-            'match',
-            ['get', 'variant'],
-            'red',
-            LandscapeColor.RedLake,
+            'step',
+            ['zoom'],
             LandscapeColor.Water,
+            ZoomLevel.Low,
+            ['match', ['get', 'variant'], 'red', LandscapeColor.RedLake, LandscapeColor.Water]
         ],
     },
     seas: {
