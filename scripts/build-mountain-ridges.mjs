@@ -3,9 +3,9 @@ import { lineInPolygon } from './point-in-polygon.mjs';
 
 const { intersection, union, difference } = polygonClipping;
 
-const BASE_NORMAL_LENGTH = 20;
+const BASE_NORMAL_LENGTH = 1;
 const TAPER_LENGTH_RATIO = 1.25;
-const LIGHT_NORMAL_RATIO = 0.75;
+const LIGHT_NORMAL_RATIO = 0.5;
 const LIGHT_DIRECTION = normalize([-1, 1]);
 
 function getNormalLength(height) {
