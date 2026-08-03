@@ -31,7 +31,7 @@ export function addContinentId(feature, continents) {
     return { ...feature, properties };
 }
 
-export function findPolygonContaining({ geometry }, collection) {
+export function findPolygonContaining(geometry, collection) {
     switch (geometry.type) {
         case 'Point':
             return collection.features.find(feature =>
@@ -43,13 +43,13 @@ export function findPolygonContaining({ geometry }, collection) {
     }
 }
 
-export function getContainingPolygonId(location, collection) {
-    const polygon = findPolygonContaining(location, collection);
+export function getContainingPolygonId(geometry, collection) {
+    const polygon = findPolygonContaining(geometry, collection);
     return polygon?.properties.id ?? null;
 }
 
-export function getLocationContinentId(location, continents, islands) {
-    const continent = findPolygonContaining(location, continents);
-    const island = findPolygonContaining(location, islands);
+export function getLocationContinentId(geometry, continents, islands) {
+    const continent = findPolygonContaining(geometry, continents);
+    const island = findPolygonContaining(geometry, islands);
     return continent?.properties.id ?? island?.properties.continentId ?? null;
 }

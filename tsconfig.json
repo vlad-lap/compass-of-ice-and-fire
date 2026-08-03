@@ -4,6 +4,7 @@
     "compileOnSave": false,
     "compilerOptions": {
         "baseUrl": ".",
+        "allowJs": true,
         "module": "ESNext",
         "target": "ES2022",
         "sourceMap": true,

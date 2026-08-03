@@ -8,6 +8,8 @@ import {
 } from 'geojson';
 import { flatten, flattenDepth } from 'lodash';
 
+export { getCentralPoint } from '../../../scripts/geometry-utils.mjs';
+
 export type HighlightableGeometry = Polygon | MultiPolygon | LineString | MultiLineString | Point;
 
 export function getGeometryPositions(geometry: HighlightableGeometry): Position[] {
@@ -22,43 +24,6 @@ export function getGeometryPositions(geometry: HighlightableGeometry): Position[
         case 'MultiPolygon':
             return flattenDepth<Position>(geometry.coordinates, 2);
     }
-}
-
-export function getCentralPoint(geometry: Polygon | MultiPolygon): Position {
-    switch (geometry.type) {
-        case 'Polygon':
-            return ringCentroid(geometry.coordinates[0]);
-        case 'MultiPolygon': {
-            const weightedCentroids = geometry.coordinates.map(([outerRing]) => ({
-                centroid: ringCentroid(outerRing),
-                area: ringArea(outerRing),
-            }));
-            const totalArea = weightedCentroids.reduce((sum, { area }) => sum + area, 0);
-            const [totalLon, totalLat] = weightedCentroids.reduce(
-                ([lon, lat], { centroid: [posLon, posLat], area }) => [lon + posLon * area, lat + posLat * area],
-                [0, 0],
-            );
-            return [totalLon / totalArea, totalLat / totalArea];
-        }
-    }
-}
-
-export function ringCentroid(ring: Position[]): Position {
-    const [totalLon, totalLat] = ring.reduce(
-        ([lon, lat], [posLon, posLat]) => [lon + posLon, lat + posLat],
-        [0, 0],
-    );
-    return [totalLon / ring.length, totalLat / ring.length];
-}
-
-function ringArea(ring: Position[]): number {
-    let sum = 0;
-    for (let i = 0; i < ring.length - 1; i++) {
-        const [lon1, lat1] = ring[i];
-        const [lon2, lat2] = ring[i + 1];
-        sum += lon1 * lat2 - lon2 * lat1;
-    }
-    return Math.abs(sum) / 2;
 }
 
 export function buildMaskPolygon(hole: Polygon | MultiPolygon, bounds: [Position, Position]): Polygon {

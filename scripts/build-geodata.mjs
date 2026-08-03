@@ -13,6 +13,7 @@ import {
     syncLanguageDict,
 } from './language.mjs';
 import { getConsolePrefix, getConsoleStats } from './console-utils.mjs';
+import { getCentralPoint } from './geometry-utils.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const QGIS = join(__dirname, '..', 'qgis');
@@ -112,26 +113,15 @@ processGeoJSON('got_volcanoes.geojson', null, {
     }),
 });
 
-const namedRegions = {
-    type: 'FeatureCollection',
-    features: [],
-};
-
-function appendNamedRegions(collection) {
-    namedRegions.features = [
-        ...namedRegions.features,
-        ...collection.features.filter(feature => !!feature.properties.name && feature.properties.type !== 'water'),
-    ];
-}
-
-function splitAndProcess(fileName, languageFileName) {
+function splitAndProcess(fileName, languageFileName, { filterFn, mapFn } = {}) {
     const unsplitted = readGeoJSON(fileName, languageFileName);
-    syncLanguage(unsplitted, languageFileName);
+    const filtered = filterFn ? filterGeodata(unsplitted, filterFn) : unsplitted;
+    const mapped = mapFn ? mapGeodata(filtered, mapFn) : filtered;
+    syncLanguage(mapped, languageFileName);
 
-    const byType = splitByType(unsplitted);
+    const byType = splitByType(mapped);
 
     for (const [type, collection] of Object.entries(byType)) {
-        appendNamedRegions(collection);
         const [name, extension] = fileName.split('.');
         writeGeoJSON(`${name}_${type.toLowerCase()}.${extension}`, collection);
     }
@@ -139,12 +129,27 @@ function splitAndProcess(fileName, languageFileName) {
     return byType;
 }
 
-const landscape = splitAndProcess('got_landscape.geojson', 'landscape.json');
+const landscape = splitAndProcess('got_landscape.geojson', 'landscape.json', {
+    mapFn: feature => {
+        const coordinates = getCentralPoint(feature.geometry);
+        const centroid = { type: 'Point', coordinates };
+
+        return {
+            ...feature,
+            properties: {
+                ...feature.properties,
+                centerLng: coordinates[0],
+                centerLat: coordinates[1],
+                continentId: getLocationContinentId(centroid, continents, islands),
+            }
+        }
+    }
+});
 const { land } = splitAndProcess('got_regions.geojson', 'regions.json');
 
 function getContainingLandscapeId(feature) {
     return Object.values(landscape)
-        .map(collection => getContainingPolygonId(feature, collection))
+        .map(collection => getContainingPolygonId(feature.geometry, collection))
         .find(Boolean);
 }
 
@@ -156,11 +161,11 @@ const theWall = processGeoJSON('got_wall.geojson', 'the-wall.json', {
         ...feature,
         properties: {
             ...feature.properties,
-            continentId: getLocationContinentId(feature, continents, islands),
-            kingdomId: getContainingPolygonId(feature, kingdoms),
-            regionId: getContainingPolygonId(feature, land),
+            continentId: getLocationContinentId(feature.geometry, continents, islands),
+            kingdomId: getContainingPolygonId(feature.geometry, kingdoms),
+            regionId: getContainingPolygonId(feature.geometry, land),
             landscapeId: getContainingLandscapeId(feature),
-            islandId: getContainingPolygonId(feature, islands),
+            islandId: getContainingPolygonId(feature.geometry, islands),
             description: descriptions[feature.properties.id] ?? null,
         },
     }),
@@ -171,11 +176,11 @@ const locations = processGeoJSON('got_locations.geojson', 'locations.json', {
         ...feature,
         properties: {
             ...feature.properties,
-            continentId: getLocationContinentId(feature, continents, islands),
-            kingdomId: getContainingPolygonId(feature, kingdoms),
-            regionId: getContainingPolygonId(feature, land),
+            continentId: getLocationContinentId(feature.geometry, continents, islands),
+            kingdomId: getContainingPolygonId(feature.geometry, kingdoms),
+            regionId: getContainingPolygonId(feature.geometry, land),
             landscapeId: getContainingLandscapeId(feature),
-            islandId: getContainingPolygonId(feature, islands),
+            islandId: getContainingPolygonId(feature.geometry, islands),
             description: descriptions[feature.properties.id] ?? null,
             nameVariant: nameVariants[feature.properties.id] ?? null,
         },
