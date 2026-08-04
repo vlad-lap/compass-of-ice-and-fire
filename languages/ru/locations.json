@@ -1,4 +1,5 @@
 {
+  "castle-harvest-hall": "Дом Урожая",
   "city-kings-landing": "Королевская Гавань",
   "castle-hayford-castle": "Хейфорд",
   "castle-rosby": "Росби",
@@ -260,5 +261,23 @@
   "town-new-ibbish": "Новый Иббиш",
   "town-ib-sar": "Иб-Сар",
   "town-ib-nor": "Иб-Нор",
-  "city-port-of-ibben": "Порт-Иббен"
+  "city-port-of-ibben": "Порт-Иббен",
+  "town-kayakayanaya": "Каякаяная",
+  "town-samyriana": "Самириана",
+  "town-bayasabhad": "Баясабад",
+  "town-tiqui": "Тикуи",
+  "town-trader-town": "Торговый город",
+  "town-asabhad": "Азабад",
+  "city-yin": "Инь",
+  "town-jinqi": "Цзиньци",
+  "city-asshai": "Асшай",
+  "ruin-stygai": "Стигай",
+  "town-leng-yi": "Лэнг И",
+  "town-leng-ma": "Лэнг Ма",
+  "town-turrani": "Туррани",
+  "town-carcosa": "Каркоса",
+  "town-city-of-the-winged-men": "Город Крылатых людей",
+  "town-bonetown": "Костяной город",
+  "town-k-dath": "К'дат",
+  "town-nefer": "Нефер"
 }

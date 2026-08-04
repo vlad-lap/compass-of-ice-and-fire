@@ -3,7 +3,7 @@ import { LngLatLike } from 'maplibre-gl';
 export enum MapBounds {
     North = 48.8,
     South = -39.3,
-    East = 92,
+    East = 127.4,
     West = -7.1,
 }
 
@@ -33,6 +33,7 @@ export enum LandscapeColor {
     Forest = '#93cba2',
     ForestNorth = '#93cbc4',
     ForestSouth = '#a1cb93',
+    ForestUlthos = '#ac93cb',
     Swamp = '#d7f6a1',
     Desert = '#f4efe5',
     Snow = '#ffffff',
@@ -42,15 +43,17 @@ export enum LandscapeColor {
     Volcano = ORANGE,
     Wasteland = '#f5f4f4',
     RedLake = '#f8c1c1',
+    DryLake = '#e8e4d9',
 }
 
-export const MOUNTAIN_COLORS = ['#e9e7dd', '#deddd4', '#cccfca'];
+export const MOUNTAIN_COLORS = ['#e9e7dd', '#deddd4', '#d3d5cf'];
 
 export enum LabelColor {
     Land = '#12875f',
     Water = '#1a6b8a',
     Mountain = BROWN,
     Desert = BROWN,
+    Wasteland = GREY,
     Road = '#bd7c05',
     Wall = BLACK,
     Location = BLACK,
@@ -71,6 +74,7 @@ export const SELECTABLE_LAYER_IDS = [
     'secondary-point',
     'tertiary-point',
     'wall-line',
+    'the-five-forts-point'
 ];
 
 export enum FontStyle {

@@ -6,7 +6,7 @@ import { GetGeodata } from './geodata.actions';
 import { Observable, tap } from 'rxjs';
 import { GEODATA_URLS } from '../../constants';
 import { FeatureData, GeodataDict, GeodataType } from '../../models';
-import { getCentralPoint, getLocationsSearchOptions, getSearchOptions } from '../../utils';
+import { getCentralPoint, getLocationsSearchOptions, getMiddleMultiPoint, getSearchOptions } from '../../utils';
 import { flatten, mapValues, omit } from 'lodash';
 
 const EMPTY: FeatureCollection<Point> = { type: 'FeatureCollection', features: [] };
@@ -49,15 +49,16 @@ export class GeodataState {
 
                 const features: Feature<Point>[] = collection.features
                     .filter(feature => feature.properties?.name)
-                    .map(feature => ({
-                        ...feature,
-                        geometry: {
-                            type: 'Point',
-                            coordinates: getCentralPoint(
-                                feature.geometry as Polygon | MultiPolygon,
-                            ),
-                        },
-                    }));
+                    .map(feature => {
+                        const coordinates = feature.geometry.type === 'MultiPoint'
+                            ? getMiddleMultiPoint(feature.geometry)
+                            : getCentralPoint(feature.geometry as Polygon | MultiPolygon);
+
+                        return {
+                            ...feature,
+                            geometry: { type: 'Point', coordinates },
+                        };
+                    });
 
                 return { ...collection, features };
             },

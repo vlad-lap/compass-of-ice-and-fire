@@ -49,6 +49,8 @@ import { GeodataState, LanguagesState } from '../../store';
 import {
     DEFAULT_LABEL_LAYOUT,
     DIM_OVERLAY_PAINT,
+    FIVE_FORTS_PAINT,
+    FIVE_FORTS_SHADOW,
     GRADIENT_COORDINATES,
     GRADIENT_PAINT,
     LABEL_LAYOUT,
@@ -170,8 +172,8 @@ export class MapPageComponent {
         'vales',
         'snow',
         'steppes',
-        'deserts',
         'wastelands',
+        'deserts',
         'swamps',
         'mountains',
         'forests',
@@ -182,6 +184,7 @@ export class MapPageComponent {
     protected readonly labeledTypes: GeodataType[] = [
         'snow',
         'steppes',
+        'wastelands',
         'deserts',
         'swamps',
         'seas',
@@ -211,6 +214,10 @@ export class MapPageComponent {
         GeodataState.labelPoints('mountains'),
     );
 
+    protected readonly theFiveFortsLabelPoints = this.store.selectSignal(
+        GeodataState.labelPoints('theFiveForts'),
+    );
+
     protected readonly polygonsPaint = POLYGONS_PAINT;
 
     protected readonly linesLayout = LINES_LAYOUT;
@@ -220,6 +227,9 @@ export class MapPageComponent {
 
     protected readonly pointsPaint = POINTS_PAINT;
     protected readonly pointsShadow = POINTS_SHADOW;
+
+    protected readonly theFiveFortsPaint = FIVE_FORTS_PAINT;
+    protected readonly theFiveFortsShadow = FIVE_FORTS_SHADOW;
 
     protected readonly volcanoesPaint = VOLCANOES_PAINT;
     protected readonly volcanoesSmokePaint = VOLCANOES_SMOKE_PAINT;
@@ -425,6 +435,7 @@ export class MapPageComponent {
             MultiPolygon: 'polygon',
             LineString: 'line',
             MultiLineString: 'line',
+            MultiPoint: 'point',
             Point: 'point',
         } as const;
         return layerTypes[geometryType];

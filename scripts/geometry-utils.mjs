@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 /**
  * @param {import('geojson').Position[]} ring
  * @returns {import('geojson').Position}
@@ -45,4 +47,13 @@ export function getCentralPoint(geometry) {
             return [totalLon / totalArea, totalLat / totalArea];
         }
     }
+}
+/**
+ * @param {import('geojson').MultiPoint} geometry
+ * @returns {import('geojson').Position}
+ */
+export function getMiddleMultiPoint(geometry) {
+    const sortedByLng = _.sortBy(geometry.coordinates, '0');
+    const middleIndex = Math.floor(geometry.coordinates.length / 2);
+    return sortedByLng[middleIndex];
 }

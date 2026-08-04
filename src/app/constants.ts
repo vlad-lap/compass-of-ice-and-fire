@@ -27,4 +27,5 @@ export const GEODATA_URLS: GeodataDict<string> = {
     roads: 'geodata/got_roads.geojson',
     wall: 'geodata/got_wall.geojson',
     locations: 'geodata/got_locations.geojson',
+    theFiveForts: 'geodata/got_five_forts.geojson',
 };
