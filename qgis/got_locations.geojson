@@ -2,6 +2,7 @@
 "type": "FeatureCollection",
 "name": "got_locations",
 "features": [
+{ "type": "Feature", "properties": { "id": 311, "name": "Harvest Hall", "size": 3, "confirmed": 1, "type": "Castle" }, "geometry": { "type": "Point", "coordinates": [ 15.142476279496151, -3.587273000319469 ] } },
 { "type": "Feature", "properties": { "id": 1, "name": "King's Landing", "size": 5, "confirmed": 1, "type": "City" }, "geometry": { "type": "Point", "coordinates": [ 18.432066083848635, 3.736014024094777 ] } },
 { "type": "Feature", "properties": { "id": 2, "name": "Hayford Castle", "size": 3, "confirmed": 0, "type": "Castle" }, "geometry": { "type": "Point", "coordinates": [ 18.306671191450057, 4.783014234685957 ] } },
 { "type": "Feature", "properties": { "id": 3, "name": "Rosby", "size": 3, "confirmed": 1, "type": "Castle" }, "geometry": { "type": "Point", "coordinates": [ 19.111838395272535, 4.56899438074251 ] } },
@@ -53,7 +54,7 @@
 { "type": "Feature", "properties": { "id": 59, "name": "Crow's Nest", "size": 3, "confirmed": 1, "type": "Castle" }, "geometry": { "type": "Point", "coordinates": [ 20.416442810639932, -2.318948829971144 ] } },
 { "type": "Feature", "properties": { "id": 60, "name": "Grandview", "size": 3, "confirmed": 0, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 19.636113833178261, -1.293112772317447 ] } },
 { "type": "Feature", "properties": { "id": 61, "name": "Summerhall", "size": 3, "confirmed": 1, "type": "Ruin" }, "geometry": { "type": "Point", "coordinates": [ 17.709604279884825, -1.428592442955215 ] } },
-{ "type": "Feature", "properties": { "id": 62, "name": "Blackhaven", "size": 3, "confirmed": 1, "type": "Castle" }, "geometry": { "type": "Point", "coordinates": [ 15.145811537040595, -3.55873058798141 ] } },
+{ "type": "Feature", "properties": { "id": 62, "name": "Blackhaven", "size": 3, "confirmed": 1, "type": "Castle" }, "geometry": { "type": "Point", "coordinates": [ 16.715925690091922, -3.052019227607871 ] } },
 { "type": "Feature", "properties": { "id": 63, "name": "Fawnton", "size": 3, "confirmed": 0, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 14.787619295633226, -1.398921138525803 ] } },
 { "type": "Feature", "properties": { "id": 64, "name": "Grassy Vale", "size": 3, "confirmed": 1, "type": "Castle" }, "geometry": { "type": "Point", "coordinates": [ 15.221621270915344, 0.392966545754584 ] } },
 { "type": "Feature", "properties": { "id": 65, "name": "Wyl", "size": 3, "confirmed": 1, "type": "Castle" }, "geometry": { "type": "Point", "coordinates": [ 16.75353698855362, -4.253372834694921 ] } },
@@ -270,6 +271,25 @@
 { "type": "Feature", "properties": { "id": 288, "name": "New Ibbish", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 79.546007594821802, 17.896704357654496 ] } },
 { "type": "Feature", "properties": { "id": 289, "name": "Ib Sar", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 86.711286728167366, 19.674705778289507 ] } },
 { "type": "Feature", "properties": { "id": 290, "name": "Ib Nor", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 81.122013847819119, 28.404892529047906 ] } },
-{ "type": "Feature", "properties": { "id": 291, "name": "Port of Ibben", "size": 4, "confirmed": 1, "type": "City" }, "geometry": { "type": "Point", "coordinates": [ 79.830132665784689, 24.047568198577853 ] } }
+{ "type": "Feature", "properties": { "id": 291, "name": "Port of Ibben", "size": 4, "confirmed": 1, "type": "City" }, "geometry": { "type": "Point", "coordinates": [ 79.830132665784689, 24.047568198577853 ] } },
+{ "type": "Feature", "properties": { "id": 292, "name": "Kayakayanaya", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 91.111067044073764, 4.606342655004625 ] } },
+{ "type": "Feature", "properties": { "id": 293, "name": "Samyriana", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 89.442744710462023, -3.434361560188001 ] } },
+{ "type": "Feature", "properties": { "id": 294, "name": "Bayasabhad", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 91.804296872195536, -9.917203139656431 ] } },
+{ "type": "Feature", "properties": { "id": 295, "name": "Tiqui", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 98.431878745447619, -8.709764373092687 ] } },
+{ "type": "Feature", "properties": { "id": 296, "name": "Trader Town", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 99.74215929969975, -4.139018253608484 ] } },
+{ "type": "Feature", "properties": { "id": 297, "name": "Asabhad", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 92.162338651555132, -16.491459641514545 ] } },
+{ "type": "Feature", "properties": { "id": 298, "name": "Yin", "size": 5, "confirmed": 1, "type": "City" }, "geometry": { "type": "Point", "coordinates": [ 98.538529488235582, -22.574360935528109 ] } },
+{ "type": "Feature", "properties": { "id": 299, "name": "Jinqi", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 109.157896305837212, -19.786205802642744 ] } },
+{ "type": "Feature", "properties": { "id": 300, "name": "Asshai", "size": 5, "confirmed": 1, "type": "City" }, "geometry": { "type": "Point", "coordinates": [ 112.822111111623741, -33.818396389459245 ] } },
+{ "type": "Feature", "properties": { "id": 301, "name": "Stygai", "size": 3, "confirmed": 1, "type": "Ruin" }, "geometry": { "type": "Point", "coordinates": [ 115.705490121998352, -30.761709922054187 ] } },
+{ "type": "Feature", "properties": { "id": 302, "name": "Leng Yi", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 107.101060552069342, -21.683065442228699 ] } },
+{ "type": "Feature", "properties": { "id": 303, "name": "Leng Ma", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 106.506863556536402, -25.27871905622294 ] } },
+{ "type": "Feature", "properties": { "id": 304, "name": "Turrani", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 106.543048629982309, -27.618369726133899 ] } },
+{ "type": "Feature", "properties": { "id": 305, "name": "Carcosa", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 126.174403213166912, -17.153265590064894 ] } },
+{ "type": "Feature", "properties": { "id": 306, "name": "City of the Winged Men", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 123.089149582515091, -13.755677641248312 ] } },
+{ "type": "Feature", "properties": { "id": 307, "name": "Bonetown", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 121.199907853128295, -4.553242120686809 ] } },
+{ "type": "Feature", "properties": { "id": 308, "name": "K'Dath", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 118.11465422247646, -2.374519803732679 ] } },
+{ "type": "Feature", "properties": { "id": 309, "name": "Nefer", "size": 3, "confirmed": 1, "type": "Town" }, "geometry": { "type": "Point", "coordinates": [ 110.953818635284563, 4.873921750749329 ] } },
+{ "type": "Feature", "properties": { "id": 310, "name": null, "size": 3, "confirmed": 1, "type": "Ruin" }, "geometry": { "type": "Point", "coordinates": [ 125.319854306625587, -29.730462478543924 ] } }
 ]
 }

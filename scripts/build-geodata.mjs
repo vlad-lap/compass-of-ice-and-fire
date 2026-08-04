@@ -13,7 +13,7 @@ import {
     syncLanguageDict,
 } from './language.mjs';
 import { getConsolePrefix, getConsoleStats } from './console-utils.mjs';
-import { getCentralPoint } from './geometry-utils.mjs';
+import { getCentralPoint, getMiddleMultiPoint } from './geometry-utils.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const QGIS = join(__dirname, '..', 'qgis');
@@ -171,6 +171,25 @@ const theWall = processGeoJSON('got_wall.geojson', 'the-wall.json', {
     }),
 });
 
+const theFiveForts = processGeoJSON('got_five_forts.geojson', 'the-five-forts.json', {
+    mapFn: feature => {
+        const middlePoint = getMiddleMultiPoint(feature.geometry);
+        const geometry = { type: 'Point', coordinates: middlePoint };
+        return {
+            ...feature,
+            properties: {
+                ...feature.properties,
+                continentId: getLocationContinentId(geometry, continents, islands),
+                kingdomId: getContainingPolygonId(geometry, kingdoms),
+                regionId: getContainingPolygonId(geometry, land),
+                islandId: getContainingPolygonId(geometry, islands),
+                description: descriptions[feature.properties.id] ?? null,
+                nameVariant: nameVariants[feature.properties.id] ?? null,
+            },
+        };
+    },
+});
+
 const locations = processGeoJSON('got_locations.geojson', 'locations.json', {
     mapFn: feature => ({
         ...feature,
@@ -188,8 +207,9 @@ const locations = processGeoJSON('got_locations.geojson', 'locations.json', {
 });
 
 const wallData = getFeatureProperties(theWall);
+const fiveFortsData = getFeatureProperties(theFiveForts);
 const locationsData = getFeatureProperties(locations);
-syncDictionary([...wallData, ...locationsData], 'description');
+syncDictionary([...wallData, ...fiveFortsData, ...locationsData], 'description');
 syncDictionary(locationsData, 'nameVariant', false);
 
 

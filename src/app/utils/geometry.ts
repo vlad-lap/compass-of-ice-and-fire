@@ -1,6 +1,7 @@
 import {
     LineString,
     MultiLineString,
+    MultiPoint,
     MultiPolygon,
     Point,
     Polygon,
@@ -8,14 +9,15 @@ import {
 } from 'geojson';
 import { flatten, flattenDepth } from 'lodash';
 
-export { getCentralPoint } from '../../../scripts/geometry-utils.mjs';
+export { getCentralPoint, getMiddleMultiPoint } from '../../../scripts/geometry-utils.mjs';
 
-export type HighlightableGeometry = Polygon | MultiPolygon | LineString | MultiLineString | Point;
+export type HighlightableGeometry = Polygon | MultiPolygon | LineString | MultiLineString | Point | MultiPoint;
 
 export function getGeometryPositions(geometry: HighlightableGeometry): Position[] {
     switch (geometry.type) {
         case 'Point':
             return [geometry.coordinates];
+        case 'MultiPoint':
         case 'LineString':
             return geometry.coordinates;
         case 'MultiLineString':
