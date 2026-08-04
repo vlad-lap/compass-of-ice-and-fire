@@ -47,7 +47,7 @@ export const MAP_BOUNDS: LngLatBoundsLike = [
     [MapBounds.East, MapBounds.North],
 ];
 
-const GRADIENT_WIDTH = 2;
+const GRADIENT_WIDTH = 0.5;
 
 export const GRADIENT_COORDINATES: Record<string, ImageSourceSpecification['coordinates']> = {
     north: [
@@ -107,9 +107,13 @@ export const POLYGONS_PAINT: GeodataDict<FillLayerSpecification['paint']> = {
     forests: {
         'fill-color': [
             'case',
-            ['>=', ['get', 'centerLat'], 11],
+            ['==', ['get', 'continentId'], 'ulthos'],
+            LandscapeColor.ForestUlthos,
+            ['all', ['==', ['get', 'continentId'], 'westeros'], ['>=', ['get', 'centerLat'], 17]],
             LandscapeColor.ForestNorth,
-            ['<=', ['get', 'centerLat'], -20],
+            ['all', ['!=', ['get', 'continentId'], 'westeros'], ['>=', ['get', 'centerLat'], 7]],
+            LandscapeColor.ForestNorth,
+            ['<=', ['get', 'centerLat'], -17],
             LandscapeColor.ForestSouth,
             LandscapeColor.Forest,
         ],
@@ -138,9 +142,17 @@ export const POLYGONS_PAINT: GeodataDict<FillLayerSpecification['paint']> = {
         'fill-color': [
             'step',
             ['zoom'],
-            LandscapeColor.Water,
+            ['match', ['get', 'variant'], 'dry', LandscapeColor.DryLake, LandscapeColor.Water],
             ZoomLevel.Low,
-            ['match', ['get', 'variant'], 'red', LandscapeColor.RedLake, LandscapeColor.Water],
+            [
+                'match',
+                ['get', 'variant'],
+                'red',
+                LandscapeColor.RedLake,
+                'dry',
+                LandscapeColor.DryLake,
+                LandscapeColor.Water,
+            ],
         ],
     },
     seas: {
@@ -171,9 +183,13 @@ export const LINES_LAYOUT: GeodataDict<LineLayerSpecification['layout']> = {
 export const LINES_PAINT: GeodataDict<LineLayerSpecification['paint']> = {
     rivers: {
         'line-color': LandscapeColor.Water,
+        'line-width': ['match', ['get', 'size'], 1, 0.6, 2, 1.2, 3, 1.8, 1.2],
+        'line-opacity': ['step', ['zoom'], ['match', ['get', 'size'], 1, 0, 1], ZoomLevel.Low, 1],
     },
     roads: {
         'line-color': LandscapeColor.Road,
+        'line-width': ['match', ['get', 'size'], 1, 0.4, 2, 0.8, 3, 1.2, 0.8],
+        'line-opacity': ['step', ['zoom'], 0, ZoomLevel.Low, 1],
     },
     wall: {
         'line-color': LandscapeColor.Wall,
@@ -259,6 +275,33 @@ export const POINTS_PAINT: CircleLayerSpecification['paint'] = {
 
 export const POINTS_SHADOW: CircleLayerSpecification['paint'] = {
     'circle-radius': POINT_SHADOW_RADIUS,
+    'circle-color': BLACK,
+    'circle-opacity': 0.3,
+    'circle-blur': 0.8,
+    'circle-translate': [1.5, 1.5],
+};
+
+export const FIVE_FORTS_PAINT: CircleLayerSpecification['paint'] = {
+    'circle-radius': [
+        'step',
+        ['zoom'],
+        LocationRadius.SM,
+        ZoomLevel.Low,
+        LocationRadius.MD,
+    ],
+    'circle-color': WHITE,
+    'circle-stroke-color': BLACK,
+    'circle-stroke-width': 1,
+};
+
+export const FIVE_FORTS_SHADOW: CircleLayerSpecification['paint'] = {
+    'circle-radius': [
+        'step',
+        ['zoom'],
+        LocationRadius.SM + POINT_SHADOW_BLUR,
+        ZoomLevel.Low,
+        LocationRadius.MD + POINT_SHADOW_BLUR
+    ],
     'circle-color': BLACK,
     'circle-opacity': 0.3,
     'circle-blur': 0.8,
@@ -383,6 +426,14 @@ export const LABEL_LAYOUT: Partial<GeodataDict<SymbolLayerSpecification['layout'
         'text-size': FontSize.LG,
     },
     locations: DEFAULT_POINT_LABEL_LAYOUT,
+    theFiveForts: {
+        ...DEFAULT_LABEL_LAYOUT,
+        'text-variable-anchor': ['top-right', 'bottom-left'],
+        'text-radial-offset': 0.6,
+        'text-justify': 'auto',
+        'text-font': [FontStyle.Bold],
+        'text-size': FontSize.LG,
+    },
 };
 
 const DEFAULT_LABEL_PAINT: SymbolLayerSpecification['paint'] = {
@@ -413,11 +464,20 @@ export const LABEL_PAINT: Partial<GeodataDict<SymbolLayerSpecification['paint']>
     swamps: DEFAULT_LAND_LABEL_PAINT,
     lakes: {
         ...DEFAULT_LABEL_PAINT,
-        'text-color': ['match', ['get', 'variant'], 'red', LabelColor.RedLake, LabelColor.Water],
+        'text-color': [
+            'match',
+            ['get', 'variant'],
+            'red',
+            LabelColor.RedLake,
+            'dry',
+            LabelColor.Desert,
+            LabelColor.Water,
+        ],
     },
     seas: DEFAULT_WATER_LABEL_PAINT,
     rivers: DEFAULT_WATER_LABEL_PAINT,
     mountains: { ...DEFAULT_LABEL_PAINT, 'text-color': LabelColor.Mountain },
+    wastelands: { ...DEFAULT_LABEL_PAINT, 'text-color': LabelColor.Wasteland },
     deserts: { ...DEFAULT_LABEL_PAINT, 'text-color': LabelColor.Desert },
     roads: { ...DEFAULT_LABEL_PAINT, 'text-color': LabelColor.Road },
     wall: { ...DEFAULT_LABEL_PAINT, 'text-color': LabelColor.Wall },
@@ -425,6 +485,7 @@ export const LABEL_PAINT: Partial<GeodataDict<SymbolLayerSpecification['paint']>
         ...DEFAULT_LABEL_PAINT,
         'text-color': ['match', ['get', 'type'], 'Ruin', LabelColor.Ruin, LabelColor.Location],
     },
+    theFiveForts: { ...DEFAULT_LABEL_PAINT, 'text-color': LabelColor.Location },
 };
 
 export const SEARCH_HIGHLIGHT_LINE_LAYOUT: LineLayerSpecification['layout'] = {
@@ -455,5 +516,5 @@ export const SEARCH_HIGHLIGHT_CIRCLE_PAINT: CircleLayerSpecification['paint'] = 
 
 export const DIM_OVERLAY_PAINT: FillLayerSpecification['paint'] = {
     'fill-color': BLACK,
-    'fill-opacity': 0.15,
+    'fill-opacity': 0.05,
 };

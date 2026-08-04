@@ -257,6 +257,41 @@
         />
     }
 
+
+    <mgl-geojson-source
+        id="the-five-forts"
+        [data]="geodataUrls.theFiveForts"
+    />
+    <mgl-layer
+        id="the-five-forts-point"
+        before="primary-point-label"
+        type="circle"
+        source="the-five-forts"
+        [paint]="theFiveFortsPaint"
+        (layerMouseEnter)="onFeatureEnter($event)"
+        (layerMouseLeave)="onFeatureLeave()"
+    />
+    <mgl-layer
+        id="the-five-forts-point-shadow"
+        before="the-five-forts-point"
+        type="circle"
+        source="the-five-forts"
+        [paint]="theFiveFortsShadow"
+    />
+
+    <mgl-geojson-source
+        id="the-five-forts-label-point"
+        [data]="theFiveFortsLabelPoints()"
+    />
+    <mgl-layer
+        id="the-five-forts-label"
+        before="primary-point-label"
+        type="symbol"
+        source="the-five-forts-label-point"
+        [layout]="labelLayout().theFiveForts"
+        [paint]="labelPaint.theFiveForts"
+    />
+
     @let gradients = gradientCoordinates | keyvalue;
     @for (gradient of gradients; track gradient.key) {
             <mgl-image-source
