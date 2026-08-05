@@ -326,6 +326,7 @@ export const VOLCANOES_SMOKE_PAINT: CircleLayerSpecification['paint'] = {
 
 export const LABELS_MIN_ZOOM: GeodataDict<ZoomLevel> = {
     kingdoms: ZoomLevel.Initial,
+    kingdomBorders: ZoomLevel.High,
     shores: ZoomLevel.Medium,
     vales: ZoomLevel.Medium,
     lands: ZoomLevel.Low,
@@ -417,6 +418,7 @@ export const LABEL_LAYOUT: Partial<GeodataDict<SymbolLayerSpecification['layout'
         ...DEFAULT_LABEL_POINT_LABEL_LAYOUT,
         'text-size': FontSize.LG,
     },
+    kingdomBorders: DEFAULT_LINE_LABEL_LAYOUT,
     lands: DEFAULT_LABEL_POINT_LABEL_LAYOUT,
     rivers: DEFAULT_LINE_LABEL_LAYOUT,
     roads: {
@@ -456,6 +458,7 @@ const DEFAULT_WATER_LABEL_PAINT: SymbolLayerSpecification['paint'] = {
 
 export const LABEL_PAINT: Partial<GeodataDict<SymbolLayerSpecification['paint']>> = {
     kingdoms: DEFAULT_LABEL_PAINT,
+    kingdomBorders: DEFAULT_LABEL_PAINT,
     lands: DEFAULT_LABEL_PAINT,
     shores: DEFAULT_LAND_LABEL_PAINT,
     vales: DEFAULT_LAND_LABEL_PAINT,

@@ -197,6 +197,7 @@ export class MapPageComponent {
         'vales',
         'forests',
         'lakes',
+        'kingdomBorders',
         'rivers',
         'roads',
         'theWall',

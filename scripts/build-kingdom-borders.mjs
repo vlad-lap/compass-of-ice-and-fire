@@ -1,3 +1,60 @@
+function pointKey([lng, lat]) {
+    return `${lng},${lat}`;
+}
+
+function mergeSegmentsIntoLines(edges) {
+    const adjacency = new Map();
+    edges.forEach(([start, end], index) => {
+        const startKey = pointKey(start);
+        const endKey = pointKey(end);
+        if (!adjacency.has(startKey)) adjacency.set(startKey, []);
+        if (!adjacency.has(endKey)) adjacency.set(endKey, []);
+        adjacency.get(startKey).push({ point: end, edgeIndex: index });
+        adjacency.get(endKey).push({ point: start, edgeIndex: index });
+    });
+
+    const used = new Array(edges.length).fill(false);
+    const lines = [];
+
+    for (let i = 0; i < edges.length; i++) {
+        if (used[i]) continue;
+        used[i] = true;
+        const line = [edges[i][0], edges[i][1]];
+
+        let extended = true;
+        while (extended) {
+            extended = false;
+            const candidates = adjacency.get(pointKey(line[line.length - 1])) || [];
+            for (const { point, edgeIndex } of candidates) {
+                if (!used[edgeIndex]) {
+                    used[edgeIndex] = true;
+                    line.push(point);
+                    extended = true;
+                    break;
+                }
+            }
+        }
+
+        extended = true;
+        while (extended) {
+            extended = false;
+            const candidates = adjacency.get(pointKey(line[0])) || [];
+            for (const { point, edgeIndex } of candidates) {
+                if (!used[edgeIndex]) {
+                    used[edgeIndex] = true;
+                    line.unshift(point);
+                    extended = true;
+                    break;
+                }
+            }
+        }
+
+        lines.push(line);
+    }
+
+    return lines;
+}
+
 export function buildKingdomBorders(kingdoms, continents, islands) {
     const coastlineVertices = new Set();
     for (const source of [continents, islands]) {
@@ -14,10 +71,10 @@ export function buildKingdomBorders(kingdoms, continents, islands) {
         }
     }
 
-    const seenSegments = new Set();
-    const borderLines = [];
+    const segments = new Map();
 
     for (const feature of kingdoms.features) {
+        const { id, name, name_ru } = feature.properties;
         const rings =
             feature.geometry.type === 'Polygon'
                 ? feature.geometry.coordinates
@@ -42,20 +99,47 @@ export function buildKingdomBorders(kingdoms, continents, islands) {
                         ? `${segmentStartKey}|${segmentEndKey}`
                         : `${segmentEndKey}|${segmentStartKey}`;
 
-                if (!seenSegments.has(segKey)) {
-                    seenSegments.add(segKey);
-                    borderLines.push([segmentStart, segmentEnd]);
+                if (!segments.has(segKey)) {
+                    segments.set(segKey, {
+                        coordinates: [segmentStart, segmentEnd],
+                        kingdomNames: [],
+                    });
                 }
+                segments.get(segKey).kingdomNames.push({ id, name, name_ru });
             }
         }
     }
 
+    const borderGroups = new Map();
+
+    for (const { coordinates, kingdomNames } of segments.values()) {
+        const [first, second] = kingdomNames;
+        const pairKey = second ? `${first.id}::${second.id}` : first.id;
+
+        if (!borderGroups.has(pairKey)) {
+            borderGroups.set(pairKey, { first, second, edges: [] });
+        }
+        borderGroups.get(pairKey).edges.push(coordinates);
+    }
+
     return {
         type: 'FeatureCollection',
-        features: borderLines.map(coordinates => ({
-            type: 'Feature',
-            properties: {},
-            geometry: { type: 'LineString', coordinates },
-        })),
+        features: Array.from(borderGroups.values()).map(({ first, second, edges }) => {
+            const lines = mergeSegmentsIntoLines(edges);
+            const geometry =
+                lines.length === 1
+                    ? { type: 'LineString', coordinates: lines[0] }
+                    : { type: 'MultiLineString', coordinates: lines };
+
+            return {
+                type: 'Feature',
+                properties: {
+                    id: second ? `border-${first.id}-${second.id}` : `border-${first.id}`,
+                    name: second ? `${first.name} - ${second.name}` : first.name,
+                    name_ru: second ? `${first.name_ru} - ${second.name_ru}` : first.name_ru,
+                },
+                geometry,
+            };
+        }),
     };
 }
