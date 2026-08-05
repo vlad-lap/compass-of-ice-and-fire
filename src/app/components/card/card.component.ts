@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/core';
+import { TitleCasePipe } from '@angular/common';
 import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { LocationData } from '../../models';
 import { MatIcon } from '@angular/material/icon';
@@ -14,7 +15,7 @@ import { LanguagesState } from '../../store';
 @Component({
     selector: 'coiaf-card',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [MatIcon, MatIconButton, AreaPipe, LocalizePipe],
+    imports: [MatIcon, MatIconButton, AreaPipe, LocalizePipe, TitleCasePipe],
     templateUrl: './card.component.html',
     styleUrl: './card.component.scss',
 })

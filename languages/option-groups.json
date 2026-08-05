@@ -1,21 +1,17 @@
 {
-    "castles": {
+    "castle": {
         "en": "Castles",
         "ru": "Замки"
     },
-    "cities": {
+    "city": {
         "en": "Cities",
-        "ru": "Крупные города"
-    },
-    "towns": {
-        "en": "Towns",
         "ru": "Города"
     },
-    "settlements": {
+    "settlement": {
         "en": "Settlements",
         "ru": "Поселения"
     },
-    "ruins": {
+    "ruin": {
         "en": "Ruins",
         "ru": "Руины"
     },
@@ -35,9 +31,13 @@
         "en": "Lands",
         "ru": "Территории"
     },
-    "wall": {
+    "theWall": {
         "en": "The Wall",
         "ru": "Стена"
+    },
+    "theFiveForts": {
+        "en": "The Five Forts",
+        "ru": "Пять Твердынь"
     },
     "continents": {
         "en": "Continents",

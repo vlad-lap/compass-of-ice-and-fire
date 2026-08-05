@@ -19,7 +19,7 @@ import { Store } from '@ngxs/store';
 import { GeodataState, LanguagesState, SetLanguage } from '../../store';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { map, Observable, startWith } from 'rxjs';
-import { FeatureData, GeodataType, LocationType } from '../../models';
+import { FeatureData, OptionGroup } from '../../models';
 import { flatten, isEmpty, mapValues, omitBy } from 'lodash';
 import { CommonModule, KeyValue, Location } from '@angular/common';
 import { MatIconButton } from '@angular/material/button';
@@ -30,19 +30,17 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Title } from '@angular/platform-browser';
 import { APP_TITLE, AVAILABLE_LANGUAGES } from '../../constants';
 
-type OptionGroup = GeodataType | LocationType;
-
 const OPTIONS_GROUP_ORDER: OptionGroup[] = [
-    'castles',
-    'cities',
-    'towns',
-    'settlements',
-    'ruins',
+    'city',
+    'castle',
+    'ruin',
+    'settlement',
     'other',
 
+    'theWall',
+    'theFiveForts',
     'kingdoms',
     'lands',
-    'wall',
     'roads',
 
     'continents',

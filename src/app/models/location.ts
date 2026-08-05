@@ -20,6 +20,6 @@ export interface LocationData extends FeatureData {
     nameVariant_ru?: string;
 }
 
-export type LocationType = 'cities' | 'towns' | 'settlements' | 'castles' | 'ruins' | 'other';
-export type LocationTier = 'primary' | 'secondary' | 'tertiary';
+export type LocationType = 'city' | 'settlement' | 'castle' | 'ruin' | 'other';
+export type LocationTier = 'tier1' | 'tier2' | 'tier3' | 'tier4';
 export type LocationDict<T> = Partial<Record<LocationTier, T>>;

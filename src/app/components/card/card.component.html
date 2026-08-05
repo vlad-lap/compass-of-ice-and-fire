@@ -34,7 +34,7 @@
 
 <div class="card-subtitle">
     @if (data.type) {
-        <span>{{ data | localize: 'type' }}</span>
+        <span>{{ data | localize: 'type' | titlecase }}</span>
 
         @if (area?.length) {
             <span class="bullet">&bull;</span>
