@@ -59,6 +59,7 @@
     (mapDblClick)="onMapDoubleClick($event)"
     (mapDragStart)="onMapDragStart()"
     (mapDragEnd)="onMapDragEnd()"
+    (zoomEnd)="saveCurrentPosition()"
 >
     @for (polygonType of polygonTypes; track polygonType) {
         @let kebab = kebabCase(polygonType);

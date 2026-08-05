@@ -300,7 +300,22 @@ export class MapPageComponent {
         const feature = this.searchHighlightFeature();
         if (feature) {
             this.zoomToFeature(feature);
+        } else {
+            const zoom = localStorage.getItem('zoom');
+            const center = localStorage.getItem('center');
+            if (zoom && center) {
+                map.jumpTo({
+                    zoom: +zoom,
+                    center: JSON.parse(center),
+                });
+            }
         }
+    }
+
+    saveCurrentPosition(): void {
+        const map = this.map().mapInstance;
+        localStorage.setItem('zoom', map.getZoom().toString())
+        localStorage.setItem('center', JSON.stringify(map.getCenter()));
     }
 
     zoomIn(): void {
@@ -353,6 +368,7 @@ export class MapPageComponent {
 
     onMapDragEnd(): void {
         this.cursorStyle.set('default');
+        this.saveCurrentPosition();
     }
 
     onMapClick({ target, point: { x, y } }: MapMouseEvent): void {
