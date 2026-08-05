@@ -410,10 +410,7 @@ export const LABEL_LAYOUT: Partial<GeodataDict<SymbolLayerSpecification['layout'
         ...DEFAULT_LABEL_LAYOUT,
         'text-size': FontSize.SM,
     },
-    islands: {
-        ...DEFAULT_LABEL_POINT_LABEL_LAYOUT,
-        'text-size': FontSize.MD,
-    },
+    islands: DEFAULT_LABEL_POINT_LABEL_LAYOUT,
     kingdoms: {
         ...DEFAULT_LABEL_POINT_LABEL_LAYOUT,
         'text-size': FontSize.LG,
