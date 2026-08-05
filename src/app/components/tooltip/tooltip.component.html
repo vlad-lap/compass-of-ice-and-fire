@@ -11,7 +11,7 @@
 
     <div class="tooltip-subtitle">
         @if (locationData.type) {
-            <span>{{ locationData | localize: 'type' }}</span>
+            <span>{{ locationData | localize: 'type' | titlecase }}</span>
 
             @if (locationArea?.length) {
                 <span class="bullet">&bull;</span>

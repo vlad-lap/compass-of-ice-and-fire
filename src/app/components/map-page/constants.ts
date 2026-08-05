@@ -14,6 +14,7 @@ export enum ZoomLevel {
     Low = 3.9,
     Medium = 4.6,
     High = 5.9,
+    Max = 9,
 }
 
 export const ZOOM_DURATION = 300;
@@ -70,11 +71,12 @@ export enum LocationRadius {
 export const TOUCH_HIT_RADIUS_PX = 15;
 
 export const SELECTABLE_LAYER_IDS = [
-    'primary-point',
-    'secondary-point',
-    'tertiary-point',
-    'wall-line',
-    'the-five-forts-point'
+    'tier1-point',
+    'tier2-point',
+    'tier3-point',
+    'tier4-point',
+    'the-wall-line',
+    'the-five-forts-point',
 ];
 
 export enum FontStyle {

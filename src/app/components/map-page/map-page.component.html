@@ -48,7 +48,7 @@
     [center]="initialCenter"
     [zoom]="[ZoomLevel.Initial]"
     [minZoom]="1"
-    [maxZoom]="9"
+    [maxZoom]="ZoomLevel.Max"
     [maxBounds]="maxBounds"
     [dragRotate]="false"
     [pitchWithRotate]="false"
@@ -99,7 +99,7 @@
     />
     <mgl-layer
         id="volcanoes-smoke-circle"
-        before="primary-point-shadow"
+        before="tier1-point-shadow"
         type="circle"
         source="volcanoes"
         [paint]="volcanoesSmokePaint"
@@ -120,103 +120,64 @@
     }
 
     <mgl-geojson-source
-        id="wall"
-        [data]="geodataUrls.wall"
+        id="the-wall"
+        [data]="geodataUrls.theWall"
     />
     <mgl-layer
-        id="wall-line"
+        id="the-wall-line"
         type="line"
-        source="wall"
-        [layout]="linesLayout.wall"
-        [paint]="linesPaint.wall"
-        before="wall-label"
+        source="the-wall"
+        [layout]="linesLayout.theWall"
+        [paint]="linesPaint.theWall"
+        before="the-wall-label"
         (layerMouseEnter)="onFeatureEnter($event)"
         (layerMouseLeave)="onFeatureLeave()"
     />
     <mgl-layer
-        id="wall-outline"
+        id="the-wall-outline"
         type="line"
-        source="wall"
-        [layout]="linesLayout.wall"
-        [paint]="linesOutline.wall"
-        before="wall-line"
+        source="the-wall"
+        [layout]="linesLayout.theWall"
+        [paint]="linesOutline.theWall"
+        before="the-wall-line"
     />
     <mgl-layer
-        id="wall-shadow"
+        id="the-wall-shadow"
         type="line"
-        source="wall"
-        [layout]="linesLayout.wall"
-        [paint]="linesShadow.wall"
-        before="wall-outline"
+        source="the-wall"
+        [layout]="linesLayout.theWall"
+        [paint]="linesShadow.theWall"
+        before="the-wall-outline"
     />
 
-    @for (labeledType of labeledTypes; track labeledType) {
-        <mgl-layer
-            [id]="labeledType + '-label'"
-            type="symbol"
-            [source]="labeledType"
-            [layout]="labelLayout()[labeledType] || defaultLabelLayout()"
-            [paint]="labelPaint[labeledType]"
-            [minzoom]="labelsMinZoom[labeledType] || 0"
-        />
+    @for (type of labeledTypes; track type) {
+        @let kebab = kebabCase(type);
+        @if (labelPoints[type]; as points) {
+            <mgl-geojson-source
+                [id]="kebab + '-label-points'"
+                [data]="points"
+            />
+            <mgl-layer
+                [id]="kebab + '-label'"
+                type="symbol"
+                [source]="kebab + '-label-points'"
+                [layout]="labelLayout()[type] || defaultLabelLayout()"
+                [paint]="labelPaint[type]"
+                [minzoom]="labelsMinZoom[type] || 0"
+                [maxzoom]="labelsMaxZoom[type] || ZoomLevel.Max + 0.5"
+            />
+        } @else {
+            <mgl-layer
+                [id]="kebab + '-label'"
+                type="symbol"
+                [source]="kebab"
+                [layout]="labelLayout()[type] || defaultLabelLayout()"
+                [paint]="labelPaint[type]"
+                [minzoom]="labelsMinZoom[type] || 0"
+                [maxzoom]="labelsMaxZoom[type] || ZoomLevel.Max + 0.5"
+            />
+        }
     }
-
-    <mgl-geojson-source
-        id="continents-label-points"
-        [data]="continentsLabelPoints()"
-    />
-    <mgl-layer
-        id="continents-label"
-        type="symbol"
-        source="continents-label-points"
-        [layout]="labelLayout().continents"
-        [paint]="labelPaint.continents"
-        [maxzoom]="ZoomLevel.Low"
-        before="kingdoms-label"
-    />
-
-    <mgl-geojson-source
-        id="kingdoms-label-points"
-        [data]="kingdomsLabelPoints()"
-    />
-    <mgl-layer
-        id="kingdoms-label"
-        type="symbol"
-        source="kingdoms-label-points"
-        [layout]="labelLayout().kingdoms"
-        [paint]="labelPaint.kingdoms"
-        [minzoom]="labelsMinZoom.kingdoms"
-        [maxzoom]="ZoomLevel.Medium"
-        before="lands-label"
-    />
-
-    <mgl-geojson-source
-        id="lands-label-points"
-        [data]="landsLabelPoints()"
-    />
-    <mgl-layer
-        id="lands-label"
-        type="symbol"
-        source="lands-label-points"
-        [layout]="labelLayout().lands"
-        [paint]="labelPaint.lands"
-        [minzoom]="labelsMinZoom.lands"
-        before="mountains-label"
-    />
-
-    <mgl-geojson-source
-        id="mountains-label-points"
-        [data]="mountainsLabelPoints()"
-    />
-    <mgl-layer
-        id="mountains-label"
-        type="symbol"
-        source="mountains-label-points"
-        [layout]="defaultLabelLayout()"
-        [paint]="labelPaint.mountains"
-        [minzoom]="labelsMinZoom.mountains"
-        before="primary-point-label"
-    />
 
     <mgl-geojson-source
         id="locations"
@@ -226,7 +187,7 @@
     @for (tier of locationTiers; track tier) {
         <mgl-layer
             [id]="tier + '-point'"
-            before="primary-point-label"
+            before="tier1-point-label"
             type="circle"
             source="locations"
             [filter]="locationsFilter[tier]"
@@ -251,7 +212,7 @@
             type="symbol"
             source="locations"
             [filter]="locationLabelsFilter[tier]"
-            [minzoom]="locationLabelsMinZoom[tier] || 0"
+            [minzoom]="locationsMinZoom[tier] || 0"
             [layout]="labelLayout().locations"
             [paint]="labelPaint.locations"
         />
@@ -264,7 +225,7 @@
     />
     <mgl-layer
         id="the-five-forts-point"
-        before="primary-point-label"
+        before="tier1-point-label"
         type="circle"
         source="the-five-forts"
         [paint]="theFiveFortsPaint"
@@ -277,19 +238,6 @@
         type="circle"
         source="the-five-forts"
         [paint]="theFiveFortsShadow"
-    />
-
-    <mgl-geojson-source
-        id="the-five-forts-label-point"
-        [data]="theFiveFortsLabelPoints()"
-    />
-    <mgl-layer
-        id="the-five-forts-label"
-        before="primary-point-label"
-        type="symbol"
-        source="the-five-forts-label-point"
-        [layout]="labelLayout().theFiveForts"
-        [paint]="labelPaint.theFiveForts"
     />
 
     @let gradients = gradientCoordinates | keyvalue;
@@ -352,7 +300,7 @@
         id="search-highlight-point"
         type="circle"
         source="search-highlight"
-        before="primary-point"
+        before="tier1-point"
         [paint]="pointsPaint"
         [layout]="searchHighPointLayout()"
     />

@@ -27,7 +27,7 @@ import {
     Popup,
     SymbolLayerSpecification,
 } from 'maplibre-gl';
-import { Feature, FeatureCollection, MultiPolygon, Polygon, Position } from 'geojson';
+import { Feature, FeatureCollection, MultiPolygon, Point, Polygon, Position } from 'geojson';
 import { GEODATA_URLS } from '../../constants';
 import {
     INITIAL_MAP_CENTER,
@@ -55,13 +55,13 @@ import {
     GRADIENT_PAINT,
     LABEL_LAYOUT,
     LABEL_PAINT,
+    LABELS_MAX_ZOOM,
     LABELS_MIN_ZOOM,
     LINES_LAYOUT,
     LINES_OUTLINE,
     LINES_PAINT,
     LINES_SHADOW,
     LOCATION_LABELS_FILTER,
-    LOCATION_LABELS_MIN_ZOOM,
     LOCATIONS_FILTER,
     LOCATIONS_MIN_ZOOM,
     MAP_BOUNDS,
@@ -91,7 +91,7 @@ import { KeyValuePipe } from '@angular/common';
 import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { CardComponent } from '../card/card.component';
 import { takeUntil } from 'rxjs';
-import { mapValues } from 'lodash';
+import { kebabCase, mapValues } from 'lodash';
 
 @Component({
     selector: 'coiaf-map-page',
@@ -182,6 +182,10 @@ export class MapPageComponent {
     protected readonly lineTypes: LineGeodataType[] = ['kingdomBorders', 'rivers', 'roads'];
 
     protected readonly labeledTypes: GeodataType[] = [
+        'continents',
+        'kingdoms',
+        'lands',
+        'mountains',
         'snow',
         'steppes',
         'wastelands',
@@ -195,28 +199,18 @@ export class MapPageComponent {
         'lakes',
         'rivers',
         'roads',
-        'wall',
+        'theWall',
+        'theFiveForts',
     ];
 
-    protected readonly continentsLabelPoints = this.store.selectSignal(
-        GeodataState.labelPoints('continents'),
-    );
-
-    protected readonly kingdomsLabelPoints = this.store.selectSignal(
-        GeodataState.labelPoints('kingdoms'),
-    );
-
-    protected readonly landsLabelPoints = this.store.selectSignal(
-        GeodataState.labelPoints('lands'),
-    );
-
-    protected readonly mountainsLabelPoints = this.store.selectSignal(
-        GeodataState.labelPoints('mountains'),
-    );
-
-    protected readonly theFiveFortsLabelPoints = this.store.selectSignal(
-        GeodataState.labelPoints('theFiveForts'),
-    );
+    protected readonly labelPoints: GeodataDict<FeatureCollection<Point>> = {
+        continents: this.store.selectSnapshot(GeodataState.labelPoints('continents')),
+        kingdoms: this.store.selectSnapshot(GeodataState.labelPoints('kingdoms')),
+        islands: this.store.selectSnapshot(GeodataState.labelPoints('islands')),
+        lands: this.store.selectSnapshot(GeodataState.labelPoints('lands')),
+        mountains: this.store.selectSnapshot(GeodataState.labelPoints('mountains')),
+        theFiveForts: this.store.selectSnapshot(GeodataState.labelPoints('theFiveForts')),
+    };
 
     protected readonly polygonsPaint = POLYGONS_PAINT;
 
@@ -234,10 +228,9 @@ export class MapPageComponent {
     protected readonly volcanoesPaint = VOLCANOES_PAINT;
     protected readonly volcanoesSmokePaint = VOLCANOES_SMOKE_PAINT;
 
-    protected readonly locationTiers: LocationTier[] = ['primary', 'secondary', 'tertiary'];
+    protected readonly locationTiers: LocationTier[] = ['tier1', 'tier2', 'tier3', 'tier4'];
     protected readonly locationsFilter = LOCATIONS_FILTER;
     protected readonly locationsMinZoom = LOCATIONS_MIN_ZOOM;
-    protected readonly locationLabelsMinZoom = LOCATION_LABELS_MIN_ZOOM;
 
     protected readonly labelLayout = computed<GeodataDict<SymbolLayerSpecification['layout']>>(() =>
         mapValues(LABEL_LAYOUT, layout => this.getLocalizedLabelLayout(layout)),
@@ -247,6 +240,7 @@ export class MapPageComponent {
     );
     protected readonly labelPaint = LABEL_PAINT;
     protected readonly labelsMinZoom = LABELS_MIN_ZOOM;
+    protected readonly labelsMaxZoom = LABELS_MAX_ZOOM;
     protected readonly locationLabelsFilter = LOCATION_LABELS_FILTER;
 
     protected readonly gradientUrl = this.buildGradientUrl();
@@ -275,6 +269,8 @@ export class MapPageComponent {
     protected readonly searchHighlightPointPaint = SEARCH_HIGHLIGHT_CIRCLE_PAINT;
 
     protected readonly dimOverlayPaint = DIM_OVERLAY_PAINT;
+
+    protected kebabCase = kebabCase;
 
     private readonly hasHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     private popup: Popup;

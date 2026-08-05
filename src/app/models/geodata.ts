@@ -16,7 +16,7 @@ export type PolygonGeodataType =
     | 'lakes'
     | 'seas';
 
-export type LineGeodataType = 'rivers' | 'kingdomBorders' | 'roads' | 'wall';
+export type LineGeodataType = 'rivers' | 'kingdomBorders' | 'roads' | 'theWall';
 
 export type PointGeodataType = 'locations' | 'theFiveForts' | 'volcanoes';
 

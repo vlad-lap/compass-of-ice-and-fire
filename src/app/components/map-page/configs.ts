@@ -174,7 +174,7 @@ export const LINES_LAYOUT: GeodataDict<LineLayerSpecification['layout']> = {
         'line-cap': 'round',
         'line-join': 'round',
     },
-    wall: {
+    theWall: {
         'line-cap': 'round',
         'line-join': 'round',
     },
@@ -191,7 +191,7 @@ export const LINES_PAINT: GeodataDict<LineLayerSpecification['paint']> = {
         'line-width': ['match', ['get', 'size'], 1, 0.4, 2, 0.8, 3, 1.2, 0.8],
         'line-opacity': ['step', ['zoom'], 0, ZoomLevel.Low, 1],
     },
-    wall: {
+    theWall: {
         'line-color': LandscapeColor.Wall,
         'line-width': 3,
     },
@@ -203,14 +203,14 @@ export const LINES_PAINT: GeodataDict<LineLayerSpecification['paint']> = {
 };
 
 export const LINES_OUTLINE: GeodataDict<LineLayerSpecification['paint']> = {
-    wall: {
+    theWall: {
         'line-color': BLACK,
         'line-width': 5,
     },
 };
 
 export const LINES_SHADOW: GeodataDict<LineLayerSpecification['paint']> = {
-    wall: {
+    theWall: {
         'line-color': BLACK,
         'line-width': 7,
         'line-opacity': 0.3,
@@ -220,36 +220,36 @@ export const LINES_SHADOW: GeodataDict<LineLayerSpecification['paint']> = {
 };
 
 export const LOCATIONS_FILTER: LocationDict<ExpressionSpecification> = {
-    primary: ['any', ['==', ['get', 'size'], 4], ['==', ['get', 'size'], 5]],
-    secondary: ['==', ['get', 'size'], 3],
-    tertiary: ['any', ['==', ['get', 'size'], 1], ['==', ['get', 'size'], 2]],
+    tier1: ['==', ['get', 'size'], 5],
+    tier2: ['==', ['get', 'size'], 4],
+    tier3: ['==', ['get', 'size'], 3],
+    tier4: ['any', ['==', ['get', 'size'], 2], ['==', ['get', 'size'], 1]],
 };
 
 export const LABEL_SIZE_FILTER: ExpressionSpecification = ['>', ['number', ['get', 'size']], 1];
 
 export const LOCATION_LABELS_FILTER: LocationDict<ExpressionSpecification> = {
-    primary: ['all', LOCATIONS_FILTER.primary, LABEL_SIZE_FILTER],
-    secondary: ['all', LOCATIONS_FILTER.secondary, LABEL_SIZE_FILTER],
-    tertiary: ['all', LOCATIONS_FILTER.tertiary, LABEL_SIZE_FILTER],
+    tier1: ['all', LOCATIONS_FILTER.tier1, LABEL_SIZE_FILTER],
+    tier2: ['all', LOCATIONS_FILTER.tier2, LABEL_SIZE_FILTER],
+    tier3: ['all', LOCATIONS_FILTER.tier3, LABEL_SIZE_FILTER],
+    tier4: ['all', LOCATIONS_FILTER.tier4, LABEL_SIZE_FILTER],
 };
 
 export const LOCATIONS_MIN_ZOOM: LocationDict<ZoomLevel> = {
-    secondary: ZoomLevel.Low,
-    tertiary: ZoomLevel.High,
-};
-
-export const LOCATION_LABELS_MIN_ZOOM: LocationDict<ZoomLevel> = {
-    secondary: ZoomLevel.Medium,
-    tertiary: ZoomLevel.High,
+    tier2: ZoomLevel.Low,
+    tier3: ZoomLevel.Medium,
+    tier4: ZoomLevel.High,
 };
 
 const POINT_CIRCLE_RADIUS: DataDrivenPropertyValueSpecification<number> = [
     'case',
-    LOCATIONS_FILTER.primary,
+    LOCATIONS_FILTER.tier1,
     LocationRadius.LG,
-    LOCATIONS_FILTER.secondary,
+    LOCATIONS_FILTER.tier2,
     LocationRadius.MD,
-    LOCATIONS_FILTER.tertiary,
+    LOCATIONS_FILTER.tier3,
+    LocationRadius.MD,
+    LOCATIONS_FILTER.tier4,
     LocationRadius.SM,
     LocationRadius.MD,
 ];
@@ -257,19 +257,21 @@ const POINT_CIRCLE_RADIUS: DataDrivenPropertyValueSpecification<number> = [
 const POINT_SHADOW_BLUR = 2;
 const POINT_SHADOW_RADIUS: DataDrivenPropertyValueSpecification<number> = [
     'case',
-    LOCATIONS_FILTER.primary,
+    LOCATIONS_FILTER.tier1,
     LocationRadius.LG + POINT_SHADOW_BLUR,
-    LOCATIONS_FILTER.secondary,
+    LOCATIONS_FILTER.tier2,
     LocationRadius.MD + POINT_SHADOW_BLUR,
-    LOCATIONS_FILTER.tertiary,
+    LOCATIONS_FILTER.tier3,
+    LocationRadius.MD + POINT_SHADOW_BLUR,
+    LOCATIONS_FILTER.tier4,
     LocationRadius.SM + POINT_SHADOW_BLUR,
     LocationRadius.MD + POINT_SHADOW_BLUR,
 ];
 
 export const POINTS_PAINT: CircleLayerSpecification['paint'] = {
     'circle-radius': POINT_CIRCLE_RADIUS,
-    'circle-color': ['match', ['get', 'type'], 'Ruin', LIGHT_GREY, WHITE],
-    'circle-stroke-color': ['match', ['get', 'type'], 'Ruin', GREY, BLACK],
+    'circle-color': ['match', ['get', 'type'], 'ruin', LIGHT_GREY, WHITE],
+    'circle-stroke-color': ['match', ['get', 'type'], 'ruin', GREY, BLACK],
     'circle-stroke-width': 1,
 };
 
@@ -331,10 +333,15 @@ export const LABELS_MIN_ZOOM: GeodataDict<ZoomLevel> = {
     forests: ZoomLevel.Low,
     swamps: ZoomLevel.Low,
     deserts: ZoomLevel.Low,
-    islands: ZoomLevel.Medium,
+    islands: ZoomLevel.Low,
     lakes: ZoomLevel.Low,
     rivers: ZoomLevel.Low,
     roads: ZoomLevel.Medium,
+};
+
+export const LABELS_MAX_ZOOM: GeodataDict<ZoomLevel> = {
+    continents: ZoomLevel.Low,
+    kingdoms: ZoomLevel.Medium,
 };
 
 export const DEFAULT_LABEL_LAYOUT: SymbolLayerSpecification['layout'] = {
@@ -357,6 +364,12 @@ export const DEFAULT_LABEL_LAYOUT: SymbolLayerSpecification['layout'] = {
     ]
 };
 
+const DEFAULT_LABEL_POINT_LABEL_LAYOUT: SymbolLayerSpecification['layout'] = {
+    ...DEFAULT_LABEL_LAYOUT,
+    'text-variable-anchor': ['bottom', 'top', 'left', 'right'],
+    'text-justify': 'auto',
+};
+
 const DEFAULT_LINE_LABEL_LAYOUT: SymbolLayerSpecification['layout'] = {
     ...DEFAULT_LABEL_LAYOUT,
     'text-size': FontSize.SM,
@@ -364,26 +377,24 @@ const DEFAULT_LINE_LABEL_LAYOUT: SymbolLayerSpecification['layout'] = {
 };
 
 const DEFAULT_POINT_LABEL_LAYOUT: SymbolLayerSpecification['layout'] = {
-    ...DEFAULT_LABEL_LAYOUT,
-    'text-variable-anchor': ['bottom', 'top', 'left', 'right'],
+    ...DEFAULT_LABEL_POINT_LABEL_LAYOUT,
     'text-radial-offset': 0.6,
-    'text-justify': 'auto',
     'text-font': [
         'match',
         ['get', 'type'],
-        'City',
-        ['literal', [FontStyle.Bold]],
-        'Town',
+        'city',
         ['literal', [FontStyle.Bold]],
         ['literal', [FontStyle.Regular]],
     ],
     'text-size': [
         'case',
-        LOCATIONS_FILTER.primary,
+        LOCATIONS_FILTER.tier1,
         FontSize.LG,
-        LOCATIONS_FILTER.secondary,
+        LOCATIONS_FILTER.tier2,
         FontSize.MD,
-        LOCATIONS_FILTER.tertiary,
+        LOCATIONS_FILTER.tier3,
+        FontSize.MD,
+        LOCATIONS_FILTER.tier4,
         FontSize.SM,
         FontSize.MD,
     ],
@@ -391,46 +402,37 @@ const DEFAULT_POINT_LABEL_LAYOUT: SymbolLayerSpecification['layout'] = {
 
 export const LABEL_LAYOUT: Partial<GeodataDict<SymbolLayerSpecification['layout']>> = {
     continents: {
-        ...DEFAULT_LABEL_LAYOUT,
+        ...DEFAULT_LABEL_POINT_LABEL_LAYOUT,
         'text-size': FontSize.XL,
-        'text-variable-anchor': ['bottom', 'top', 'left', 'right'],
-        'text-justify': 'auto',
     },
     lakes: {
         ...DEFAULT_LABEL_LAYOUT,
         'text-size': FontSize.SM,
     },
     islands: {
-        ...DEFAULT_LABEL_LAYOUT,
-        'text-size': FontSize.SM,
+        ...DEFAULT_LABEL_POINT_LABEL_LAYOUT,
+        'text-size': FontSize.MD,
     },
     kingdoms: {
-        ...DEFAULT_LABEL_LAYOUT,
+        ...DEFAULT_LABEL_POINT_LABEL_LAYOUT,
         'text-size': FontSize.LG,
-        'text-variable-anchor': ['bottom', 'top', 'left', 'right'],
-        'text-justify': 'auto',
     },
-    lands: {
-        ...DEFAULT_LABEL_LAYOUT,
-        'text-variable-anchor': ['bottom', 'top', 'left', 'right'],
-        'text-justify': 'auto',
-    },
+    lands: DEFAULT_LABEL_POINT_LABEL_LAYOUT,
     rivers: DEFAULT_LINE_LABEL_LAYOUT,
     roads: {
         ...DEFAULT_LINE_LABEL_LAYOUT,
         'text-font': [FontStyle.Bold],
     },
-    wall: {
+    theWall: {
         ...DEFAULT_LINE_LABEL_LAYOUT,
         'text-font': [FontStyle.Bold],
         'text-size': FontSize.LG,
     },
     locations: DEFAULT_POINT_LABEL_LAYOUT,
     theFiveForts: {
-        ...DEFAULT_LABEL_LAYOUT,
+        ...DEFAULT_LABEL_POINT_LABEL_LAYOUT,
         'text-variable-anchor': ['top-right', 'bottom-left'],
         'text-radial-offset': 0.6,
-        'text-justify': 'auto',
         'text-font': [FontStyle.Bold],
         'text-size': FontSize.LG,
     },
@@ -480,10 +482,10 @@ export const LABEL_PAINT: Partial<GeodataDict<SymbolLayerSpecification['paint']>
     wastelands: { ...DEFAULT_LABEL_PAINT, 'text-color': LabelColor.Wasteland },
     deserts: { ...DEFAULT_LABEL_PAINT, 'text-color': LabelColor.Desert },
     roads: { ...DEFAULT_LABEL_PAINT, 'text-color': LabelColor.Road },
-    wall: { ...DEFAULT_LABEL_PAINT, 'text-color': LabelColor.Wall },
+    theWall: { ...DEFAULT_LABEL_PAINT, 'text-color': LabelColor.Wall },
     locations: {
         ...DEFAULT_LABEL_PAINT,
-        'text-color': ['match', ['get', 'type'], 'Ruin', LabelColor.Ruin, LabelColor.Location],
+        'text-color': ['match', ['get', 'type'], 'ruin', LabelColor.Ruin, LabelColor.Location],
     },
     theFiveForts: { ...DEFAULT_LABEL_PAINT, 'text-color': LabelColor.Location },
 };

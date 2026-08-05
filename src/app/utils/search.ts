@@ -1,16 +1,7 @@
 import { FeatureCollection } from 'geojson';
-import { FeatureData, LocationData, LocationType } from '../models';
+import { FeatureData, LocationData } from '../models';
 import { flatten, groupBy, uniq, uniqBy } from 'lodash';
 import { AVAILABLE_LANGUAGES, DEFAULT_LANGUAGE } from '../constants';
-
-const LOCATION_TYPES: Record<string, LocationType> = {
-    City: 'cities',
-    Town: 'towns',
-    Castle: 'castles',
-    Ruin: 'ruins',
-    Settlement: 'settlements',
-    Other: 'other',
-};
 
 function buildSearchKeys(name: string): string[] {
     if (!name) {
@@ -59,7 +50,7 @@ export function getLocationsSearchOptions({
 
     const uniqueLocations = uniqBy(locations, 'id');
 
-    return groupBy(uniqueLocations, ({ type }) => LOCATION_TYPES[type]);
+    return groupBy(uniqueLocations, 'type');
 }
 
 export function matchesSearch(searchKeys: string[], query: string): boolean {
