@@ -270,7 +270,7 @@
 { "type": "Feature", "properties": { "id": 288, "name": "New Ibbish", "size": 4, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 79.546007594821802, 17.896704357654496 ] } },
 { "type": "Feature", "properties": { "id": 289, "name": "Ib Sar", "size": 4, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 86.711286728167366, 19.674705778289507 ] } },
 { "type": "Feature", "properties": { "id": 290, "name": "Ib Nor", "size": 4, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 81.122013847819119, 28.404892529047906 ] } },
-{ "type": "Feature", "properties": { "id": 291, "name": "Port of Ibben", "size": 4, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 79.830132665784689, 24.047568198577853 ] } },
+{ "type": "Feature", "properties": { "id": 291, "name": "Port of Ibben", "size": 5, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 79.830132665784689, 24.047568198577853 ] } },
 { "type": "Feature", "properties": { "id": 292, "name": "Kayakayanaya", "size": 4, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 91.111067044073764, 4.606342655004625 ] } },
 { "type": "Feature", "properties": { "id": 293, "name": "Samyriana", "size": 4, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 89.442744710462023, -3.434361560188001 ] } },
 { "type": "Feature", "properties": { "id": 294, "name": "Bayasabhad", "size": 4, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 91.804296872195536, -9.917203139656431 ] } },
