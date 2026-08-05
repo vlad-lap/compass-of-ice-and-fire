@@ -61,14 +61,15 @@
     (mapDragEnd)="onMapDragEnd()"
 >
     @for (polygonType of polygonTypes; track polygonType) {
+        @let kebab = kebabCase(polygonType);
         <mgl-geojson-source
-            [id]="polygonType"
+            [id]="kebab"
             [data]="geodataUrls[polygonType]"
         />
         <mgl-layer
-            [id]="polygonType + '-fill'"
+            [id]="kebab + '-fill'"
             type="fill"
-            [source]="polygonType"
+            [source]="kebab"
             [paint]="polygonsPaint[polygonType]"
         />
     }
@@ -107,14 +108,15 @@
     />
 
     @for (lineType of lineTypes; track lineType) {
+        @let kebab = kebabCase(lineType);
         <mgl-geojson-source
-            [id]="lineType"
+            [id]="kebab"
             [data]="geodataUrls[lineType]"
         />
         <mgl-layer
-            [id]="lineType + '-line'"
+            [id]="kebab + '-line'"
             type="line"
-            [source]="lineType"
+            [source]="kebab"
             [paint]="linesPaint[lineType]"
         />
     }
