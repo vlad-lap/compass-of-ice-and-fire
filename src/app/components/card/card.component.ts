@@ -1,10 +1,12 @@
 import {
     ChangeDetectionStrategy,
-    Component, computed,
+    Component,
+    computed,
     ElementRef,
     Inject,
     OnDestroy,
     signal,
+    viewChild,
 } from '@angular/core';
 import { TitleCasePipe } from '@angular/common';
 import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet';
@@ -19,9 +21,10 @@ import { APP_TITLE, DISPLAYED_TYPES } from '../../constants';
 import { Store } from '@ngxs/store';
 import { LanguagesState } from '../../store';
 
-const MIN_CARD_HEIGHT_PX = 64;
 const MAX_CARD_HEIGHT_VIEWPORT_RATIO = 0.9;
 const DEFAULT_MAX_CARD_HEIGHT = 300;
+
+const CARD_HEIGHT_ABOVE_HEADER = 28;
 
 @Component({
     selector: 'coiaf-card',
@@ -38,6 +41,7 @@ const DEFAULT_MAX_CARD_HEIGHT = 300;
 export class CardComponent implements OnDestroy {
     goToLocation$ = new Subject<void>();
 
+    readonly header = viewChild('header', { read: ElementRef });
     readonly coreUi = this.store.selectSignal(LanguagesState.coreUi);
 
     protected readonly showType = DISPLAYED_TYPES.includes(this.data.type);
@@ -46,6 +50,9 @@ export class CardComponent implements OnDestroy {
         Math.max(this.cardHeight() ?? 0, DEFAULT_MAX_CARD_HEIGHT),
     );
     protected readonly isResizing = signal(false);
+    protected readonly minCardHeight = computed<number>(
+        () => parseInt(getComputedStyle(this.header()?.nativeElement).height) + CARD_HEIGHT_ABOVE_HEADER,
+    );
 
     private resizeStartY = 0;
     private resizeStartHeight = 0;
@@ -97,7 +104,7 @@ export class CardComponent implements OnDestroy {
     private onResize = (event: PointerEvent): void => {
         const height = this.resizeStartHeight + this.resizeStartY - event.clientY;
         const maxHeight = window.innerHeight * MAX_CARD_HEIGHT_VIEWPORT_RATIO;
-        this.cardHeight.set(Math.min(Math.max(height, MIN_CARD_HEIGHT_PX), maxHeight));
+        this.cardHeight.set(Math.min(Math.max(height, this.minCardHeight()), maxHeight));
     };
 
     private stopResize = (): void => {
