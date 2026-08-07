@@ -42,3 +42,10 @@ body {
 a {
     color: var(--mat-sys-on-primary-container);
 }
+
+.coiaf-card-panel .mat-bottom-sheet-container {
+    padding: {
+        top: 0;
+        bottom: 0;
+    }
+}
