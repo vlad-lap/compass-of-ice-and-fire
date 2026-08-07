@@ -474,14 +474,11 @@ export class MapPageComponent {
             new LngLatBounds(),
         );
 
-        const verticalOffset = this.hasCard(feature) ? -55 : 0;
-
-        const isPolygon =
-            feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon';
+        const verticalOffset = this.hasCard(feature) ? -80 : 0;
 
         mapInstance.fitBounds(bounds, {
             maxZoom: ZoomLevel.High + 0.5,
-            padding: isPolygon ? 5 : 60,
+            padding: 30,
             offset: [0, verticalOffset],
         });
     }
