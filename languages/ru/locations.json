@@ -1,5 +1,4 @@
 {
-  "other-field-of-crows": "Поле Стервятников",
   "city-kings-landing": "Королевская Гавань",
   "castle-hayford-castle": "Хейфорд",
   "castle-rosby": "Росби",
@@ -281,5 +280,6 @@
   "city-k-dath": "К'дат",
   "city-nefer": "Нефер",
   "castle-harvest-hall": "Дом Урожая",
-  "ruin-vaes-gorqoyi-mardosh": "Ваэс Горкойи (Мардош)"
+  "ruin-vaes-gorqoyi-mardosh": "Ваэс Горкойи (Мардош)",
+  "other-field-of-crows": "Поле Стервятников"
 }

@@ -1,11 +1,47 @@
 @use '../../../variables';
 
 :host {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    overflow: hidden;
     margin: {
         top: 4px;
         bottom: 12px;
     }
+
+    &.resizing,
+    &.resizing * {
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+    }
+}
+
+.card-resize-area {
+    height: 12px;
+    padding: {
+        top: 4px;
+        bottom: 4px;
+    }
+    box-sizing: border-box;
+    align-self: center;
+    flex-grow: 0;
+    flex-shrink: 0;
+    cursor: ns-resize;
+    touch-action: none;
+
+    &:hover .card-resize-control {
+        opacity: .8;
+    }
+}
+
+.card-resize-control {
+    height: 4px;
+    width: 64px;
+    background-color: variables.$grey;
+    border-radius: 2px;
+    opacity: .4;
 }
 
 .card-header {
@@ -51,8 +87,10 @@
 
 .description {
     max-width: 640px;
-    max-height: 200px;
-    overflow-y: auto;
+    overflow: {
+        x: hidden;
+        y: auto;
+    }
     padding: {
         left: 12px;
         right: 12px;

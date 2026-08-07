@@ -2,7 +2,6 @@
 "type": "FeatureCollection",
 "name": "got_locations",
 "features": [
-{ "type": "Feature", "properties": { "id": 313, "name": "Field of Crows", "size": 1, "confirmed": 0, "type": "other" }, "geometry": { "type": "Point", "coordinates": [ 60.97349142568234, 3.913502426006143 ] } },
 { "type": "Feature", "properties": { "id": 1, "name": "King's Landing", "size": 5, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 18.432066083848635, 3.736014024094777 ] } },
 { "type": "Feature", "properties": { "id": 2, "name": "Hayford Castle", "size": 3, "confirmed": 0, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 18.306671191450057, 4.783014234685957 ] } },
 { "type": "Feature", "properties": { "id": 3, "name": "Rosby", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 19.111838395272535, 4.56899438074251 ] } },
@@ -12,7 +11,7 @@
 { "type": "Feature", "properties": { "id": 8, "name": "High Heart", "size": 3, "confirmed": 1, "type": "ruin" }, "geometry": { "type": "Point", "coordinates": [ 13.967112236656227, 8.651870933615321 ] } },
 { "type": "Feature", "properties": { "id": 9, "name": "Duskendale", "size": 4, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 20.414813893729992, 5.708862237207821 ] } },
 { "type": "Feature", "properties": { "id": 10, "name": "Antlers", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 19.52573582206184, 7.468633415117259 ] } },
-{ "type": "Feature", "properties": { "id": 11, "name": "Stokeworth", "size": 3, "confirmed": 0, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 19.651130714460429, 5.323249372613684 ] } },
+{ "type": "Feature", "properties": { "id": 11, "name": "Stokeworth", "size": 3, "confirmed": 0, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 18.961805111147086, 5.151332170766397 ] } },
 { "type": "Feature", "properties": { "id": 15, "name": "Harrenhal", "size": 5, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 16.6241060494282, 8.454703521361028 ] } },
 { "type": "Feature", "properties": { "id": 16, "name": "Rushing Falls", "size": 1, "confirmed": 0, "type": "other" }, "geometry": { "type": "Point", "coordinates": [ 15.926572068618453, 8.169073349470152 ] } },
 { "type": "Feature", "properties": { "id": 17, "name": "Tumbler's Falls", "size": 4, "confirmed": 0, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 14.196821165508187, 7.492833103315541 ] } },
@@ -32,7 +31,7 @@
 { "type": "Feature", "properties": { "id": 37, "name": "Lord Harroway's Town", "size": 4, "confirmed": 0, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 16.51806995404938, 10.054357205588182 ] } },
 { "type": "Feature", "properties": { "id": 38, "name": "Crossroads Inn", "size": 1, "confirmed": 0, "type": "other" }, "geometry": { "type": "Point", "coordinates": [ 16.892253458008387, 9.969135734250111 ] } },
 { "type": "Feature", "properties": { "id": 39, "name": "Saltpans", "size": 4, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 18.813907673483417, 9.239718417904792 ] } },
-{ "type": "Feature", "properties": { "id": 40, "name": "Quiet Isle", "size": 2, "confirmed": 1, "type": "other" }, "geometry": { "type": "Point", "coordinates": [ 19.11466685149205, 8.559474697110947 ] } },
+{ "type": "Feature", "properties": { "id": 40, "name": "Quiet Isle", "size": 1, "confirmed": 1, "type": "other" }, "geometry": { "type": "Point", "coordinates": [ 19.208350169587998, 8.672128321069017 ] } },
 { "type": "Feature", "properties": { "id": 41, "name": "Wickenden", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 22.005349107838324, 8.913974543290426 ] } },
 { "type": "Feature", "properties": { "id": 42, "name": "Maidenpool", "size": 4, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 20.016001566778105, 8.015468284223861 ] } },
 { "type": "Feature", "properties": { "id": 43, "name": "Rook's Rest", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 21.582966312390464, 7.094334375401252 ] } },
@@ -54,7 +53,7 @@
 { "type": "Feature", "properties": { "id": 59, "name": "Crow's Nest", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 20.416442810639932, -2.318948829971144 ] } },
 { "type": "Feature", "properties": { "id": 60, "name": "Grandview", "size": 4, "confirmed": 0, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 19.636113833178261, -1.293112772317447 ] } },
 { "type": "Feature", "properties": { "id": 61, "name": "Summerhall", "size": 3, "confirmed": 1, "type": "ruin" }, "geometry": { "type": "Point", "coordinates": [ 17.709604279884825, -1.428592442955215 ] } },
-{ "type": "Feature", "properties": { "id": 62, "name": "Blackhaven", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 16.715925690091922, -3.052019227607871 ] } },
+{ "type": "Feature", "properties": { "id": 62, "name": "Blackhaven", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 15.153883504585645, -3.569625020668221 ] } },
 { "type": "Feature", "properties": { "id": 63, "name": "Fawnton", "size": 4, "confirmed": 0, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 14.787619295633226, -1.398921138525803 ] } },
 { "type": "Feature", "properties": { "id": 64, "name": "Grassy Vale", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 15.221621270915344, 0.392966545754584 ] } },
 { "type": "Feature", "properties": { "id": 65, "name": "Wyl", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 16.75353698855362, -4.253372834694921 ] } },
@@ -291,7 +290,8 @@
 { "type": "Feature", "properties": { "id": 308, "name": "K'Dath", "size": 4, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 118.11465422247646, -2.374519803732679 ] } },
 { "type": "Feature", "properties": { "id": 309, "name": "Nefer", "size": 4, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 110.953818635284563, 4.873921750749329 ] } },
 { "type": "Feature", "properties": { "id": 310, "name": null, "size": 4, "confirmed": 1, "type": "ruin" }, "geometry": { "type": "Point", "coordinates": [ 125.319854306625587, -29.730462478543924 ] } },
-{ "type": "Feature", "properties": { "id": 311, "name": "Harvest Hall", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 15.142476279496151, -3.587273000319469 ] } },
-{ "type": "Feature", "properties": { "id": 312, "name": "Vaes Gorqoyi (Mardosh)", "size": 4, "confirmed": 0, "type": "ruin" }, "geometry": { "type": "Point", "coordinates": [ 54.82773054860462, 4.033967506320956 ] } }
+{ "type": "Feature", "properties": { "id": 311, "name": "Harvest Hall", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 13.887979270768971, -3.716633254272738 ] } },
+{ "type": "Feature", "properties": { "id": 312, "name": "Vaes Gorqoyi (Mardosh)", "size": 4, "confirmed": 0, "type": "ruin" }, "geometry": { "type": "Point", "coordinates": [ 54.82773054860462, 4.033967506320956 ] } },
+{ "type": "Feature", "properties": { "id": 313, "name": "Field of Crows", "size": 1, "confirmed": 0, "type": "other" }, "geometry": { "type": "Point", "coordinates": [ 60.97349142568234, 3.913502426006143 ] } }
 ]
 }
