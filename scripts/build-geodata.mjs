@@ -55,7 +55,8 @@ function writeRawDataJSON(fileName, collection) {
 
     const hasDescriptions = dataItems.some(item => item.description !== undefined);
     if (hasDescriptions) {
-        console.log(`${getPrefix('descriptions')} ${getConsoleStats(withDescriptions.length, named.length)}`);
+        const shouldHaveDescriptions = named.filter(item => item.description !== undefined);
+        console.log(`${getPrefix('descriptions')} ${getConsoleStats(withDescriptions.length, shouldHaveDescriptions.length)}`);
     }
 
     return dataItems;
@@ -82,12 +83,23 @@ function processGeoJSON(fileName, languageFileName = null, { filterFn, mapFn } =
 mkdirSync(GEODATA, { recursive: true });
 mkdirSync(RAW_DATA, { recursive: true });
 
+const descriptions = readJSON(join(DATA, 'descriptions.json'));
+const nameVariants = readJSON(join(DATA, 'name-variants.json'));
+
 const continents = processGeoJSON('got_continents.geojson', 'continents.json');
 
 const islands = processGeoJSON('got_islands.geojson', 'islands.json', {
     mapFn: feature => addContinentId(feature, continents)
 });
-const kingdoms = processGeoJSON('got_political.geojson', 'kingdoms.json');
+const kingdoms = processGeoJSON('got_political.geojson', 'kingdoms.json', {
+    mapFn: feature => ({
+        ...feature,
+        properties: {
+            ...feature.properties,
+            description: descriptions[feature.properties.id] ?? null,
+        },
+    }),
+});
 
 const borders = buildKingdomBorders(kingdoms, continents, islands);
 writeGeoJSON('got_political_borders.geojson', borders);
@@ -145,16 +157,23 @@ const landscape = splitAndProcess('got_landscape.geojson', 'landscape.json', {
         }
     }
 });
-const { land } = splitAndProcess('got_regions.geojson', 'regions.json');
+const { land } = splitAndProcess('got_regions.geojson', 'regions.json', {
+    mapFn: feature => ({
+        ...feature,
+        properties: {
+            ...feature.properties,
+            description: feature.properties.type === 'land'
+                ? descriptions[feature.properties.id] ?? null
+                : undefined,
+        },
+    }),
+});
 
 function getContainingLandscapeId(feature) {
     return Object.values(landscape)
         .map(collection => getContainingPolygonId(feature.geometry, collection))
         .find(Boolean);
 }
-
-const descriptions = readJSON(join(DATA, 'descriptions.json'));
-const nameVariants = readJSON(join(DATA, 'name-variants.json'));
 
 const theWall = processGeoJSON('got_wall.geojson', 'the-wall.json', {
     mapFn: feature => ({
@@ -209,7 +228,12 @@ const locations = processGeoJSON('got_locations.geojson', 'locations.json', {
 const wallData = getFeatureProperties(theWall);
 const fiveFortsData = getFeatureProperties(theFiveForts);
 const locationsData = getFeatureProperties(locations);
-syncDictionary([...wallData, ...fiveFortsData, ...locationsData], 'description');
+const kingdomsData = getFeatureProperties(kingdoms);
+const landsData = getFeatureProperties(land);
+syncDictionary(
+    [...wallData, ...fiveFortsData, ...locationsData, ...kingdomsData, ...landsData],
+    'description',
+);
 syncDictionary(locationsData, 'nameVariant', false);
 
 

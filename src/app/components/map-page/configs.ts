@@ -84,6 +84,9 @@ export const POLYGONS_PAINT: GeodataDict<FillLayerSpecification['paint']> = {
     continents: {
         'fill-color': LandscapeColor.Land,
     },
+    kingdoms: {
+        'fill-opacity': 0,
+    },
     islands: {
         'fill-color': LandscapeColor.Land,
     },
@@ -313,7 +316,7 @@ export const FIVE_FORTS_SHADOW: CircleLayerSpecification['paint'] = {
 export const VOLCANOES_PAINT: CircleLayerSpecification['paint'] = {
     'circle-radius': LocationRadius.MD,
     'circle-color': LandscapeColor.Volcano,
-    'circle-opacity': 0.5,
+    'circle-opacity': 0.7,
 };
 
 export const VOLCANOES_SMOKE_PAINT: CircleLayerSpecification['paint'] = {

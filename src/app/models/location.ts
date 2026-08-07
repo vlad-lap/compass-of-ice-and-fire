@@ -18,6 +18,7 @@ export interface LocationData extends FeatureData {
     description_ru?: string;
     nameVariant?: string;
     nameVariant_ru?: string;
+    ClaimedBy?: string;
 }
 
 export type LocationType = 'city' | 'settlement' | 'castle' | 'ruin' | 'other';
