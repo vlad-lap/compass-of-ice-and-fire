@@ -24,6 +24,7 @@ import {
     MapGeoJSONFeature,
     MapLayerMouseEvent,
     MapMouseEvent,
+    MapTouchEvent,
     Popup,
     SymbolLayerSpecification,
 } from 'maplibre-gl';
@@ -31,11 +32,14 @@ import { Feature, FeatureCollection, MultiPolygon, Point, Polygon, Position } fr
 import { GEODATA_URLS } from '../../constants';
 import {
     INITIAL_MAP_CENTER,
-    SELECTABLE_LAYER_IDS,
-    TOUCH_HIT_RADIUS_PX,
+    LONG_PRESS_DURATION_MS,
+    CLICKABLE_LAYER_IDS,
     ZOOM_DURATION,
     ZOOM_STEP,
     ZoomLevel,
+    LONG_PRESSABLE_LAYER_IDS,
+    HitRadiusPx,
+    LONG_PRESS_TOOLTIP_TIMEOUT_MS,
 } from './constants';
 import {
     FeatureData, GeodataDict,
@@ -121,42 +125,6 @@ export class MapPageComponent {
 
     protected readonly searchHighlightFeature = signal<Feature>(null);
 
-    protected readonly searchHighlight = computed<FeatureCollection>(() => {
-        const feature = this.searchHighlightFeature();
-        return {
-            type: 'FeatureCollection',
-            features: feature ? [feature] : null,
-        };
-    });
-
-    protected readonly searchHighlightLayerType = computed<'polygon' | 'line' | 'point' | null>(
-        () => {
-            const feature = this.searchHighlightFeature();
-            return feature
-                ? this.getHighlightLayerType(feature.geometry.type as HighlightableGeometry['type'])
-                : null;
-        },
-    );
-
-    protected readonly dimOverlay = computed<FeatureCollection>(() => {
-        const feature = this.searchHighlightFeature();
-        const isMaskable = this.searchHighlightLayerType() === 'polygon';
-        return {
-            type: 'FeatureCollection',
-            features: isMaskable
-                ? [
-                      {
-                          ...feature,
-                          geometry: buildMaskPolygon(
-                              feature.geometry as Polygon | MultiPolygon,
-                              MAP_BOUNDS as [Position, Position],
-                          ),
-                      },
-                  ]
-                : null,
-        };
-    });
-
     protected readonly mapStyle = MAP_STYLE;
     protected readonly geodataUrls = GEODATA_URLS;
     protected readonly ZoomLevel = ZoomLevel;
@@ -165,6 +133,7 @@ export class MapPageComponent {
 
     protected readonly polygonTypes: PolygonGeodataType[] = [
         'continents',
+        'kingdoms',
         'lands',
         'seas',
         'islands',
@@ -248,6 +217,42 @@ export class MapPageComponent {
     protected readonly gradientCoordinates = GRADIENT_COORDINATES;
     protected readonly gradientPaint = GRADIENT_PAINT;
 
+    protected readonly searchHighlight = computed<FeatureCollection>(() => {
+        const feature = this.searchHighlightFeature();
+        return {
+            type: 'FeatureCollection',
+            features: feature ? [feature] : null,
+        };
+    });
+
+    protected readonly searchHighlightLayerType = computed<'polygon' | 'line' | 'point' | null>(
+        () => {
+            const feature = this.searchHighlightFeature();
+            return feature
+                ? this.getHighlightLayerType(feature.geometry.type as HighlightableGeometry['type'])
+                : null;
+        },
+    );
+
+    protected readonly dimOverlay = computed<FeatureCollection>(() => {
+        const feature = this.searchHighlightFeature();
+        const isMaskable = this.searchHighlightLayerType() === 'polygon';
+        return {
+            type: 'FeatureCollection',
+            features: isMaskable
+                ? [
+                      {
+                          ...feature,
+                          geometry: buildMaskPolygon(
+                              feature.geometry as Polygon | MultiPolygon,
+                              MAP_BOUNDS as [Position, Position],
+                          ),
+                      },
+                  ]
+                : null,
+        };
+    });
+
     protected readonly searchHighlightPolygonLayout = computed<LineLayerSpecification['layout']>(
         () => ({
             visibility: this.searchHighlightLayerType() === 'polygon' ? 'visible' : 'none',
@@ -271,12 +276,16 @@ export class MapPageComponent {
 
     protected readonly dimOverlayPaint = DIM_OVERLAY_PAINT;
 
-    protected kebabCase = kebabCase;
+    protected readonly kebabCase = kebabCase;
 
     private readonly hasHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    private readonly hitRadius = this.hasHover ? HitRadiusPx.Mouse : HitRadiusPx.Touch;
+
     private popup: Popup;
     private tooltipRef: ComponentRef<TooltipComponent>;
     private bottomSheetRef: MatBottomSheetRef;
+    private longPressTimer: ReturnType<typeof setTimeout>;
+    private longPressTooltipTimer: ReturnType<typeof setTimeout>;
 
     constructor(
         private store: Store,
@@ -301,21 +310,18 @@ export class MapPageComponent {
         if (feature) {
             this.zoomToFeature(feature);
         } else {
-            const zoom = localStorage.getItem('zoom');
-            const center = localStorage.getItem('center');
-            if (zoom && center) {
-                map.jumpTo({
-                    zoom: +zoom,
-                    center: JSON.parse(center),
-                });
+            const position = JSON.parse(localStorage.getItem('position'));
+            if (position) {
+                map.jumpTo(position);
             }
         }
     }
 
     saveCurrentPosition(): void {
         const map = this.map().mapInstance;
-        localStorage.setItem('zoom', map.getZoom().toString())
-        localStorage.setItem('center', JSON.stringify(map.getCenter()));
+        const zoom = map.getZoom();
+        const center = map.getCenter();
+        localStorage.setItem('position', JSON.stringify({ zoom, center }));
     }
 
     zoomIn(): void {
@@ -364,6 +370,7 @@ export class MapPageComponent {
 
     onMapDragStart(): void {
         this.cursorStyle.set('grabbing');
+        this.cancelLongPress();
     }
 
     onMapDragEnd(): void {
@@ -371,22 +378,36 @@ export class MapPageComponent {
         this.saveCurrentPosition();
     }
 
-    onMapClick({ target, point: { x, y } }: MapMouseEvent): void {
-        const hitRadius = this.hasHover ? 2 : TOUCH_HIT_RADIUS_PX;
+    onLongPressStart(event: MapMouseEvent | MapTouchEvent): void {
+        this.cancelLongPress();
 
-        const [feature] = target.queryRenderedFeatures(
-            [
-                [x - hitRadius, y - hitRadius],
-                [x + hitRadius, y + hitRadius],
-            ],
-            { layers: SELECTABLE_LAYER_IDS },
-        );
+        this.longPressTooltipTimer = setTimeout(() => {
+            const feature = this.queryRenderedFeature(event, LONG_PRESSABLE_LAYER_IDS);
+            const lngLat = this.hasHover
+                ? event.lngLat
+                : [event.lngLat.lng, event.lngLat.lat + 0.5] as LngLatLike;
 
-        if (!feature?.properties?.name) {
+            if (feature) {
+                this.showTooltip(event.target, feature, lngLat);
+            }
+        }, LONG_PRESS_TOOLTIP_TIMEOUT_MS);
+
+        this.longPressTimer = setTimeout(() => {
+            this.hideTooltip();
+            this.selectFeature(event, LONG_PRESSABLE_LAYER_IDS);
+        }, LONG_PRESS_DURATION_MS);
+    }
+
+    onLongPressEnd(): void {
+        this.cancelLongPress();
+    }
+
+    onMapClick(event: MapMouseEvent): void {
+        if (this.longPressTimer || this.longPressTooltipTimer) {
             return;
         }
 
-        this.searchComponent().setSelectedId(feature.properties.id);
+        this.selectFeature(event, CLICKABLE_LAYER_IDS);
     }
 
     onMapDoubleClick({ lngLat }: MapMouseEvent): void {
@@ -416,6 +437,31 @@ export class MapPageComponent {
         this.dialog.open(AboutDialogComponent);
     }
 
+    private selectFeature(event: MapMouseEvent | MapTouchEvent, layers: string[]): void {
+        const feature = this.queryRenderedFeature(event, layers);
+
+        if (!feature?.properties?.name) {
+            return;
+        }
+
+        this.searchComponent().setSelectedId(feature.properties.id);
+    }
+
+    private queryRenderedFeature(
+        { target, point: { x, y } }: MapMouseEvent | MapTouchEvent,
+        layers: string[],
+    ): MapGeoJSONFeature {
+        const [feature] = target.queryRenderedFeatures(
+            [
+                [x - this.hitRadius, y - this.hitRadius],
+                [x + this.hitRadius, y + this.hitRadius],
+            ],
+            { layers },
+        );
+
+        return feature;
+    }
+
     private zoomToFeature(feature: Feature): void {
         const mapInstance = this.map().mapInstance;
 
@@ -438,6 +484,14 @@ export class MapPageComponent {
             padding: isPolygon ? 5 : 60,
             offset: [0, verticalOffset],
         });
+    }
+
+    private cancelLongPress(): void {
+        this.hideTooltip();
+        if (this.longPressTimer) {
+            clearTimeout(this.longPressTimer);
+            this.longPressTimer = null;
+        }
     }
 
     private getHighlightLayerType(
@@ -488,16 +542,32 @@ export class MapPageComponent {
     ): void {
         const anchor = geometry.type === 'Point' ? (geometry.coordinates as LngLatLike) : lngLat;
 
-        this.popup?.remove();
-        this.tooltipRef?.destroy();
+        this.hideTooltip();
         this.popup = new Popup({
             closeButton: false,
             closeOnClick: false,
-            className: 'cc-map-popup',
+            className: 'coiaf-map-popup',
         })
             .setLngLat(anchor)
             .setDOMContent(this.buildTooltip(properties as LocationData))
             .addTo(map);
+    }
+
+    private hideTooltip(): void {
+        this.popup?.remove();
+        this.tooltipRef?.destroy();
+
+        if (this.longPressTooltipTimer) {
+            clearTimeout(this.longPressTooltipTimer);
+            this.longPressTooltipTimer = null;
+        }
+    }
+
+    private buildTooltip(location: LocationData): HTMLElement {
+        this.tooltipRef = this.viewContainerRef.createComponent(TooltipComponent);
+        this.tooltipRef.setInput('location', location);
+        this.tooltipRef.changeDetectorRef.detectChanges();
+        return this.tooltipRef.location.nativeElement;
     }
 
     private buildGradientUrl(): string {
@@ -511,13 +581,6 @@ export class MapPageComponent {
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, 1, 256);
         return canvas.toDataURL();
-    }
-
-    private buildTooltip(location: LocationData): HTMLElement {
-        this.tooltipRef = this.viewContainerRef.createComponent(TooltipComponent);
-        this.tooltipRef.setInput('location', location);
-        this.tooltipRef.changeDetectorRef.detectChanges();
-        return this.tooltipRef.location.nativeElement;
     }
 
     private getLocalizedLabelLayout(

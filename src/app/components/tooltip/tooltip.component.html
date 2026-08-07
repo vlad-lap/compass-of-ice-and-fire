@@ -6,16 +6,23 @@
     <h5 class="tooltip-title">{{ (locationData | localize: 'name') || ui.namePlaceholder }}</h5>
 
     @if (locationData.nameVariant) {
-            <div class="tooltip-subtitle name-variant">{{ locationData | localize: 'nameVariant' }}</div>
+        <div class="tooltip-subtitle name-variant">{{ locationData | localize: 'nameVariant' }}</div>
     }
 
     <div class="tooltip-subtitle">
-        @if (locationData.type) {
+        @if (showType()) {
             <span>{{ locationData | localize: 'type' | titlecase }}</span>
 
             @if (locationArea?.length) {
                 <span class="bullet">&bull;</span>
             }
+        }
+
+        @if (locationData.ClaimedBy) {
+            <span class="claimed-by">
+                <mat-icon class="claimed-by-icon">castle</mat-icon>
+                <span>{{ locationData | localize: 'ClaimedBy' }}</span>
+            </span>
         }
 
         @for (areaPart of locationArea; track areaPart; let last = $last) {

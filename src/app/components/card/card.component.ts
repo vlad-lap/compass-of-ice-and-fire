@@ -8,7 +8,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { Subject } from 'rxjs';
 import { AreaPipe, LocalizePipe } from '../../pipes';
-import { APP_TITLE } from '../../constants';
+import { APP_TITLE, DISPLAYED_TYPES } from '../../constants';
 import { Store } from '@ngxs/store';
 import { LanguagesState } from '../../store';
 
@@ -23,6 +23,8 @@ export class CardComponent implements OnDestroy {
     goToLocation$ = new Subject<void>();
 
     readonly coreUi = this.store.selectSignal(LanguagesState.coreUi);
+
+    protected readonly showType = DISPLAYED_TYPES.includes(this.data.type);
 
     constructor(
         @Inject(MAT_BOTTOM_SHEET_DATA) protected data: LocationData,

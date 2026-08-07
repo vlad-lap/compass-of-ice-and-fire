@@ -33,12 +33,19 @@
 @let area = data | area;
 
 <div class="card-subtitle">
-    @if (data.type) {
+    @if (showType) {
         <span>{{ data | localize: 'type' | titlecase }}</span>
 
         @if (area?.length) {
             <span class="bullet">&bull;</span>
         }
+    }
+
+    @if (data.ClaimedBy) {
+        <span class="claimed-by">
+            <mat-icon class="claimed-by-icon">castle</mat-icon>
+            <span>{{ data | localize: 'ClaimedBy' }}</span>
+        </span>
     }
 
     @for (areaPart of area; track areaPart; let last = $last) {

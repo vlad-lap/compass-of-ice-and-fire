@@ -58,3 +58,15 @@
         right: 12px;
     }
 }
+
+.claimed-by {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+
+    &-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+    }
+}

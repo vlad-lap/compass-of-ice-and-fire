@@ -64,6 +64,24 @@ The Twins:
 
 If a feature is extremely minor with almost no canonical information, give a one-sentence description instead of fabricating details.
 
+## Depth scales with `size` — tier 1 (`size: 5`) locations go much deeper
+
+The 2–4 sentence guideline above is the default, and applies to most entries regardless of tier. Tier 1 locations — entries with `"size": 5` — are the exception: they call for substantially more depth, on par with the kingdom-level entries in `data/raw/kingdoms.json` (see that file for the target register/length). Aim for roughly 5–8 sentences per language, more for major cities with several landmarks worth naming. This is more research-intensive than a typical entry — expect to pull from several wiki pages (the location's own page, plus pages for the houses/events/buildings it mentions), not just one.
+
+For every tier 1 entry, cover all of the following that apply:
+
+- **Ruling house or affiliation, if any** — who currently holds the seat, and its formal title where one exists (Warden, Lord Paramount, Prince, etc.). Omit this point entirely for entries with no ruling house (a free city with another government, a natural feature, a ruin).
+- **What the place physically looks like and its defining structural or geographic feature** — go beyond "a castle in the North" to the specific thing that makes it distinctive, defensible, or memorable. For example:
+  - Riverrun: its position at the joining of the Tumblestone and the Red Fork lets its garrison flood the surrounding ditches during a siege, turning the castle into a de facto island.
+  - Winterfell: built over natural hot springs whose water is channeled through the walls and glass gardens to heat them.
+- **If it's a city or other major settlement, name its landmark sites** — the specific buildings or institutions that define it, not a vague "notable buildings." For example:
+  - King's Landing: the Red Keep, the Great Sept of Baelor, the Dragonpit.
+  - Oldtown: the Citadel, seat of the maesters.
+  - Braavos: the Titan, the Iron Bank, the House of Black and White.
+- **Key historical events tied specifically to that location** — not the kingdom's general history repeated, but what actually happened *there*: a founding, a siege, a battle, a fire, a notable death or wedding (subject to the no-spoilers rule below).
+
+All the style rules elsewhere in this document — no name repetition, no calque, capitalization, no spoilers, proper-noun verification — apply identically at this greater length. More sentences means more surface area for calque and gender-agreement bugs, so re-check each sentence in `description_ru`, not just the opening one.
+
 ## No spoilers
 
 Avoid narrating War of the Five Kings-era plot twists as if summarizing the story — specific character deaths, betrayals, forced marriages, resurrections, or other current-book reveals (e.g. don't describe Ramsay Snow's marriage to and murder of Donella Hornwood, Bronn marrying Lollys Stokeworth, the Red Wedding, Beric Dondarrion's resurrections, Euron Greyjoy's Golden Company campaign taking Griffin's Roost/Rain House/Crow's Nest, Stannis capturing Mance Rayder, etc.).

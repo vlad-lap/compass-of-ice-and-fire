@@ -2,6 +2,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { LocationData } from '../models';
 import { Store } from '@ngxs/store';
 import { GeodataState, LanguagesState } from '../store';
+import { uniq } from 'lodash';
 
 @Pipe({
     name: 'area',
@@ -18,7 +19,8 @@ export class AreaPipe implements PipeTransform {
             !location.kingdomId || location.id === 'the-wall' ? 'continentId' : null,
         ];
 
-        return areaKeys.map(key => this.featureNameById(location?.[key] as string)).filter(Boolean);
+        const areaParts = areaKeys.map(key => this.featureNameById(location?.[key] as string)).filter(Boolean);
+        return uniq(areaParts);
     }
 
     private featureNameById(id: string): string {

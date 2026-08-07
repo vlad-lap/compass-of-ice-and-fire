@@ -18,6 +18,7 @@ export function addFeatureLanguageProperties(feature, namesFileName) {
             const typesDict = readJSON(join(LANGUAGES, lang, 'types.json'));
             const descriptionsDict = readJSON(join(LANGUAGES, lang, 'descriptions.json'));
             const nameVariantsDict = readJSON(join(LANGUAGES, lang, 'name-variants.json'));
+            const claimedByDict = readJSON(join(LANGUAGES, lang, 'claimed-by.json'),);
 
             return {
                 ...props,
@@ -27,7 +28,11 @@ export function addFeatureLanguageProperties(feature, namesFileName) {
                 ...(feature.properties.type
                     ? { [`type_${lang}`]: typesDict[feature.properties.type] ?? null }
                     : {}
-                )
+                ),
+                ...(feature.properties.ClaimedBy
+                    ? { [`ClaimedBy_${lang}`]: claimedByDict[feature.properties.id] ?? null }
+                    : {}
+                ),
             };
             
         }, feature.properties);

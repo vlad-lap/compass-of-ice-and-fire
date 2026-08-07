@@ -24,3 +24,15 @@
 .bullet {
     margin: 0 4px;
 }
+
+.claimed-by {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+
+    &-icon {
+        font-size: 12px;
+        width: 12px;
+        height: 12px;
+    }
+}

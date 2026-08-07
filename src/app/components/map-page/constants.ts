@@ -19,6 +19,8 @@ export enum ZoomLevel {
 
 export const ZOOM_DURATION = 300;
 export const ZOOM_STEP = 0.5;
+export const LONG_PRESS_TOOLTIP_TIMEOUT_MS = 150;
+export const LONG_PRESS_DURATION_MS = 800;
 
 export const BLACK = '#333333';
 export const GREY = '#7b766f';
@@ -68,15 +70,23 @@ export enum LocationRadius {
     LG = 4,
 }
 
-export const TOUCH_HIT_RADIUS_PX = 15;
+export enum HitRadiusPx {
+    Mouse = 2,
+    Touch = 15,
+}
 
-export const SELECTABLE_LAYER_IDS = [
+export const CLICKABLE_LAYER_IDS = [
     'tier1-point',
     'tier2-point',
     'tier3-point',
     'tier4-point',
     'the-wall-line',
     'the-five-forts-point',
+];
+
+export const LONG_PRESSABLE_LAYER_IDS = [
+    'kingdoms-fill',
+    'lands-fill',
 ];
 
 export enum FontStyle {

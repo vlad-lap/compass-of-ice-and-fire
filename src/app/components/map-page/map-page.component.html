@@ -60,6 +60,12 @@
     (mapDragStart)="onMapDragStart()"
     (mapDragEnd)="onMapDragEnd()"
     (zoomEnd)="saveCurrentPosition()"
+    (mapMouseDown)="onLongPressStart($event)"
+    (mapMouseUp)="onLongPressEnd()"
+    (mapTouchStart)="onLongPressStart($event)"
+    (mapTouchEnd)="onLongPressEnd()"
+    (mapTouchCancel)="onLongPressEnd()"
+    (mapTouchMove)="onLongPressEnd()"
 >
     @for (polygonType of polygonTypes; track polygonType) {
         @let kebab = kebabCase(polygonType);
