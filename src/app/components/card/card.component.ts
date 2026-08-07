@@ -21,7 +21,7 @@ import { APP_TITLE, DISPLAYED_TYPES } from '../../constants';
 import { Store } from '@ngxs/store';
 import { LanguagesState } from '../../store';
 
-const MAX_CARD_HEIGHT_VIEWPORT_RATIO = 0.9;
+const MAX_CARD_HEIGHT_VIEWPORT_RATIO = 0.8;
 const DEFAULT_MAX_CARD_HEIGHT = 300;
 
 const CARD_HEIGHT_ABOVE_HEADER = 28;

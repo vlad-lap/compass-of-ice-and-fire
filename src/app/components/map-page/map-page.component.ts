@@ -515,6 +515,7 @@ export class MapPageComponent {
         const bottomSheetRef = (this.bottomSheetRef = this.bottomSheet.open(CardComponent, {
             hasBackdrop: false,
             data: feature.properties as LocationData,
+            panelClass: 'coiaf-card-panel',
         }));
 
         bottomSheetRef.instance.goToLocation$
