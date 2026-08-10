@@ -1,7 +1,8 @@
 export type PolygonGeodataType =
     | 'continents'
     | 'kingdoms'
-    | 'lands'
+    | 'countries'
+    | 'regions'
     | 'shores'
     | 'vales'
     | 'islands'

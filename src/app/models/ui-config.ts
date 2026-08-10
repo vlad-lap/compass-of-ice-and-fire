@@ -10,4 +10,5 @@ export interface UiConfig<T> {
     close: T;
     clear: T;
     language: T;
+    formerly: T;
 }

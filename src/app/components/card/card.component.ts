@@ -8,18 +8,18 @@ import {
     signal,
     viewChild,
 } from '@angular/core';
-import { TitleCasePipe } from '@angular/common';
 import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet';
-import { LocationData } from '../../models';
+import { FeatureData } from '../../models';
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton } from '@angular/material/button';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { Subject } from 'rxjs';
-import { AreaPipe, LocalizePipe } from '../../pipes';
-import { APP_TITLE, DISPLAYED_TYPES } from '../../constants';
+import { LocalizePipe } from '../../pipes';
+import { APP_TITLE } from '../../constants';
 import { Store } from '@ngxs/store';
 import { LanguagesState } from '../../store';
+import { SubtitleComponent } from '../subtitle/subtitle.component';
 
 const MAX_CARD_HEIGHT_VIEWPORT_RATIO = 0.8;
 const DEFAULT_MAX_CARD_HEIGHT = 300;
@@ -29,7 +29,7 @@ const CARD_HEIGHT_ABOVE_HEADER = 28;
 @Component({
     selector: 'coiaf-card',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [MatIcon, MatIconButton, AreaPipe, LocalizePipe, TitleCasePipe],
+    imports: [MatIcon, MatIconButton, LocalizePipe, SubtitleComponent],
     templateUrl: './card.component.html',
     styleUrl: './card.component.scss',
     host: {
@@ -44,21 +44,22 @@ export class CardComponent implements OnDestroy {
     readonly header = viewChild('header', { read: ElementRef });
     readonly coreUi = this.store.selectSignal(LanguagesState.coreUi);
 
-    protected readonly showType = DISPLAYED_TYPES.includes(this.data.type);
     protected readonly cardHeight = signal<number | null>(null);
     protected readonly maxCardHeight = computed<number>(() =>
         Math.max(this.cardHeight() ?? 0, DEFAULT_MAX_CARD_HEIGHT),
     );
     protected readonly isResizing = signal(false);
     protected readonly minCardHeight = computed<number>(
-        () => parseInt(getComputedStyle(this.header()?.nativeElement).height) + CARD_HEIGHT_ABOVE_HEADER,
+        () =>
+            parseInt(getComputedStyle(this.header()?.nativeElement).height) +
+            CARD_HEIGHT_ABOVE_HEADER,
     );
 
     private resizeStartY = 0;
     private resizeStartHeight = 0;
 
     constructor(
-        @Inject(MAT_BOTTOM_SHEET_DATA) protected data: LocationData,
+        @Inject(MAT_BOTTOM_SHEET_DATA) protected data: FeatureData,
         private bottomSheetRef: MatBottomSheetRef,
         private clipboard: Clipboard,
         private snackBar: MatSnackBar,

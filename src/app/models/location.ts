@@ -3,15 +3,14 @@ export interface FeatureData {
     name: string;
     name_ru?: string;
     searchKeys?: string[];
-}
-
-export interface LocationData extends FeatureData {
+    active?: boolean;
     type?: string;
     type_ru?: string;
     size?: number;
     continentId?: string;
     islandId?: string;
     kingdomId?: string;
+    countryId?: string;
     regionId?: string;
     landscapeId?: string;
     description?: string;

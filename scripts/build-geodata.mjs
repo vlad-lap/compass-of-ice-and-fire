@@ -8,12 +8,13 @@ import { buildKingdomBorders } from './build-kingdom-borders.mjs';
 import { buildMountainRidges, buildMountainUnion } from './build-mountain-ridges.mjs';
 import { readJSON, writeJSON } from './json-utils.mjs';
 import {
+    addFeatureLanguageProperties,
     addLanguageProperties,
     syncDictionary,
     syncLanguageDict,
 } from './language.mjs';
 import { getConsolePrefix, getConsoleStats } from './console-utils.mjs';
-import { getCentralPoint, getMiddleMultiPoint } from './geometry-utils.mjs';
+import { getCentralPoint, getInteriorPoint, getMiddleMultiPoint } from './geometry-utils.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const QGIS = join(__dirname, '..', 'qgis');
@@ -92,13 +93,15 @@ const islands = processGeoJSON('got_islands.geojson', 'islands.json', {
     mapFn: feature => addContinentId(feature, continents)
 });
 const kingdoms = processGeoJSON('got_political.geojson', 'kingdoms.json', {
-    mapFn: feature => ({
+    // TODO add language properties while writing, not reading, to avoid such duplicate calls
+    mapFn: feature => addFeatureLanguageProperties({
         ...feature,
         properties: {
             ...feature.properties,
+            type: 'kingdom',
             description: descriptions[feature.properties.id] ?? null,
         },
-    }),
+    }, 'kingdoms.json'),
 });
 
 const borders = buildKingdomBorders(kingdoms, continents, islands);
@@ -144,7 +147,7 @@ function splitAndProcess(fileName, languageFileName, { filterFn, mapFn } = {}) {
 const landscape = splitAndProcess('got_landscape.geojson', 'landscape.json', {
     mapFn: feature => {
         const coordinates = getCentralPoint(feature.geometry);
-        const centroid = { type: 'Point', coordinates };
+        const interiorPoint = { type: 'Point', coordinates: getInteriorPoint(feature.geometry) };
 
         return {
             ...feature,
@@ -152,21 +155,27 @@ const landscape = splitAndProcess('got_landscape.geojson', 'landscape.json', {
                 ...feature.properties,
                 centerLng: coordinates[0],
                 centerLat: coordinates[1],
-                continentId: getLocationContinentId(centroid, continents, islands),
+                continentId: getLocationContinentId(interiorPoint, continents, islands),
             }
         }
     }
 });
-const { land } = splitAndProcess('got_regions.geojson', 'regions.json', {
-    mapFn: feature => ({
-        ...feature,
-        properties: {
-            ...feature.properties,
-            description: feature.properties.type === 'land'
-                ? descriptions[feature.properties.id] ?? null
-                : undefined,
-        },
-    }),
+const { country, region } = splitAndProcess('got_regions.geojson', 'regions.json', {
+    mapFn: feature => {
+        const interiorPoint = { type: 'Point', coordinates: getInteriorPoint(feature.geometry) };
+
+        return {
+            ...feature,
+            properties: {
+                ...feature.properties,
+                continentId: getLocationContinentId(interiorPoint, continents, islands),
+                kingdomId: getContainingPolygonId(interiorPoint, kingdoms),
+                description: ['country', 'region'].includes(feature.properties.type)
+                    ? (descriptions[feature.properties.id] ?? null)
+                    : undefined,
+            },
+        };
+    },
 });
 
 function getContainingLandscapeId(feature) {
@@ -182,7 +191,8 @@ const theWall = processGeoJSON('got_wall.geojson', 'the-wall.json', {
             ...feature.properties,
             continentId: getLocationContinentId(feature.geometry, continents, islands),
             kingdomId: getContainingPolygonId(feature.geometry, kingdoms),
-            regionId: getContainingPolygonId(feature.geometry, land),
+            countryId: getContainingPolygonId(feature.geometry, country),
+            regionId: getContainingPolygonId(feature.geometry, region),
             landscapeId: getContainingLandscapeId(feature),
             islandId: getContainingPolygonId(feature.geometry, islands),
             description: descriptions[feature.properties.id] ?? null,
@@ -200,7 +210,8 @@ const theFiveForts = processGeoJSON('got_five_forts.geojson', 'the-five-forts.js
                 ...feature.properties,
                 continentId: getLocationContinentId(geometry, continents, islands),
                 kingdomId: getContainingPolygonId(geometry, kingdoms),
-                regionId: getContainingPolygonId(geometry, land),
+                countryId: getContainingPolygonId(geometry, country),
+                regionId: getContainingPolygonId(geometry, region),
                 islandId: getContainingPolygonId(geometry, islands),
                 description: descriptions[feature.properties.id] ?? null,
                 nameVariant: nameVariants[feature.properties.id] ?? null,
@@ -216,7 +227,8 @@ const locations = processGeoJSON('got_locations.geojson', 'locations.json', {
             ...feature.properties,
             continentId: getLocationContinentId(feature.geometry, continents, islands),
             kingdomId: getContainingPolygonId(feature.geometry, kingdoms),
-            regionId: getContainingPolygonId(feature.geometry, land),
+            countryId: getContainingPolygonId(feature.geometry, country),
+            regionId: getContainingPolygonId(feature.geometry, region),
             landscapeId: getContainingLandscapeId(feature),
             islandId: getContainingPolygonId(feature.geometry, islands),
             description: descriptions[feature.properties.id] ?? null,
@@ -229,9 +241,18 @@ const wallData = getFeatureProperties(theWall);
 const fiveFortsData = getFeatureProperties(theFiveForts);
 const locationsData = getFeatureProperties(locations);
 const kingdomsData = getFeatureProperties(kingdoms);
-const landsData = getFeatureProperties(land);
+const countriesData = getFeatureProperties(country);
+const regionsData = getFeatureProperties(region);
+
 syncDictionary(
-    [...wallData, ...fiveFortsData, ...locationsData, ...kingdomsData, ...landsData],
+    [
+        ...wallData,
+        ...fiveFortsData,
+        ...locationsData,
+        ...kingdomsData,
+        ...countriesData,
+        ...regionsData,
+    ],
     'description',
 );
 syncDictionary(locationsData, 'nameVariant', false);
