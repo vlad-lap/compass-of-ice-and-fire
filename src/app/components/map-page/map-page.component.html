@@ -138,7 +138,7 @@
         source="the-wall"
         [layout]="linesLayout.theWall"
         [paint]="linesPaint.theWall"
-        before="the-wall-label"
+        before="tier1-point"
         (layerMouseEnter)="onFeatureEnter($event)"
         (layerMouseLeave)="onFeatureLeave()"
     />
@@ -168,6 +168,7 @@
             />
             <mgl-layer
                 [id]="kebab + '-label'"
+                before="north-gradient-layer"
                 type="symbol"
                 [source]="kebab + '-label-points'"
                 [layout]="labelLayout()[type] || defaultLabelLayout()"
@@ -178,6 +179,7 @@
         } @else {
             <mgl-layer
                 [id]="kebab + '-label'"
+                before="north-gradient-layer"
                 type="symbol"
                 [source]="kebab"
                 [layout]="labelLayout()[type] || defaultLabelLayout()"
@@ -196,7 +198,6 @@
     @for (tier of locationTiers; track tier) {
         <mgl-layer
             [id]="tier + '-point'"
-            before="tier1-point-label"
             type="circle"
             source="locations"
             [filter]="locationsFilter[tier]"
@@ -218,6 +219,7 @@
 
         <mgl-layer
             [id]="tier + '-point-label'"
+            before="north-gradient-layer"
             type="symbol"
             source="locations"
             [filter]="locationLabelsFilter[tier]"
@@ -234,7 +236,7 @@
     />
     <mgl-layer
         id="the-five-forts-point"
-        before="tier1-point-label"
+        before="tier1-point"
         type="circle"
         source="the-five-forts"
         [paint]="theFiveFortsPaint"
