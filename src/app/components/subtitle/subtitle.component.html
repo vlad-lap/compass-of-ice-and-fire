@@ -1,0 +1,32 @@
+@let locationData = location();
+@let ui = coreUi();
+@let locationArea = locationData | area;
+
+<div>
+    @if (locationData.type) {
+        <span>{{ locationData | localize: 'type' | titlecase }}</span>
+
+        @if (locationData.active === false) {
+            <span>&nbsp;({{ ui.formerly }})</span>
+        }
+
+        @if (locationArea?.length) {
+            <span class="bullet">&bull;</span>
+        }
+    }
+
+    @for (areaPart of locationArea; track areaPart; let last = $last) {
+        <span>{{ areaPart }}</span>
+
+        @if (!last) {
+            <span>, </span>
+        }
+    }
+</div>
+
+@if (locationData.ClaimedBy) {
+    <div class="claimed-by">
+        <mat-icon class="claimed-by-icon" [ngClass]="iconSize()">castle</mat-icon>
+        <span>{{ locationData | localize: 'ClaimedBy' }}</span>
+    </div>
+}

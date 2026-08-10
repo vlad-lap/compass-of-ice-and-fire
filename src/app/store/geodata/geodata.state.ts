@@ -1,4 +1,4 @@
-import { FeatureCollection, Feature, Point, Polygon, MultiPolygon } from 'geojson';
+import { FeatureCollection, Feature, Point, Polygon, MultiPolygon, Position } from 'geojson';
 import { Action, createSelector, Selector, State, StateContext } from '@ngxs/store';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
@@ -50,9 +50,7 @@ export class GeodataState {
                 const features: Feature<Point>[] = collection.features
                     .filter(feature => feature.properties?.name)
                     .map(feature => {
-                        const coordinates = feature.geometry.type === 'MultiPoint'
-                            ? getMiddleMultiPoint(feature.geometry)
-                            : getCentralPoint(feature.geometry as Polygon | MultiPolygon);
+                        const coordinates = GeodataState.getLabelPosition(feature);
 
                         return {
                             ...feature,
@@ -70,6 +68,16 @@ export class GeodataState {
             const allFeatures = Object.values(state).map(({ features }) => features);
             return flatten(allFeatures).find(feature => feature.properties.id === id);
         });
+    }
+
+    private static getLabelPosition(feature: Feature): Position {
+        if (feature.properties.id === 'country-valyrian-freehold') {
+            return [50.77, -21.76];
+        } else if (feature.geometry.type === 'MultiPoint') {
+            return getMiddleMultiPoint(feature.geometry);
+        } else {
+            return getCentralPoint(feature.geometry as Polygon | MultiPolygon);
+        }
     }
 
     constructor(private http: HttpClient) {}

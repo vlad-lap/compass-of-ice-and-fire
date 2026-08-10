@@ -5,6 +5,7 @@ import { readJSON, writeJSON } from './json-utils.mjs';
 import { mapGeodata } from './geodata-utils.mjs';
 import { getConsolePrefix, getConsoleStats } from './console-utils.mjs';
 import _ from 'lodash';
+import { getCategory } from './get-category.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA = join(__dirname, '..', 'data');
@@ -18,13 +19,17 @@ export function addFeatureLanguageProperties(feature, namesFileName) {
             const typesDict = readJSON(join(LANGUAGES, lang, 'types.json'));
             const descriptionsDict = readJSON(join(LANGUAGES, lang, 'descriptions.json'));
             const nameVariantsDict = readJSON(join(LANGUAGES, lang, 'name-variants.json'));
-            const claimedByDict = readJSON(join(LANGUAGES, lang, 'claimed-by.json'),);
+            const claimedByDict = readJSON(join(LANGUAGES, lang, 'claimed-by.json'));
+            const categoriesDict = readJSON(join(LANGUAGES, lang, 'categories.json'));
+
+            const category = getCategory(feature);
 
             return {
                 ...props,
                 [`name_${lang}`]: namesDict[feature.properties.id] ?? null,
                 [`description_${lang}`]: descriptionsDict[feature.properties.id] ?? null,
                 [`nameVariant_${lang}`]: nameVariantsDict[feature.properties.id] ?? null,
+                [`category_${lang}`]: categoriesDict[category?.id] ?? null,
                 ...(feature.properties.type
                     ? { [`type_${lang}`]: typesDict[feature.properties.type] ?? null }
                     : {}

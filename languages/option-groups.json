@@ -27,9 +27,13 @@
         "en": "Kingdoms",
         "ru": "Королевства"
     },
-    "lands": {
-        "en": "Lands",
-        "ru": "Территории"
+    "countries": {
+        "en": "Countries",
+        "ru": "Страны"
+    },
+    "regions": {
+        "en": "Regions",
+        "ru": "Регионы"
     },
     "theWall": {
         "en": "The Wall",

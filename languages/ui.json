@@ -42,5 +42,9 @@
     "namePlaceholder": {
         "en": "Unknown",
         "ru": "Неизвестно"
+    },
+    "formerly": {
+        "en": "formerly",
+        "ru": "в прошлом"
     }
 }

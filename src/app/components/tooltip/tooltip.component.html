@@ -1,6 +1,5 @@
 @let locationData = location();
 @let ui = coreUi();
-@let locationArea = locationData | area;
 
 <div class="tooltip">
     <h5 class="tooltip-title">{{ (locationData | localize: 'name') || ui.namePlaceholder }}</h5>
@@ -9,28 +8,5 @@
         <div class="tooltip-subtitle name-variant">{{ locationData | localize: 'nameVariant' }}</div>
     }
 
-    <div class="tooltip-subtitle">
-        @if (showType()) {
-            <span>{{ locationData | localize: 'type' | titlecase }}</span>
-
-            @if (locationArea?.length) {
-                <span class="bullet">&bull;</span>
-            }
-        }
-
-        @if (locationData.ClaimedBy) {
-            <span class="claimed-by">
-                <mat-icon class="claimed-by-icon">castle</mat-icon>
-                <span>{{ locationData | localize: 'ClaimedBy' }}</span>
-            </span>
-        }
-
-        @for (areaPart of locationArea; track areaPart; let last = $last) {
-            <span>{{ areaPart }}</span>
-
-            @if (!last) {
-                <span>, </span>
-            }
-        }
-    </div>
+    <coiaf-subtitle [location]="locationData" iconSize="small" class="tooltip-subtitle" />
 </div>

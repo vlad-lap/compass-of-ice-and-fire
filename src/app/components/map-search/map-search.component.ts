@@ -40,7 +40,8 @@ const OPTIONS_GROUP_ORDER: OptionGroup[] = [
     'theWall',
     'theFiveForts',
     'kingdoms',
-    'lands',
+    'countries',
+    'regions',
     'roads',
 
     'continents',

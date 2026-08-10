@@ -86,7 +86,8 @@ export const CLICKABLE_LAYER_IDS = [
 
 export const LONG_PRESSABLE_LAYER_IDS = [
     'kingdoms-fill',
-    'lands-fill',
+    'countries-fill',
+    'regions-fill',
 ];
 
 export enum FontStyle {

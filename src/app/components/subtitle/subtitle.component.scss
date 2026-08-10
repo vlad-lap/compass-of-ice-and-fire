@@ -1,0 +1,31 @@
+@mixin icon-size($icon-size) {
+    min-height: $icon-size;
+    height: $icon-size;
+    min-width: $icon-size;
+    width: $icon-size;
+    font-size: $icon-size;
+}
+
+:host {
+    display: block;
+}
+
+.bullet {
+    margin: 0 4px;
+}
+
+.claimed-by {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+
+    &-icon {
+        &.small {
+            @include icon-size(12px);
+        }
+
+        &.medium {
+            @include icon-size(16px);
+        }
+    }
+}

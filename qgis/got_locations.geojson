@@ -2,6 +2,7 @@
 "type": "FeatureCollection",
 "name": "got_locations",
 "features": [
+{ "type": "Feature", "properties": { "id": 314, "name": "Sarhoy", "size": 4, "confirmed": 1, "type": "ruin" }, "geometry": { "type": "Point", "coordinates": [ 43.245600382365275, -10.805644748527511 ] } },
 { "type": "Feature", "properties": { "id": 1, "name": "King's Landing", "size": 5, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 18.432066083848635, 3.736014024094777 ] } },
 { "type": "Feature", "properties": { "id": 2, "name": "Hayford Castle", "size": 3, "confirmed": 0, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 18.306671191450057, 4.783014234685957 ] } },
 { "type": "Feature", "properties": { "id": 3, "name": "Rosby", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 19.111838395272535, 4.56899438074251 ] } },

@@ -42,10 +42,10 @@ import {
     LONG_PRESS_TOOLTIP_TIMEOUT_MS,
 } from './constants';
 import {
-    FeatureData, GeodataDict,
+    FeatureData,
+    GeodataDict,
     GeodataType,
     LineGeodataType,
-    LocationData,
     LocationTier,
     PolygonGeodataType,
 } from '../../models';
@@ -134,7 +134,8 @@ export class MapPageComponent {
     protected readonly polygonTypes: PolygonGeodataType[] = [
         'continents',
         'kingdoms',
-        'lands',
+        'countries',
+        'regions',
         'seas',
         'islands',
         'shores',
@@ -153,7 +154,8 @@ export class MapPageComponent {
     protected readonly labeledTypes: GeodataType[] = [
         'continents',
         'kingdoms',
-        'lands',
+        'countries',
+        'regions',
         'mountains',
         'snow',
         'steppes',
@@ -177,7 +179,8 @@ export class MapPageComponent {
         continents: this.store.selectSnapshot(GeodataState.labelPoints('continents')),
         kingdoms: this.store.selectSnapshot(GeodataState.labelPoints('kingdoms')),
         islands: this.store.selectSnapshot(GeodataState.labelPoints('islands')),
-        lands: this.store.selectSnapshot(GeodataState.labelPoints('lands')),
+        countries: this.store.selectSnapshot(GeodataState.labelPoints('countries')),
+        regions: this.store.selectSnapshot(GeodataState.labelPoints('regions')),
         mountains: this.store.selectSnapshot(GeodataState.labelPoints('mountains')),
         theFiveForts: this.store.selectSnapshot(GeodataState.labelPoints('theFiveForts')),
     };
@@ -385,7 +388,7 @@ export class MapPageComponent {
             const feature = this.queryRenderedFeature(event, LONG_PRESSABLE_LAYER_IDS);
             const lngLat = this.hasHover
                 ? event.lngLat
-                : [event.lngLat.lng, event.lngLat.lat + 0.5] as LngLatLike;
+                : ([event.lngLat.lng, event.lngLat.lat + 0.5] as LngLatLike);
 
             if (feature) {
                 this.showTooltip(event.target, feature, lngLat);
@@ -514,7 +517,7 @@ export class MapPageComponent {
 
         const bottomSheetRef = (this.bottomSheetRef = this.bottomSheet.open(CardComponent, {
             hasBackdrop: false,
-            data: feature.properties as LocationData,
+            data: feature.properties as FeatureData,
             panelClass: 'coiaf-card-panel',
         }));
 
@@ -547,7 +550,7 @@ export class MapPageComponent {
             className: 'coiaf-map-popup',
         })
             .setLngLat(anchor)
-            .setDOMContent(this.buildTooltip(properties as LocationData))
+            .setDOMContent(this.buildTooltip(properties as FeatureData))
             .addTo(map);
     }
 
@@ -561,7 +564,7 @@ export class MapPageComponent {
         }
     }
 
-    private buildTooltip(location: LocationData): HTMLElement {
+    private buildTooltip(location: FeatureData): HTMLElement {
         this.tooltipRef = this.viewContainerRef.createComponent(TooltipComponent);
         this.tooltipRef.setInput('location', location);
         this.tooltipRef.changeDetectorRef.detectChanges();

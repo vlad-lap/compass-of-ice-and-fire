@@ -1,5 +1,5 @@
 import { FeatureCollection } from 'geojson';
-import { FeatureData, LocationData } from '../models';
+import { FeatureData } from '../models';
 import { flatten, groupBy, uniq, uniqBy } from 'lodash';
 import { AVAILABLE_LANGUAGES, DEFAULT_LANGUAGE } from '../constants';
 
@@ -40,12 +40,12 @@ export function getSearchOptions({ features }: FeatureCollection): FeatureData[]
 
 export function getLocationsSearchOptions({
     features,
-}: FeatureCollection): Record<string, LocationData[]> {
-    const locations: LocationData[] = features
+}: FeatureCollection): Record<string, FeatureData[]> {
+    const locations: FeatureData[] = features
         .filter(({ properties }) => !!properties?.name)
         .map(({ properties }) => ({
-            ...properties as LocationData,
-            searchKeys: buildLocalizedSearchKeys(properties as LocationData),
+            ...properties as FeatureData,
+            searchKeys: buildLocalizedSearchKeys(properties as FeatureData),
         }));
 
     const uniqueLocations = uniqBy(locations, 'id');

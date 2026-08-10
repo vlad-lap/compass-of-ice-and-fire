@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { LocationData } from '../models';
+import { FeatureData } from '../models';
 import { Store } from '@ngxs/store';
 import { GeodataState, LanguagesState } from '../store';
 import { uniq } from 'lodash';
@@ -11,21 +11,35 @@ import { uniq } from 'lodash';
 export class AreaPipe implements PipeTransform {
     constructor(private store: Store) {}
 
-    transform(location: LocationData): string[] {
-        const areaKeys: (keyof LocationData)[] = [
+    transform(location: FeatureData): string[] {
+        const category = this.getCategoryName(location);
+        const areaKeys: (keyof FeatureData)[] = [
             'islandId',
-            location.regionId ? 'regionId' : 'landscapeId',
+            category ? null : 'regionId',
+            'countryId',
+            (category || location.countryId || location.regionId) ? null : 'landscapeId',
             'kingdomId',
-            !location.kingdomId || location.id === 'the-wall' ? 'continentId' : null,
+            location.kingdomId ? null : 'continentId',
         ];
 
-        const areaParts = areaKeys.map(key => this.featureNameById(location?.[key] as string)).filter(Boolean);
+        const areaParts = [
+            category,
+            ...areaKeys.map(key => this.featureNameById(location?.[key] as string)),
+        ].filter(Boolean);
         return uniq(areaParts);
+    }
+
+    private getCategoryName(location: FeatureData): string {
+        const language = this.store.selectSnapshot(LanguagesState.language);
+        return location?.[`category_${language}`] ?? location?.category;
     }
 
     private featureNameById(id: string): string {
         const feature = this.store.selectSnapshot(GeodataState.byId(id));
         const language = this.store.selectSnapshot(LanguagesState.language);
-        return feature?.properties[`name_${language}`] ?? feature?.properties.name;
+        const name = feature?.properties[`name_${language}`] ?? feature?.properties.name;
+        const ui = this.store.selectSnapshot(LanguagesState.coreUi);
+
+        return feature?.properties.active === false ? `${name} (${ui.formerly})` : name;
     }
 }
