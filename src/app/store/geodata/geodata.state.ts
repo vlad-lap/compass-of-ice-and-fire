@@ -1,5 +1,5 @@
 import { FeatureCollection, Feature, Point, Polygon, MultiPolygon, Position } from 'geojson';
-import { Action, createSelector, Selector, State, StateContext } from '@ngxs/store';
+import { Action, createSelector, Selector, State, StateContext, StateToken } from '@ngxs/store';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { GetGeodata } from './geodata.actions';
@@ -13,8 +13,10 @@ const EMPTY: FeatureCollection<Point> = { type: 'FeatureCollection', features: [
 
 type GeodataStateModel = GeodataDict<FeatureCollection>;
 
+export const GEODATA_STATE_TOKEN = new StateToken<GeodataStateModel>('geodata');
+
 @State<GeodataStateModel>({
-    name: 'geodata',
+    name: GEODATA_STATE_TOKEN,
     defaults: {},
 })
 @Injectable()

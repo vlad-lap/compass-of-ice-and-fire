@@ -29,7 +29,6 @@ import {
     SymbolLayerSpecification,
 } from 'maplibre-gl';
 import { Feature, FeatureCollection, MultiPolygon, Point, Polygon, Position } from 'geojson';
-import { GEODATA_URLS } from '../../constants';
 import {
     INITIAL_MAP_CENTER,
     LONG_PRESS_DURATION_MS,
@@ -49,7 +48,7 @@ import {
     LocationTier,
     PolygonGeodataType,
 } from '../../models';
-import { GeodataState, LanguagesState } from '../../store';
+import { GEODATA_STATE_TOKEN, GeodataState, LanguagesState } from '../../store';
 import {
     DEFAULT_LABEL_LAYOUT,
     DIM_OVERLAY_PAINT,
@@ -126,10 +125,11 @@ export class MapPageComponent {
     protected readonly searchHighlightFeature = signal<Feature>(null);
 
     protected readonly mapStyle = MAP_STYLE;
-    protected readonly geodataUrls = GEODATA_URLS;
     protected readonly ZoomLevel = ZoomLevel;
     protected readonly maxBounds = MAP_BOUNDS;
     protected readonly initialCenter = INITIAL_MAP_CENTER;
+
+    protected readonly geodata: GeodataDict<FeatureCollection> = this.store.selectSnapshot(GEODATA_STATE_TOKEN);
 
     protected readonly polygonTypes: PolygonGeodataType[] = [
         'continents',
