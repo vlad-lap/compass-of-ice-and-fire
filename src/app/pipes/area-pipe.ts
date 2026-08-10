@@ -12,17 +12,26 @@ export class AreaPipe implements PipeTransform {
     constructor(private store: Store) {}
 
     transform(location: FeatureData): string[] {
+        const category = this.getCategoryName(location);
         const areaKeys: (keyof FeatureData)[] = [
             'islandId',
-            'regionId',
+            category ? null : 'regionId',
             'countryId',
-            (location.countryId || location.regionId) ? null : 'landscapeId',
+            (category || location.countryId || location.regionId) ? null : 'landscapeId',
             'kingdomId',
             location.kingdomId ? null : 'continentId',
         ];
 
-        const areaParts = areaKeys.map(key => this.featureNameById(location?.[key] as string)).filter(Boolean);
+        const areaParts = [
+            category,
+            ...areaKeys.map(key => this.featureNameById(location?.[key] as string)),
+        ].filter(Boolean);
         return uniq(areaParts);
+    }
+
+    private getCategoryName(location: FeatureData): string {
+        const language = this.store.selectSnapshot(LanguagesState.language);
+        return location?.[`category_${language}`] ?? location?.category;
     }
 
     private featureNameById(id: string): string {

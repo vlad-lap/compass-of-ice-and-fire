@@ -15,6 +15,7 @@ import {
 } from './language.mjs';
 import { getConsolePrefix, getConsoleStats } from './console-utils.mjs';
 import { getCentralPoint, getInteriorPoint, getMiddleMultiPoint } from './geometry-utils.mjs';
+import { getCategory } from './get-category.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const QGIS = join(__dirname, '..', 'qgis');
@@ -221,20 +222,27 @@ const theFiveForts = processGeoJSON('got_five_forts.geojson', 'the-five-forts.js
 });
 
 const locations = processGeoJSON('got_locations.geojson', 'locations.json', {
-    mapFn: feature => ({
-        ...feature,
-        properties: {
-            ...feature.properties,
-            continentId: getLocationContinentId(feature.geometry, continents, islands),
-            kingdomId: getContainingPolygonId(feature.geometry, kingdoms),
-            countryId: getContainingPolygonId(feature.geometry, country),
-            regionId: getContainingPolygonId(feature.geometry, region),
-            landscapeId: getContainingLandscapeId(feature),
-            islandId: getContainingPolygonId(feature.geometry, islands),
-            description: descriptions[feature.properties.id] ?? null,
-            nameVariant: nameVariants[feature.properties.id] ?? null,
-        },
-    }),
+    mapFn: feature => {
+        const category = getCategory(feature);
+
+        return {
+            ...feature,
+            properties: {
+                ...feature.properties,
+                category: category?.name ?? null,
+                continentId: getLocationContinentId(feature.geometry, continents, islands),
+                kingdomId: getContainingPolygonId(feature.geometry, kingdoms),
+                countryId: category?.id === 'rhoynar-cities'
+                    ? null
+                    : getContainingPolygonId(feature.geometry, country),
+                regionId: getContainingPolygonId(feature.geometry, region),
+                landscapeId: getContainingLandscapeId(feature),
+                islandId: getContainingPolygonId(feature.geometry, islands),
+                description: descriptions[feature.properties.id] ?? null,
+                nameVariant: nameVariants[feature.properties.id] ?? null,
+            },
+        };
+    },
 });
 
 const wallData = getFeatureProperties(theWall);

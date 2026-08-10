@@ -3,6 +3,8 @@ export interface FeatureData {
     name: string;
     name_ru?: string;
     searchKeys?: string[];
+    category?: string;
+    category_ru?: string;
     active?: boolean;
     type?: string;
     type_ru?: string;

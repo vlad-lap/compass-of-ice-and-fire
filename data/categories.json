@@ -1,0 +1,22 @@
+[
+    {
+        "id": "the-free-cities",
+        "name": "The Free Cities",
+        "locations": ["city-braavos", "city-lorath", "city-norvos", "city-qohor", "city-pentos", "city-myr", "city-tyrosh", "city-lys", "city-volantis"]
+    },
+    {
+        "id": "rhoynar-cities",
+        "name": "Rhoynar cities",
+        "locations": ["ruin-ghoyan-drohe", "ruin-ny-sar", "ruin-ar-noy", "ruin-the-sorrows-chroyane", "ruin-sar-mell", "ruin-sarhoy"]
+    },
+    {
+        "id": "slaver-cities",
+        "name": "Slaver Cities",
+        "locations": ["city-astapor", "city-yunkai", "city-meereen"]
+    },
+    {
+        "id": "qaathi-cities",
+        "name": "Qaathi cities",
+        "locations": ["city-qarth", "city-qarkash", "city-port-yhos", "ruin-vaes-orvik", "ruin-vaes-shirosi", "ruin-vaes-qosar", "ruin-vaes-tolorro"]
+    }
+]
