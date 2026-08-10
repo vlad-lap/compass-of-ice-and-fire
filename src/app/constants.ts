@@ -12,6 +12,7 @@ export const GEODATA_URLS: GeodataDict<string> = {
     regions: 'geodata/got_regions_region.geojson',
     islands: 'geodata/got_islands.geojson',
     mountains: 'geodata/got_mountain.geojson',
+    mountainRidges: 'geodata/got_mountain_ridges.geojson',
     volcanoes: 'geodata/got_volcanoes.geojson',
     snow: 'geodata/got_landscape_snow.geojson',
     steppes: 'geodata/got_landscape_steppe.geojson',

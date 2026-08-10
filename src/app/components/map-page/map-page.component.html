@@ -71,7 +71,7 @@
         @let kebab = kebabCase(polygonType);
         <mgl-geojson-source
             [id]="kebab"
-            [data]="geodataUrls[polygonType]"
+            [data]="geodata[polygonType]"
         />
         <mgl-layer
             [id]="kebab + '-fill'"
@@ -83,7 +83,7 @@
 
     <mgl-geojson-source
         id="mountain-ridges"
-        data="geodata/got_mountain_ridges.geojson"
+        [data]="geodata.mountainRidges"
     />
     <mgl-layer
         id="mountain-ridges-fill"
@@ -95,7 +95,7 @@
 
     <mgl-geojson-source
         id="volcanoes"
-        data="geodata/got_volcanoes.geojson"
+        [data]="geodata.volcanoes"
     />
     <mgl-layer
         id="volcanoes-circle"
@@ -118,7 +118,7 @@
         @let kebab = kebabCase(lineType);
         <mgl-geojson-source
             [id]="kebab"
-            [data]="geodataUrls[lineType]"
+            [data]="geodata[lineType]"
         />
         <mgl-layer
             [id]="kebab + '-line'"
@@ -130,7 +130,7 @@
 
     <mgl-geojson-source
         id="the-wall"
-        [data]="geodataUrls.theWall"
+        [data]="geodata.theWall"
     />
     <mgl-layer
         id="the-wall-line"
@@ -192,7 +192,7 @@
 
     <mgl-geojson-source
         id="locations"
-        [data]="geodataUrls.locations"
+        [data]="geodata.locations"
     />
 
     @for (tier of locationTiers; track tier) {
@@ -232,7 +232,7 @@
 
     <mgl-geojson-source
         id="the-five-forts"
-        [data]="geodataUrls.theFiveForts"
+        [data]="geodata.theFiveForts"
     />
     <mgl-layer
         id="the-five-forts-point"
