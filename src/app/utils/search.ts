@@ -12,6 +12,7 @@ function buildSearchKeys(name: string): string[] {
         normalized,
         normalized.replace(/'/g, ''),
         normalized.replace(/-/g, ' '),
+        normalized.replace(/ё/g, 'е'),
         normalized.replace(/\(/g, '').replace(/\)/g, ''),
     ]);
 }
