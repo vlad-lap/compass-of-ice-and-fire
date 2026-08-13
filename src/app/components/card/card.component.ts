@@ -20,6 +20,7 @@ import { APP_TITLE } from '../../constants';
 import { Store } from '@ngxs/store';
 import { LanguagesState } from '../../store';
 import { SubtitleComponent } from '../subtitle/subtitle.component';
+import { localizeProperty } from '../../utils';
 
 const MAX_CARD_HEIGHT_VIEWPORT_RATIO = 0.8;
 const DEFAULT_MAX_CARD_HEIGHT = 300;
@@ -36,6 +37,7 @@ const CARD_HEIGHT_ABOVE_HEADER = 28;
         '[style.height.px]': 'cardHeight()',
         '[style.max-height.px]': 'maxCardHeight()',
         '[class.resizing]': 'isResizing()',
+        '(touchmove)': 'preventTouchDefault($event)',
     },
 })
 export class CardComponent implements OnDestroy {
@@ -83,9 +85,13 @@ export class CardComponent implements OnDestroy {
 
     async share(): Promise<void> {
         if (navigator.share) {
+            const language = this.store.selectSnapshot(LanguagesState.language);
+            const name = localizeProperty(this.data, language, 'name');
+            const type = localizeProperty(this.data, language, 'type');
+
             await navigator.share({
-                title: `${this.data.name} | ${APP_TITLE}`,
-                text: `${this.data.name} • ${this.data.type}`,
+                title: `${name} | ${APP_TITLE}`,
+                text: `${name} • ${type}`,
                 url: window.location.href,
             });
         } else {
@@ -101,6 +107,11 @@ export class CardComponent implements OnDestroy {
     close(): void {
         this.bottomSheetRef.dismiss();
     }
+
+    preventTouchDefault = (event: TouchEvent): void => {
+        event.preventDefault();
+        event.stopPropagation();
+    };
 
     private onResize = (event: PointerEvent): void => {
         const height = this.resizeStartHeight + this.resizeStartY - event.clientY;

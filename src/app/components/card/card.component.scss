@@ -5,6 +5,7 @@
     flex-direction: column;
     align-items: stretch;
     overflow: hidden;
+    touch-action: none;
 
     &.resizing,
     &.resizing * {
@@ -68,19 +69,18 @@
 .card-subtitle {
     font-size: 14px;
     color: variables.$grey;
-    margin: {
-        bottom: 12px;
-        left: 12px;
-        right: 12px;
-    }
+    margin-bottom: 12px;
 }
 
-.description {
+.card-body {
     max-width: 640px;
     overflow: {
         x: hidden;
         y: auto;
     }
+    touch-action: pan-y;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
     padding: {
         left: 12px;
         right: 12px;

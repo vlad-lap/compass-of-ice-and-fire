@@ -1,6 +1,10 @@
 @let ui = coreUi();
 
-<div class="card-resize-area" (pointerdown)="startResize($event)">
+<div
+    class="card-resize-area"
+    (pointerdown)="startResize($event)"
+    (touchstart)="preventTouchDefault($event)"
+>
     <div class="card-resize-control"></div>
 </div>
 
@@ -34,6 +38,7 @@
     </button>
 </div>
 
-<coiaf-subtitle [location]="data" class="card-subtitle" />
-
-<div class="description">{{ data | localize: 'description' }}</div>
+<div class="card-body" (touchmove)="$event.stopPropagation()">
+    <coiaf-subtitle [location]="data" class="card-subtitle" />
+    <div class="description">{{ data | localize: 'description' }}</div>
+</div>

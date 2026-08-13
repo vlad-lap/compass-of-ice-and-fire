@@ -2,6 +2,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { FeatureData } from '../models';
 import { Store } from '@ngxs/store';
 import { LanguagesState } from '../store';
+import { localizeProperty } from '../utils';
 
 @Pipe({
     name: 'localize',
@@ -12,6 +13,6 @@ export class LocalizePipe implements PipeTransform {
 
     transform<T extends FeatureData>(feature: T, property: keyof T): string {
         const language = this.store.selectSnapshot(LanguagesState.language);
-        return feature?.[`${property as string}_${language}`] ?? feature?.[property] as string;
+        return localizeProperty(feature, language, property);
     }
 }

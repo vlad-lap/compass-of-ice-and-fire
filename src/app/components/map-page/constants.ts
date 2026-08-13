@@ -1,7 +1,7 @@
 import { LngLatLike } from 'maplibre-gl';
 
 export enum MapBounds {
-    North = 48.8,
+    North = 48.7,
     South = -39.3,
     East = 127.4,
     West = -7.1,
