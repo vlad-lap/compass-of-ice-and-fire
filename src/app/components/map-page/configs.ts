@@ -26,6 +26,7 @@ import {
     MOUNTAIN_COLORS,
 } from './constants';
 import { GeodataDict, LocationDict } from '../../models';
+import { omit } from 'lodash';
 
 export const MAP_STYLE: StyleSpecification = {
     version: 8,
@@ -234,11 +235,15 @@ export const LOCATIONS_FILTER: LocationDict<ExpressionSpecification> = {
 
 export const LABEL_SIZE_FILTER: ExpressionSpecification = ['>', ['number', ['get', 'size']], 1];
 
+export const LOCATION_LABEL_ANCHOR_OVERRIDE_FILTER: ExpressionSpecification = ['has', 'labelAnchor'];
+
+const NO_LABEL_ANCHOR_OVERRIDE_FILTER: ExpressionSpecification = ['!', LOCATION_LABEL_ANCHOR_OVERRIDE_FILTER];
+
 export const LOCATION_LABELS_FILTER: LocationDict<ExpressionSpecification> = {
-    tier1: ['all', LOCATIONS_FILTER.tier1, LABEL_SIZE_FILTER],
-    tier2: ['all', LOCATIONS_FILTER.tier2, LABEL_SIZE_FILTER],
-    tier3: ['all', LOCATIONS_FILTER.tier3, LABEL_SIZE_FILTER],
-    tier4: ['all', LOCATIONS_FILTER.tier4, LABEL_SIZE_FILTER],
+    tier1: ['all', LOCATIONS_FILTER.tier1, LABEL_SIZE_FILTER, NO_LABEL_ANCHOR_OVERRIDE_FILTER],
+    tier2: ['all', LOCATIONS_FILTER.tier2, LABEL_SIZE_FILTER, NO_LABEL_ANCHOR_OVERRIDE_FILTER],
+    tier3: ['all', LOCATIONS_FILTER.tier3, LABEL_SIZE_FILTER, NO_LABEL_ANCHOR_OVERRIDE_FILTER],
+    tier4: ['all', LOCATIONS_FILTER.tier4, LABEL_SIZE_FILTER, NO_LABEL_ANCHOR_OVERRIDE_FILTER],
 };
 
 export const LOCATIONS_MIN_ZOOM: LocationDict<ZoomLevel> = {
@@ -291,8 +296,10 @@ export const POINTS_SHADOW: CircleLayerSpecification['paint'] = {
 
 export const FIVE_FORTS_PAINT: CircleLayerSpecification['paint'] = {
     'circle-radius': [
-        'step',
+        'interpolate',
+        ['linear'],
         ['zoom'],
+        ZoomLevel.Initial,
         LocationRadius.SM,
         ZoomLevel.Low,
         LocationRadius.MD,
@@ -335,7 +342,6 @@ export const LABELS_MIN_ZOOM: GeodataDict<ZoomLevel> = {
     kingdomBorders: ZoomLevel.High,
     shores: ZoomLevel.Medium,
     vales: ZoomLevel.Medium,
-    countries: ZoomLevel.Low,
     regions: ZoomLevel.Low,
     mountains: ZoomLevel.Low,
     forests: ZoomLevel.Low,
@@ -356,20 +362,42 @@ export const DEFAULT_LABEL_LAYOUT: SymbolLayerSpecification['layout'] = {
     'text-field': ['get', 'name'],
     'text-font': [FontStyle.Italic],
     'text-size': [
-        'match',
-        ['get', 'size'],
-        1,
-        FontSize.SM,
-        2,
-        FontSize.SM,
-        3,
-        FontSize.MD,
-        4,
-        FontSize.LG,
-        5,
-        FontSize.LG,
-        FontSize.MD,
-    ]
+        'interpolate',
+        ['linear'],
+        ['zoom'],
+        ZoomLevel.Initial,
+        [
+            'match',
+            ['get', 'size'],
+            1,
+            FontSize.XS,
+            2,
+            FontSize.XS,
+            3,
+            FontSize.SM,
+            4,
+            FontSize.MD,
+            5,
+            FontSize.MD,
+            FontSize.SM,
+        ],
+        ZoomLevel.Low,
+        [
+            'match',
+            ['get', 'size'],
+            1,
+            FontSize.SM,
+            2,
+            FontSize.SM,
+            3,
+            FontSize.MD,
+            4,
+            FontSize.LG,
+            5,
+            FontSize.LG,
+            FontSize.MD,
+        ],
+    ],
 };
 
 const DEFAULT_LABEL_POINT_LABEL_LAYOUT: SymbolLayerSpecification['layout'] = {
@@ -384,9 +412,11 @@ const DEFAULT_LINE_LABEL_LAYOUT: SymbolLayerSpecification['layout'] = {
     'symbol-placement': 'line-center',
 };
 
+const POINT_LABEL_OFFSET = 0.45;
+
 const DEFAULT_POINT_LABEL_LAYOUT: SymbolLayerSpecification['layout'] = {
     ...DEFAULT_LABEL_POINT_LABEL_LAYOUT,
-    'text-radial-offset': 0.6,
+    'text-radial-offset': POINT_LABEL_OFFSET,
     'text-font': [
         'match',
         ['get', 'type'],
@@ -408,10 +438,17 @@ const DEFAULT_POINT_LABEL_LAYOUT: SymbolLayerSpecification['layout'] = {
     ],
 };
 
+export const LOCATION_LABEL_ANCHOR_OVERRIDE_LAYOUT: SymbolLayerSpecification['layout'] = {
+    ...omit(DEFAULT_POINT_LABEL_LAYOUT, 'text-variable-anchor'),
+    'text-anchor': ['get', 'labelAnchor'],
+    'text-allow-overlap': true,
+};
+
 export const LABEL_LAYOUT: Partial<GeodataDict<SymbolLayerSpecification['layout']>> = {
     continents: {
         ...DEFAULT_LABEL_POINT_LABEL_LAYOUT,
         'text-size': FontSize.XL,
+        'text-allow-overlap': true,
     },
     lakes: {
         ...DEFAULT_LABEL_LAYOUT,
@@ -439,7 +476,7 @@ export const LABEL_LAYOUT: Partial<GeodataDict<SymbolLayerSpecification['layout'
     theFiveForts: {
         ...DEFAULT_LABEL_POINT_LABEL_LAYOUT,
         'text-variable-anchor': ['top-right', 'bottom-left'],
-        'text-radial-offset': 0.6,
+        'text-radial-offset': POINT_LABEL_OFFSET,
         'text-font': [FontStyle.Bold],
         'text-size': FontSize.LG,
     },

@@ -64,6 +64,8 @@ import {
     LINES_OUTLINE,
     LINES_PAINT,
     LINES_SHADOW,
+    LOCATION_LABEL_ANCHOR_OVERRIDE_FILTER,
+    LOCATION_LABEL_ANCHOR_OVERRIDE_LAYOUT,
     LOCATION_LABELS_FILTER,
     LOCATIONS_FILTER,
     LOCATIONS_MIN_ZOOM,
@@ -215,6 +217,10 @@ export class MapPageComponent {
     protected readonly labelsMinZoom = LABELS_MIN_ZOOM;
     protected readonly labelsMaxZoom = LABELS_MAX_ZOOM;
     protected readonly locationLabelsFilter = LOCATION_LABELS_FILTER;
+    protected readonly locationLabelAnchorOverrideFilter = LOCATION_LABEL_ANCHOR_OVERRIDE_FILTER;
+    protected readonly locationLabelAnchorOverrideLayout = computed<SymbolLayerSpecification['layout']>(() =>
+        this.getLocalizedLabelLayout(LOCATION_LABEL_ANCHOR_OVERRIDE_LAYOUT),
+    );
 
     protected readonly gradientUrl = this.buildGradientUrl();
     protected readonly gradientCoordinates = GRADIENT_COORDINATES;

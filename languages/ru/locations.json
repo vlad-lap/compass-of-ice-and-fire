@@ -1,5 +1,4 @@
 {
-  "ruin-sarhoy": "Сарой",
   "city-kings-landing": "Королевская Гавань",
   "castle-hayford-castle": "Хейфорд",
   "castle-rosby": "Росби",
@@ -282,5 +281,6 @@
   "city-nefer": "Нефер",
   "castle-harvest-hall": "Дом Урожая",
   "ruin-vaes-gorqoyi-mardosh": "Ваэс Горкойи (Мардош)",
-  "other-field-of-crows": "Поле Стервятников"
+  "other-field-of-crows": "Поле Стервятников",
+  "ruin-sarhoy": "Сарой"
 }
