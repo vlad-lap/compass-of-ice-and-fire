@@ -2,7 +2,6 @@
 "type": "FeatureCollection",
 "name": "got_locations",
 "features": [
-{ "type": "Feature", "properties": { "id": 314, "name": "Sarhoy", "size": 4, "confirmed": 1, "type": "ruin" }, "geometry": { "type": "Point", "coordinates": [ 43.245600382365275, -10.805644748527511 ] } },
 { "type": "Feature", "properties": { "id": 1, "name": "King's Landing", "size": 5, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 18.432066083848635, 3.736014024094777 ] } },
 { "type": "Feature", "properties": { "id": 2, "name": "Hayford Castle", "size": 3, "confirmed": 0, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 18.306671191450057, 4.783014234685957 ] } },
 { "type": "Feature", "properties": { "id": 3, "name": "Rosby", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 19.111838395272535, 4.56899438074251 ] } },
@@ -14,8 +13,8 @@
 { "type": "Feature", "properties": { "id": 10, "name": "Antlers", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 19.52573582206184, 7.468633415117259 ] } },
 { "type": "Feature", "properties": { "id": 11, "name": "Stokeworth", "size": 3, "confirmed": 0, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 18.961805111147086, 5.151332170766397 ] } },
 { "type": "Feature", "properties": { "id": 15, "name": "Harrenhal", "size": 5, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 16.6241060494282, 8.454703521361028 ] } },
-{ "type": "Feature", "properties": { "id": 16, "name": "Rushing Falls", "size": 1, "confirmed": 0, "type": "other" }, "geometry": { "type": "Point", "coordinates": [ 15.926572068618453, 8.169073349470152 ] } },
-{ "type": "Feature", "properties": { "id": 17, "name": "Tumbler's Falls", "size": 4, "confirmed": 0, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 14.196821165508187, 7.492833103315541 ] } },
+{ "type": "Feature", "properties": { "id": 16, "name": "Rushing Falls", "size": 1, "confirmed": 0, "type": "other" }, "geometry": { "type": "Point", "coordinates": [ 14.345774366084132, 7.319895947433868 ] } },
+{ "type": "Feature", "properties": { "id": 17, "name": "Tumbler's Falls", "size": 4, "confirmed": 0, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 14.473079549652063, 5.957730483257017 ] } },
 { "type": "Feature", "properties": { "id": 18, "name": "Stoney Sept", "size": 4, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 13.209615551920029, 6.574686598017373 ] } },
 { "type": "Feature", "properties": { "id": 19, "name": "Hollow Hill", "size": 1, "confirmed": 0, "type": "other" }, "geometry": { "type": "Point", "coordinates": [ 12.620910989220055, 6.957811789615762 ] } },
 { "type": "Feature", "properties": { "id": 21, "name": "Acorn Hall", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 13.559814541045789, 8.244573238004884 ] } },
@@ -293,6 +292,7 @@
 { "type": "Feature", "properties": { "id": 310, "name": null, "size": 4, "confirmed": 1, "type": "ruin" }, "geometry": { "type": "Point", "coordinates": [ 125.319854306625587, -29.730462478543924 ] } },
 { "type": "Feature", "properties": { "id": 311, "name": "Harvest Hall", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 13.887979270768971, -3.716633254272738 ] } },
 { "type": "Feature", "properties": { "id": 312, "name": "Vaes Gorqoyi (Mardosh)", "size": 4, "confirmed": 0, "type": "ruin" }, "geometry": { "type": "Point", "coordinates": [ 54.82773054860462, 4.033967506320956 ] } },
-{ "type": "Feature", "properties": { "id": 313, "name": "Field of Crows", "size": 1, "confirmed": 0, "type": "other" }, "geometry": { "type": "Point", "coordinates": [ 60.97349142568234, 3.913502426006143 ] } }
+{ "type": "Feature", "properties": { "id": 313, "name": "Field of Crows", "size": 1, "confirmed": 0, "type": "other" }, "geometry": { "type": "Point", "coordinates": [ 60.97349142568234, 3.913502426006143 ] } },
+{ "type": "Feature", "properties": { "id": 314, "name": "Sarhoy", "size": 4, "confirmed": 1, "type": "ruin" }, "geometry": { "type": "Point", "coordinates": [ 43.245600382365275, -10.805644748527511 ] } }
 ]
 }

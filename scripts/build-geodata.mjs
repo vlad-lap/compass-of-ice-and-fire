@@ -16,6 +16,7 @@ import {
 import { getConsolePrefix, getConsoleStats } from './console-utils.mjs';
 import { getCentralPoint, getInteriorPoint, getMiddleMultiPoint } from './geometry-utils.mjs';
 import { getCategory } from './get-category.mjs';
+import { LOCATION_LABEL_ANCHORS } from './constants.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const QGIS = join(__dirname, '..', 'qgis');
@@ -240,6 +241,7 @@ const locations = processGeoJSON('got_locations.geojson', 'locations.json', {
                 islandId: getContainingPolygonId(feature.geometry, islands),
                 description: descriptions[feature.properties.id] ?? null,
                 nameVariant: nameVariants[feature.properties.id] ?? null,
+                labelAnchor: LOCATION_LABEL_ANCHORS[feature.properties.id],
             },
         };
     },
