@@ -37,7 +37,6 @@ const CARD_HEIGHT_ABOVE_HEADER = 28;
         '[style.height.px]': 'cardHeight()',
         '[style.max-height.px]': 'maxCardHeight()',
         '[class.resizing]': 'isResizing()',
-        '(touchmove)': 'preventTouchDefault($event)',
     },
 })
 export class CardComponent implements OnDestroy {

@@ -7,10 +7,6 @@
 @use 'variables';
 @use 'theme';
 
-html, body {
-    overscroll-behavior: none;
-}
-
 html {
     height: 100%;
     @include mat.theme(

@@ -38,7 +38,7 @@
     </button>
 </div>
 
-<div class="card-body" (touchmove)="$event.stopPropagation()">
+<div class="card-body">
     <coiaf-subtitle [location]="data" class="card-subtitle" />
     <div class="description">{{ data | localize: 'description' }}</div>
 </div>
