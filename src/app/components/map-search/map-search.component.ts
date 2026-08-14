@@ -2,6 +2,7 @@ import {
     ChangeDetectionStrategy,
     Component,
     DestroyRef,
+    effect,
     ElementRef,
     OnInit,
     output,
@@ -29,6 +30,7 @@ import { matchesSearch } from '../../utils';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Title } from '@angular/platform-browser';
 import { APP_TITLE, AVAILABLE_LANGUAGES } from '../../constants';
+import { SearchService } from '../../services';
 
 const OPTIONS_GROUP_ORDER: OptionGroup[] = [
     'city',
@@ -107,12 +109,18 @@ export class MapSearchComponent implements OnInit {
         private location: Location,
         private destroyRef: DestroyRef,
         private title: Title,
-    ) {}
+        private searchService: SearchService,
+    ) {
+        effect(() => {
+            const selectedId = this.searchService.selectedId();
+            this.setSelectedId(selectedId);
+        });
+    }
 
     ngOnInit(): void {
         const id = this.location.path().replace(/^\//, '');
         if (id) {
-            this.setSelectedId(decodeURIComponent(id));
+            this.searchService.selectedId.set(decodeURIComponent(id));
         }
 
         this.searchControl.valueChanges

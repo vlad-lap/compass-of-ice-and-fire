@@ -9,4 +9,17 @@
     }
 
     <coiaf-subtitle [location]="locationData" iconSize="small" class="tooltip-subtitle" />
+
+    @if (showDetailsLink()) {
+        <a
+            class="details-link"
+            (click)="setSelectedId()"
+            (keydown.enter)="setSelectedId()"
+            tabindex="0"
+            [aria-label]="ui.details"
+        >
+            <span>{{ ui.details }}</span>
+            <mat-icon>chevron_right</mat-icon>
+        </a>
+    }
 </div>

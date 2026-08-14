@@ -21,7 +21,6 @@ import {
     LngLatBounds,
     LngLatLike,
     Map,
-    MapGeoJSONFeature,
     MapLayerMouseEvent,
     MapMouseEvent,
     MapTouchEvent,
@@ -31,14 +30,11 @@ import {
 import { Feature, FeatureCollection, MultiPolygon, Point, Polygon, Position } from 'geojson';
 import {
     INITIAL_MAP_CENTER,
-    LONG_PRESS_DURATION_MS,
     CLICKABLE_LAYER_IDS,
     ZOOM_DURATION,
     ZOOM_STEP,
     ZoomLevel,
-    LONG_PRESSABLE_LAYER_IDS,
     HitRadiusPx,
-    LONG_PRESS_TOOLTIP_TIMEOUT_MS,
 } from './constants';
 import {
     FeatureData,
@@ -97,6 +93,7 @@ import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-shee
 import { CardComponent } from '../card/card.component';
 import { takeUntil } from 'rxjs';
 import { kebabCase, mapValues } from 'lodash';
+import { SearchService } from '../../services';
 
 @Component({
     selector: 'coiaf-map-page',
@@ -117,7 +114,6 @@ import { kebabCase, mapValues } from 'lodash';
 })
 export class MapPageComponent {
     protected readonly map = viewChild.required(MapComponent);
-    protected readonly searchComponent = viewChild.required(MapSearchComponent);
 
     protected readonly language = this.store.selectSignal(LanguagesState.language);
     protected readonly coreUi = this.store.selectSignal(LanguagesState.coreUi);
@@ -293,14 +289,13 @@ export class MapPageComponent {
     private popup: Popup;
     private tooltipRef: ComponentRef<TooltipComponent>;
     private bottomSheetRef: MatBottomSheetRef;
-    private longPressTimer: ReturnType<typeof setTimeout>;
-    private longPressTooltipTimer: ReturnType<typeof setTimeout>;
 
     constructor(
         private store: Store,
         private dialog: MatDialog,
         private bottomSheet: MatBottomSheet,
         private viewContainerRef: ViewContainerRef,
+        private searchService: SearchService,
     ) {
         effect(() => {
             const highlight = this.searchHighlightFeature();
@@ -353,12 +348,12 @@ export class MapPageComponent {
         this.map().mapInstance.flyTo({ center: INITIAL_MAP_CENTER, zoom: ZoomLevel.Initial });
     }
 
-    onFeatureEnter({ lngLat, target, features }: MapLayerMouseEvent): void {
+    onFeatureEnter(event: MapLayerMouseEvent): void {
         if (!this.hasHover) {
             return;
         }
 
-        const feature = features?.[0];
+        const feature = event.features?.[0];
         if (!feature) {
             return;
         }
@@ -366,20 +361,16 @@ export class MapPageComponent {
         if (this.hasCard(feature)) {
             this.cursorStyle.set('pointer');
         }
-        this.showTooltip(target, feature, lngLat);
+        this.showTooltip(event, feature);
     }
 
     onFeatureLeave(): void {
         this.cursorStyle.set('default');
-        this.popup?.remove();
-        this.popup = null;
-        this.tooltipRef?.destroy();
-        this.tooltipRef = null;
+        this.hideTooltip();
     }
 
     onMapDragStart(): void {
         this.cursorStyle.set('grabbing');
-        this.cancelLongPress();
     }
 
     onMapDragEnd(): void {
@@ -387,36 +378,20 @@ export class MapPageComponent {
         this.saveCurrentPosition();
     }
 
-    onLongPressStart(event: MapMouseEvent | MapTouchEvent): void {
-        this.cancelLongPress();
-
-        this.longPressTooltipTimer = setTimeout(() => {
-            const feature = this.queryRenderedFeature(event, LONG_PRESSABLE_LAYER_IDS);
-            const lngLat = this.hasHover
-                ? event.lngLat
-                : ([event.lngLat.lng, event.lngLat.lat + 0.5] as LngLatLike);
-
-            if (feature) {
-                this.showTooltip(event.target, feature, lngLat);
-            }
-        }, LONG_PRESS_TOOLTIP_TIMEOUT_MS);
-
-        this.longPressTimer = setTimeout(() => {
-            this.hideTooltip();
-            this.selectFeature(event, LONG_PRESSABLE_LAYER_IDS);
-        }, LONG_PRESS_DURATION_MS);
-    }
-
-    onLongPressEnd(): void {
-        this.cancelLongPress();
-    }
-
     onMapClick(event: MapMouseEvent): void {
-        if (this.longPressTimer || this.longPressTooltipTimer) {
+        const feature = this.queryRenderedFeature(event, CLICKABLE_LAYER_IDS);
+
+        if (!feature?.properties?.name) {
+            this.hideTooltip();
             return;
         }
 
-        this.selectFeature(event, CLICKABLE_LAYER_IDS);
+        const isPolygonFeature =
+            feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon';
+
+        isPolygonFeature
+            ? this.showTooltip(event, feature, true)
+            : this.searchService.selectedId.set(feature.properties.id);
     }
 
     onMapDoubleClick({ lngLat }: MapMouseEvent): void {
@@ -446,20 +421,10 @@ export class MapPageComponent {
         this.dialog.open(AboutDialogComponent);
     }
 
-    private selectFeature(event: MapMouseEvent | MapTouchEvent, layers: string[]): void {
-        const feature = this.queryRenderedFeature(event, layers);
-
-        if (!feature?.properties?.name) {
-            return;
-        }
-
-        this.searchComponent().setSelectedId(feature.properties.id);
-    }
-
     private queryRenderedFeature(
         { target, point: { x, y } }: MapMouseEvent | MapTouchEvent,
         layers: string[],
-    ): MapGeoJSONFeature {
+    ): Feature {
         const [feature] = target.queryRenderedFeatures(
             [
                 [x - this.hitRadius, y - this.hitRadius],
@@ -468,7 +433,13 @@ export class MapPageComponent {
             { layers },
         );
 
-        return feature;
+        return feature
+            ? {
+                type: 'Feature',
+                properties: feature.properties,
+                geometry: feature.geometry,
+            }
+            : null;
     }
 
     private zoomToFeature(feature: Feature): void {
@@ -490,14 +461,6 @@ export class MapPageComponent {
             padding: 30,
             offset: [0, verticalOffset],
         });
-    }
-
-    private cancelLongPress(): void {
-        this.hideTooltip();
-        if (this.longPressTimer) {
-            clearTimeout(this.longPressTimer);
-            this.longPressTimer = null;
-        }
     }
 
     private getHighlightLayerType(
@@ -533,7 +496,7 @@ export class MapPageComponent {
 
         bottomSheetRef.afterDismissed().subscribe(() => {
             if (this.bottomSheetRef === bottomSheetRef) {
-                this.searchComponent().setSelectedId(null);
+                this.searchService.selectedId.set(null);
             }
         });
     }
@@ -543,9 +506,9 @@ export class MapPageComponent {
     }
 
     private showTooltip(
-        map: MapLayerMouseEvent['target'],
-        { geometry, properties }: MapGeoJSONFeature,
-        lngLat: LngLatLike,
+        { target: map, lngLat }: MapLayerMouseEvent | MapMouseEvent | MapTouchEvent,
+        { geometry, properties }: Feature,
+        showDetailsLink = false
     ): void {
         const anchor = geometry.type === 'Point' ? (geometry.coordinates as LngLatLike) : lngLat;
 
@@ -556,23 +519,21 @@ export class MapPageComponent {
             className: 'coiaf-map-popup',
         })
             .setLngLat(anchor)
-            .setDOMContent(this.buildTooltip(properties as FeatureData))
+            .setDOMContent(this.buildTooltip(properties as FeatureData, showDetailsLink))
             .addTo(map);
     }
 
     private hideTooltip(): void {
         this.popup?.remove();
+        this.popup = null;
         this.tooltipRef?.destroy();
-
-        if (this.longPressTooltipTimer) {
-            clearTimeout(this.longPressTooltipTimer);
-            this.longPressTooltipTimer = null;
-        }
+        this.tooltipRef = null;
     }
 
-    private buildTooltip(location: FeatureData): HTMLElement {
+    private buildTooltip(location: FeatureData, showDetailsLink: boolean): HTMLElement {
         this.tooltipRef = this.viewContainerRef.createComponent(TooltipComponent);
         this.tooltipRef.setInput('location', location);
+        this.tooltipRef.setInput('showDetailsLink', showDetailsLink);
         this.tooltipRef.changeDetectorRef.detectChanges();
         return this.tooltipRef.location.nativeElement;
     }
