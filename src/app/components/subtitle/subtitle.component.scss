@@ -1,10 +1,4 @@
-@mixin icon-size($icon-size) {
-    min-height: $icon-size;
-    height: $icon-size;
-    min-width: $icon-size;
-    width: $icon-size;
-    font-size: $icon-size;
-}
+@use '../../../mixins';
 
 :host {
     display: block;
@@ -21,11 +15,11 @@
 
     &-icon {
         &.small {
-            @include icon-size(12px);
+            @include mixins.icon-size(12px);
         }
 
         &.medium {
-            @include icon-size(16px);
+            @include mixins.icon-size(16px);
         }
     }
 }

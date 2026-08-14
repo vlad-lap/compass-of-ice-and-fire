@@ -1,4 +1,5 @@
 @use '../../../variables';
+@use '../../../mixins';
 
 .tooltip {
     max-width: 180px;
@@ -18,5 +19,16 @@
     &.name-variant {
         margin-bottom: 8px;
         font-weight: bold;
+    }
+}
+
+.details-link {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    margin-top: 4px;
+
+    .mat-icon {
+        @include mixins.icon-size(14px);
     }
 }

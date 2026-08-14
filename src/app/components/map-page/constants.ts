@@ -82,9 +82,6 @@ export const CLICKABLE_LAYER_IDS = [
     'tier4-point',
     'the-wall-line',
     'the-five-forts-point',
-];
-
-export const LONG_PRESSABLE_LAYER_IDS = [
     'kingdoms-fill',
     'countries-fill',
     'regions-fill',

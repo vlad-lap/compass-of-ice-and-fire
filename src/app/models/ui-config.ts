@@ -11,4 +11,5 @@ export interface UiConfig<T> {
     clear: T;
     language: T;
     formerly: T;
+    details: T;
 }
