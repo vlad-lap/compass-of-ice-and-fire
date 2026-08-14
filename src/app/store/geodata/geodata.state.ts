@@ -28,7 +28,7 @@ export class GeodataState {
             state.locations ?? ({} as FeatureCollection),
         );
         return {
-            ...omit(allOptionsDict, ['locations', 'kingdomBorders']),
+            ...omit(allOptionsDict, ['locations', 'kingdomBorders', 'mountainRidges']),
             ...locationsOptionsDict,
         };
     }
