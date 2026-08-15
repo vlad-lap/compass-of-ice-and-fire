@@ -12,11 +12,19 @@ import { Converter } from 'showdown';
 import { Store } from '@ngxs/store';
 import { GetAboutText, LanguagesState } from '../../store';
 import { DomSanitizer } from '@angular/platform-browser';
+import { SpinnerComponent } from '../spinner/spinner.component';
 
 @Component({
     selector: 'coiaf-about-dialog',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [MatDialogTitle, MatIcon, MatIconButton, MatDialogClose, MatDialogContent],
+    imports: [
+        MatDialogTitle,
+        MatIcon,
+        MatIconButton,
+        MatDialogClose,
+        MatDialogContent,
+        SpinnerComponent,
+    ],
     templateUrl: './about-dialog.component.html',
     styleUrl: './about-dialog.component.scss',
 })
