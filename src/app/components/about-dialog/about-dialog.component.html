@@ -13,4 +13,14 @@
     </div>
 </div>
 
-<mat-dialog-content [innerHTML]="aboutHtml()" />
+<mat-dialog-content>
+    @let about = aboutHtml();
+
+    @if (about) {
+        <div [innerHTML]="about"></div>
+    } @else {
+        <div class="loader">
+            <coiaf-spinner size="small" />
+        </div>
+    }
+</mat-dialog-content>
