@@ -21,6 +21,7 @@ import {
     LngLatBounds,
     LngLatLike,
     Map,
+    MapGeoJSONFeature,
     MapLayerMouseEvent,
     MapMouseEvent,
     MapTouchEvent,
@@ -354,7 +355,9 @@ export class MapPageComponent {
         }
 
         const feature = event.features?.[0];
-        if (!feature) {
+        const zoom = event.target.getZoom();
+
+        if (!feature || this.isBelowLocationMinZoom(feature, zoom)) {
             return;
         }
 
@@ -425,13 +428,16 @@ export class MapPageComponent {
         { target, point: { x, y } }: MapMouseEvent | MapTouchEvent,
         layers: string[],
     ): Feature {
-        const [feature] = target.queryRenderedFeatures(
+        const zoom = target.getZoom();
+        const features = target.queryRenderedFeatures(
             [
                 [x - this.hitRadius, y - this.hitRadius],
                 [x + this.hitRadius, y + this.hitRadius],
             ],
             { layers },
         );
+        const feature = features
+            .find(geoJsonFeature => !this.isBelowLocationMinZoom(geoJsonFeature, zoom));
 
         return feature
             ? {
@@ -440,6 +446,11 @@ export class MapPageComponent {
                 geometry: feature.geometry,
             }
             : null;
+    }
+
+    private isBelowLocationMinZoom({ layer }: MapGeoJSONFeature, zoom: number): boolean {
+        const tier = this.locationTiers.find((locationTier) => layer.id === `${locationTier}-point`);
+        return !!tier && zoom < (LOCATIONS_MIN_ZOOM[tier] ?? 0);
     }
 
     private zoomToFeature(feature: Feature): void {
