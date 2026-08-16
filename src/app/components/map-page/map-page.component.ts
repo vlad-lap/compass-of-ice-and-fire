@@ -32,6 +32,8 @@ import { Feature, FeatureCollection, MultiPolygon, Point, Polygon, Position } fr
 import {
     INITIAL_MAP_CENTER,
     CLICKABLE_LAYER_IDS,
+    KM_PER_COORD_UNIT,
+    SCALE_BAR_MAX_WIDTH_PX,
     ZOOM_DURATION,
     ZOOM_STEP,
     ZoomLevel,
@@ -81,6 +83,7 @@ import {
 import {
     buildMaskPolygon,
     getGeometryPositions,
+    getRoundDistanceKm,
     HighlightableGeometry,
 } from '../../utils';
 import { MatIconButton, MatMiniFabButton } from '@angular/material/button';
@@ -89,6 +92,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { AboutDialogComponent } from '../about-dialog/about-dialog.component';
 import { TooltipComponent } from '../tooltip/tooltip.component';
 import { MapSearchComponent } from '../map-search/map-search.component';
+import { MapScaleComponent } from '../map-scale/map-scale.component';
 import { KeyValuePipe } from '@angular/common';
 import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { CardComponent } from '../card/card.component';
@@ -108,6 +112,7 @@ import { SearchService } from '../../services';
         MatIcon,
         MatIconButton,
         MapSearchComponent,
+        MapScaleComponent,
         KeyValuePipe,
     ],
     templateUrl: './map-page.component.html',
@@ -120,6 +125,9 @@ export class MapPageComponent {
     protected readonly coreUi = this.store.selectSignal(LanguagesState.coreUi);
 
     protected readonly cursorStyle = signal<string>('default');
+
+    protected readonly scaleBarWidthPx = signal<number>(0);
+    protected readonly scaleBarDistanceKm = signal<number>(0);
 
     protected readonly searchHighlightFeature = signal<Feature>(null);
 
@@ -320,6 +328,20 @@ export class MapPageComponent {
                 map.jumpTo(position);
             }
         }
+
+        this.updateScaleBar();
+    }
+
+    updateScaleBar(): void {
+        const map = this.map().mapInstance;
+        const y = map.getContainer().clientHeight / 2;
+        const left = map.unproject([0, y]);
+        const right = map.unproject([SCALE_BAR_MAX_WIDTH_PX, y]);
+        const maxKm = Math.hypot(right.lng - left.lng, right.lat - left.lat) * KM_PER_COORD_UNIT;
+        const roundKm = getRoundDistanceKm(maxKm);
+
+        this.scaleBarWidthPx.set(SCALE_BAR_MAX_WIDTH_PX * (roundKm / maxKm));
+        this.scaleBarDistanceKm.set(roundKm);
     }
 
     saveCurrentPosition(): void {
