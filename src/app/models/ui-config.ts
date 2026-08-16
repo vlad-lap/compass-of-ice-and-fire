@@ -12,4 +12,5 @@ export interface UiConfig<T> {
     language: T;
     formerly: T;
     details: T;
+    km: T;
 }

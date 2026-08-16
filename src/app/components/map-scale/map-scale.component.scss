@@ -1,0 +1,19 @@
+@use '../../../variables';
+
+:host {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background-color: rgba(variables.$white, .75);
+    border-radius: 4px;
+    color: variables.$black;
+    font-size: 12px;
+    line-height: 1;
+}
+
+.bar {
+    height: 6px;
+    border: 1px solid variables.$black;
+    border-top: none;
+}

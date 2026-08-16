@@ -22,6 +22,9 @@ export const ZOOM_STEP = 0.5;
 export const LONG_PRESS_TOOLTIP_TIMEOUT_MS = 150;
 export const LONG_PRESS_DURATION_MS = 800;
 
+export const KM_PER_COORD_UNIT = 85.371;
+export const SCALE_BAR_MAX_WIDTH_PX = 100;
+
 export const BLACK = '#333333';
 export const GREY = '#7b766f';
 export const LIGHT_GREY = '#b0aaa2';
