@@ -42,6 +42,12 @@
     <mat-icon>info_i</mat-icon>
 </button>
 
+<coiaf-map-scale
+    class="map-scale"
+    [widthPx]="scaleBarWidthPx()"
+    [distanceKm]="scaleBarDistanceKm()"
+/>
+
 <mgl-map
     class="map"
     [mapStyle]="mapStyle"
@@ -59,7 +65,7 @@
     (mapDblClick)="onMapDoubleClick($event)"
     (mapDragStart)="onMapDragStart()"
     (mapDragEnd)="onMapDragEnd()"
-    (zoomEnd)="saveCurrentPosition()"
+    (zoomEnd)="saveCurrentPosition(); updateScaleBar()"
 >
     @for (polygonType of polygonTypes; track polygonType) {
         @let kebab = kebabCase(polygonType);

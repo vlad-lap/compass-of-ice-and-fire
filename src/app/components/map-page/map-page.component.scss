@@ -13,11 +13,14 @@
     height: 100%;
 }
 
-.map-menu, .about-button {
+.map-menu, .about-button, .map-scale {
     position: absolute;
-    right: 16px;
     z-index: 1;
     touch-action: pan-x pan-y;
+}
+
+.map-menu, .about-button {
+    right: 16px;
 }
 
 .about-button {
@@ -30,6 +33,11 @@
     flex-direction: column;
     gap: 8px;
     opacity: .75;
+}
+
+.map-scale {
+    left: 16px;
+    bottom: 20px;
 }
 
 ::ng-deep {
