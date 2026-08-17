@@ -113,7 +113,7 @@ const mountains = readGeoJSON('got_mountains.geojson', 'mountains.json');
 const mountainRidges = buildMountainRidges(mountains, continents, islands);
 writeGeoJSON('got_mountain_ridges.geojson', mountainRidges);
 
-const mountainUnion = buildMountainUnion(mountainRidges);
+const mountainUnion = buildMountainUnion(mountainRidges, continents, islands);
 writeGeoJSON('got_mountain.geojson', mountainUnion);
 syncLanguage(mountains, 'mountains.json');
 

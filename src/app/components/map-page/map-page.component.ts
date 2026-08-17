@@ -90,7 +90,7 @@ import { MatIconButton, MatMiniFabButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
 import { AboutDialogComponent } from '../about-dialog/about-dialog.component';
-import { TooltipComponent } from '../tooltip/tooltip.component';
+import { TooltipComponent, TooltipOptions } from '../tooltip/tooltip.component';
 import { MapSearchComponent } from '../map-search/map-search.component';
 import { MapScaleComponent } from '../map-scale/map-scale.component';
 import { KeyValuePipe } from '@angular/common';
@@ -415,7 +415,7 @@ export class MapPageComponent {
             feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon';
 
         isPolygonFeature
-            ? this.showTooltip(event, feature, true)
+            ? this.showTooltip(event, feature, { showCloseButton: true, showDetailsLink: true })
             : this.searchService.selectedId.set(feature.properties.id);
     }
 
@@ -541,7 +541,7 @@ export class MapPageComponent {
     private showTooltip(
         { target: map, lngLat }: MapLayerMouseEvent | MapMouseEvent | MapTouchEvent,
         { geometry, properties }: Feature,
-        showDetailsLink = false
+        options?: TooltipOptions,
     ): void {
         const anchor = geometry.type === 'Point' ? (geometry.coordinates as LngLatLike) : lngLat;
 
@@ -549,10 +549,11 @@ export class MapPageComponent {
         this.popup = new Popup({
             closeButton: false,
             closeOnClick: false,
+            focusAfterOpen: false,
             className: 'coiaf-map-popup',
         })
             .setLngLat(anchor)
-            .setDOMContent(this.buildTooltip(properties as FeatureData, showDetailsLink))
+            .setDOMContent(this.buildTooltip(properties as FeatureData, options))
             .addTo(map);
     }
 
@@ -563,10 +564,11 @@ export class MapPageComponent {
         this.tooltipRef = null;
     }
 
-    private buildTooltip(location: FeatureData, showDetailsLink: boolean): HTMLElement {
+    private buildTooltip(location: FeatureData, options: TooltipOptions): HTMLElement {
         this.tooltipRef = this.viewContainerRef.createComponent(TooltipComponent);
         this.tooltipRef.setInput('location', location);
-        this.tooltipRef.setInput('showDetailsLink', showDetailsLink);
+        this.tooltipRef.setInput('options', options);
+        this.tooltipRef.instance.close$.subscribe(() => this.hideTooltip());
         this.tooltipRef.changeDetectorRef.detectChanges();
         return this.tooltipRef.location.nativeElement;
     }
