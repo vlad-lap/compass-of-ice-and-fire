@@ -189,6 +189,9 @@ export class MapPageComponent {
         countries: this.store.selectSnapshot(GeodataState.labelPoints('countries')),
         regions: this.store.selectSnapshot(GeodataState.labelPoints('regions')),
         mountains: this.store.selectSnapshot(GeodataState.labelPoints('mountains')),
+        steppes: this.store.selectSnapshot(GeodataState.labelPoints('steppes')),
+        deserts: this.store.selectSnapshot(GeodataState.labelPoints('deserts')),
+        wastelands: this.store.selectSnapshot(GeodataState.labelPoints('wastelands')),
         theFiveForts: this.store.selectSnapshot(GeodataState.labelPoints('theFiveForts')),
     };
 
