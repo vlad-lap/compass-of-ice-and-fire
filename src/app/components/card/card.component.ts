@@ -18,7 +18,7 @@ import { Subject } from 'rxjs';
 import { LocalizePipe } from '../../pipes';
 import { APP_TITLE } from '../../constants';
 import { Store } from '@ngxs/store';
-import { LanguagesState } from '../../store';
+import { LanguagesState, UserSettingsState } from '../../store';
 import { SubtitleComponent } from '../subtitle/subtitle.component';
 import { localizeProperty } from '../../utils';
 
@@ -84,7 +84,7 @@ export class CardComponent implements OnDestroy {
 
     async share(): Promise<void> {
         if (navigator.share) {
-            const language = this.store.selectSnapshot(LanguagesState.language);
+            const language = this.store.selectSnapshot(UserSettingsState.language);
             const name = localizeProperty(this.data, language, 'name');
             const type = localizeProperty(this.data, language, 'type');
 

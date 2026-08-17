@@ -17,7 +17,12 @@ import {
     MatOption,
 } from '@angular/material/autocomplete';
 import { Store } from '@ngxs/store';
-import { GeodataState, LanguagesState, SetLanguage } from '../../store';
+import {
+    GeodataState,
+    LanguagesState,
+    SetLanguage,
+    UserSettingsState,
+} from '../../store';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { map, Observable, startWith } from 'rxjs';
 import { FeatureData, OptionGroup } from '../../models';
@@ -87,7 +92,7 @@ export class MapSearchComponent implements OnInit {
 
     readonly coreUi = this.store.selectSignal(LanguagesState.coreUi);
     readonly optionGroups = this.store.selectSignal(LanguagesState.optionGroups);
-    readonly language = this.store.selectSignal(LanguagesState.language);
+    readonly language = this.store.selectSignal(UserSettingsState.language);
     readonly options = this.store.selectSnapshot(GeodataState.searchOptions);
     readonly searchControl = new FormControl<FeatureData | string>('');
 

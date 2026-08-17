@@ -10,7 +10,7 @@ import { MatIcon } from '@angular/material/icon';
 import { MatIconButton } from '@angular/material/button';
 import { Converter } from 'showdown';
 import { Store } from '@ngxs/store';
-import { GetAboutText, LanguagesState } from '../../store';
+import { GetAboutText, LanguagesState, UserSettingsState } from '../../store';
 import { DomSanitizer } from '@angular/platform-browser';
 import { SpinnerComponent } from '../spinner/spinner.component';
 
@@ -49,7 +49,8 @@ export class AboutDialogComponent implements OnInit {
     ) {}
 
     ngOnInit() {
-        this.store.dispatch(new GetAboutText());
+        const language = this.store.selectSnapshot(UserSettingsState.language);
+        this.store.dispatch(new GetAboutText(language));
     }
 
     private mdToHtml(md: string): string {

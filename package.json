@@ -23,6 +23,7 @@
         "@angular/platform-browser": "^21.2.0",
         "@angular/router": "^21.2.0",
         "@maplibre/ngx-maplibre-gl": "21.0.2",
+        "@ngxs/storage-plugin": "^21.0.0",
         "@ngxs/store": "^21.0.0",
         "@types/lodash": "^4.17.24",
         "lodash": "^4.18.1",

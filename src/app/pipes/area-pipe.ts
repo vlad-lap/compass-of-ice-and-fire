@@ -1,7 +1,7 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { FeatureData } from '../models';
 import { Store } from '@ngxs/store';
-import { GeodataState, LanguagesState } from '../store';
+import { GeodataState, LanguagesState, UserSettingsState } from '../store';
 import { uniq } from 'lodash';
 
 @Pipe({
@@ -30,13 +30,13 @@ export class AreaPipe implements PipeTransform {
     }
 
     private getCategoryName(location: FeatureData): string {
-        const language = this.store.selectSnapshot(LanguagesState.language);
+        const language = this.store.selectSnapshot(UserSettingsState.language);
         return location?.[`category_${language}`] ?? location?.category;
     }
 
     private featureNameById(id: string): string {
         const feature = this.store.selectSnapshot(GeodataState.byId(id));
-        const language = this.store.selectSnapshot(LanguagesState.language);
+        const language = this.store.selectSnapshot(UserSettingsState.language);
         const name = feature?.properties[`name_${language}`] ?? feature?.properties.name;
         const ui = this.store.selectSnapshot(LanguagesState.coreUi);
 
