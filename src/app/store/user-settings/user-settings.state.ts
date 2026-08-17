@@ -3,6 +3,7 @@ import { CenterZoomBearing } from 'maplibre-gl';
 import { Action, NgxsOnInit, Selector, State, StateContext } from '@ngxs/store';
 import { AVAILABLE_LANGUAGES, DEFAULT_LANGUAGE } from '../../constants';
 import { SetLanguage, SetPosition } from './user-settings.actions';
+import { Injectable } from '@angular/core';
 
 export interface UserSettingsStateModel {
     language?: Language;
@@ -13,6 +14,7 @@ export interface UserSettingsStateModel {
     name: 'userSettings',
     defaults: {},
 })
+@Injectable()
 export class UserSettingsState implements NgxsOnInit {
     @Selector()
     static language({ language }: UserSettingsStateModel): Language {

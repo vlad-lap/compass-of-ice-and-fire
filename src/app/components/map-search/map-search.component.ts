@@ -27,14 +27,13 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { map, Observable, startWith } from 'rxjs';
 import { FeatureData, OptionGroup } from '../../models';
 import { flatten, isEmpty, mapValues, omitBy } from 'lodash';
-import { CommonModule, KeyValue, Location } from '@angular/common';
+import { CommonModule, KeyValue } from '@angular/common';
 import { MatIconButton } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { LocalizePipe, SortByPipe } from '../../pipes';
 import { matchesSearch } from '../../utils';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Title } from '@angular/platform-browser';
-import { APP_TITLE, AVAILABLE_LANGUAGES } from '../../constants';
+import { AVAILABLE_LANGUAGES } from '../../constants';
 import { SearchService } from '../../services';
 
 const OPTIONS_GROUP_ORDER: OptionGroup[] = [
@@ -96,6 +95,8 @@ export class MapSearchComponent implements OnInit {
     readonly options = this.store.selectSnapshot(GeodataState.searchOptions);
     readonly searchControl = new FormControl<FeatureData | string>('');
 
+    readonly displayFn = this.searchService.displayFn;
+
     readonly filteredOptions$: Observable<Record<string, FeatureData[]>> =
         this.searchControl.valueChanges.pipe(
             startWith(this.searchControl.value),
@@ -111,9 +112,7 @@ export class MapSearchComponent implements OnInit {
 
     constructor(
         private store: Store,
-        private location: Location,
         private destroyRef: DestroyRef,
-        private title: Title,
         private searchService: SearchService,
     ) {
         effect(() => {
@@ -123,13 +122,8 @@ export class MapSearchComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        const id = this.location.path().replace(/^\//, '');
-        if (id) {
-            this.searchService.selectedId.set(decodeURIComponent(id));
-        }
-
         this.searchControl.valueChanges
-            .pipe(startWith(this.searchControl.value), takeUntilDestroyed(this.destroyRef))
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(value => {
                 if (this.isFeatureData(value)) {
                     this.search(value);
@@ -144,11 +138,6 @@ export class MapSearchComponent implements OnInit {
         const selectedOption = options.find(option => option.id === id);
         this.searchControl.patchValue(selectedOption);
     }
-
-    displayFn = (option: FeatureData): string => {
-        const language = this.language();
-        return option?.[`name_${language}`] ?? option?.name;
-    };
 
     sortOptionsGroup(
         { key: key1 }: KeyValue<OptionGroup, FeatureData[]>,
@@ -169,7 +158,7 @@ export class MapSearchComponent implements OnInit {
         const value = this.searchControl.value as FeatureData;
         this.searchControl.reset('', { emitEvent: false });
         this.searchControl.patchValue(value, { emitEvent: false });
-        this.setTitle(value);
+        this.searchService.setTitle(value);
     }
 
     clear(event: MouseEvent): void {
@@ -182,23 +171,12 @@ export class MapSearchComponent implements OnInit {
     private search(value: FeatureData): void {
         queueMicrotask(() => this.searchInput().nativeElement.blur());
         this.applySearch.emit(value);
-        this.setUrl(value);
-        this.setTitle(value);
+        this.searchService.selectedId.set(value?.id);
     }
 
     private reset(): void {
         this.resetSearch.emit();
-        this.setUrl(null);
-        this.setTitle(null);
-    }
-
-    private setUrl(value: FeatureData): void {
-        this.location.go(value ? `/${encodeURIComponent(value.id)}` : '/');
-    }
-
-    private setTitle(value: FeatureData): void {
-        const title = value ? `${this.displayFn(value)} | ${APP_TITLE}` : APP_TITLE;
-        this.title.setTitle(title);
+        this.searchService.selectedId.set(null);
     }
 
     private matchesSearch({ searchKeys }: FeatureData): boolean {
