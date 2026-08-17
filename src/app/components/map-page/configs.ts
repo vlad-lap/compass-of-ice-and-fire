@@ -187,15 +187,14 @@ export const POLYGONS_PAINT: GeodataDict<FillLayerSpecification['paint']> = {
     },
 };
 
+const DEFAULT_LINE_LAYOUT: LineLayerSpecification['layout'] = {
+    'line-cap': 'round',
+    'line-join': 'round',
+};
+
 export const LINES_LAYOUT: GeodataDict<LineLayerSpecification['layout']> = {
-    roads: {
-        'line-cap': 'round',
-        'line-join': 'round',
-    },
-    theWall: {
-        'line-cap': 'round',
-        'line-join': 'round',
-    },
+    roads: DEFAULT_LINE_LAYOUT,
+    theWall: DEFAULT_LINE_LAYOUT,
 };
 
 export const LINES_PAINT: GeodataDict<LineLayerSpecification['paint']> = {
@@ -357,7 +356,6 @@ export const LABELS_MIN_ZOOM: GeodataDict<ZoomLevel> = {
     mountains: ZoomLevel.Low,
     forests: ZoomLevel.Low,
     swamps: ZoomLevel.Low,
-    deserts: ZoomLevel.Low,
     islands: ZoomLevel.Low,
     lakes: ZoomLevel.Low,
     rivers: ZoomLevel.Low,
