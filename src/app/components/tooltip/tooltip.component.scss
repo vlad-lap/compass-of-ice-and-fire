@@ -1,25 +1,45 @@
+@use '@angular/material' as mat;
 @use '../../../variables';
 @use '../../../mixins';
 
 .tooltip {
     max-width: 180px;
+
+    @include mat.icon-button-overrides((
+        icon-size: 14px,
+        state-layer-size: 22px,
+    ));
+}
+
+.mat-icon {
+    @include mixins.icon-size(14px);
+}
+
+.tooltip-header {
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    align-items: flex-start;
 }
 
 .tooltip-title {
-    font-size: 14px;
-    color: variables.$black;
-    margin: 0;
+    flex-grow: 1;
+    h5 {
+        font-size: 14px;
+        color: variables.$black;
+        margin: 0;
+    }
 }
 
-.tooltip-subtitle {
+.tooltip-subtitle, .tooltip-caption {
     font-size: 11px;
     line-height: 14px;
     color: variables.$grey;
+}
 
-    &.name-variant {
-        margin-bottom: 8px;
-        font-weight: bold;
-    }
+.tooltip-subtitle {
+    margin-bottom: 8px;
+    font-weight: bold;
 }
 
 .details-link {

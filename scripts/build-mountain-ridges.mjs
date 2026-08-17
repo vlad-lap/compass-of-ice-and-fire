@@ -8,6 +8,7 @@ const TAPER_LENGTH_RATIO = 1.25;
 const LIGHT_NORMAL_RATIO = 0.5;
 const LIGHT_DIRECTION = normalize([-1, 1]);
 const BBOX_MARGIN = 1e-6;
+const UNION_OFFSET_RATIO = 0.2;
 
 function getNormalLength(height) {
     return BASE_NORMAL_LENGTH / Math.sqrt(height ?? 1);
@@ -34,6 +35,18 @@ function unionAll(geometries) {
     return roundMultiPolygon(union(merged));
 }
 
+function fillHoles(coordinates) {
+    if (!coordinates.length) {
+        return [];
+    }
+    let filled = coordinates;
+    do {
+        filled = roundMultiPolygon(union(filled.map(([outerRing]) => [outerRing])));
+    } while (filled.some(polygon => polygon.length > 1));
+
+    return filled;
+}
+
 function subtract(a, b) {
     return [a[0] - b[0], a[1] - b[1]];
 }
@@ -57,6 +70,43 @@ function normalize(v) {
 
 function perpendicular(v) {
     return [-v[1], v[0]];
+}
+
+function getSignedArea(ring) {
+    let doubledArea = 0;
+    for (let i = 0; i < ring.length - 1; i++) {
+        doubledArea += ring[i][0] * ring[i + 1][1] - ring[i + 1][0] * ring[i][1];
+    }
+    return doubledArea / 2;
+}
+
+function buildRingOffsetPolygons(ring, offset) {
+    const points = ring.slice(0, -1);
+    const outwardSign = getSignedArea(ring) >= 0 ? -1 : 1;
+    const edgeNormals = points.map((point, index) =>
+        scale(perpendicular(normalize(subtract(points[(index + 1) % points.length], point))), outwardSign * offset),
+    );
+
+    return points.flatMap((point, index) => {
+        const nextPoint = points[(index + 1) % points.length];
+        const edgeNormal = edgeNormals[index];
+        const previousEdgeNormal = edgeNormals[(index - 1 + points.length) % points.length];
+
+        return [
+            [[point, nextPoint, add(nextPoint, edgeNormal), add(point, edgeNormal), point]],
+            [[point, add(point, previousEdgeNormal), add(point, edgeNormal), point]],
+        ];
+    });
+}
+
+function offsetOutward(coordinates, offset) {
+    if (!coordinates.length || offset <= 0) {
+        return coordinates;
+    }
+    const offsetPolygons = coordinates.flatMap(polygon =>
+        polygon.flatMap(ring => buildRingOffsetPolygons(ring, offset)),
+    );
+    return roundMultiPolygon(union([...coordinates, ...offsetPolygons]));
 }
 
 function getTangent(points, index) {
@@ -266,7 +316,15 @@ export function buildMountainRidges(mountains, continents, islands) {
     return { type: 'FeatureCollection', features };
 }
 
-export function buildMountainUnion(mountainRidges) {
+function expandWithinLandmass(polygon, offset, landmasses) {
+    const landmass = findContainingLandmass(polygon[0], landmasses);
+    return offsetOutward([polygon], offset).flatMap(expandedPolygon =>
+        clipPolygonToLandmass(expandedPolygon, landmass),
+    );
+}
+
+export function buildMountainUnion(mountainRidges, continents, islands) {
+    const landmasses = [...continents.features, ...islands.features];
     const groups = new Map();
 
     for (const feature of mountainRidges.features) {
@@ -279,10 +337,15 @@ export function buildMountainUnion(mountainRidges) {
 
     return {
         type: 'FeatureCollection',
-        features: [...groups.values()].map(({ properties, geometries }) => ({
-            type: 'Feature',
-            properties,
-            geometry: { type: 'MultiPolygon', coordinates: unionAll(geometries) },
-        })),
+        features: [...groups.values()].map(({ properties, geometries }) => {
+            const offset = getNormalLength(properties.height) * UNION_OFFSET_RATIO;
+            const expanded = unionAll(geometries).flatMap(polygon => expandWithinLandmass(polygon, offset, landmasses));
+
+            return {
+                type: 'Feature',
+                properties,
+                geometry: { type: 'MultiPolygon', coordinates: fillHoles(expanded) },
+            };
+        }),
     };
 }

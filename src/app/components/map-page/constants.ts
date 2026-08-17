@@ -52,7 +52,7 @@ export enum LandscapeColor {
     DryLake = '#e8e4d9',
 }
 
-export const MOUNTAIN_COLORS = ['#e9e7dd', '#deddd4', '#d3d5cf'];
+export const MOUNTAIN_COLORS = ['#e9e7dd', '#e8dec8', '#deddd4', '#d3d5cf'];
 
 export enum LabelColor {
     Land = '#12875f',

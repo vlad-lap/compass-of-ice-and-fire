@@ -92,9 +92,6 @@ export const POLYGONS_PAINT: GeodataDict<FillLayerSpecification['paint']> = {
         'fill-color': LandscapeColor.Land,
     },
     mountains: {
-        'fill-opacity': 0,
-    },
-    mountainRidges: {
         'fill-color': [
             'match',
             ['get', 'height'],
@@ -106,7 +103,21 @@ export const POLYGONS_PAINT: GeodataDict<FillLayerSpecification['paint']> = {
             MOUNTAIN_COLORS[2],
             'transparent',
         ],
-        'fill-opacity': ['match', ['get', 'shade'], 'light', 0, 0.4],
+        'fill-opacity': 0.2,
+    },
+    mountainRidges: {
+        'fill-color': [
+            'match',
+            ['get', 'height'],
+            1,
+            MOUNTAIN_COLORS[1],
+            2,
+            MOUNTAIN_COLORS[2],
+            3,
+            MOUNTAIN_COLORS[3],
+            'transparent',
+        ],
+        'fill-opacity': ['match', ['get', 'shade'], 'light', 0, 0.25],
     },
     forests: {
         'fill-color': [

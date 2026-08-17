@@ -1,16 +1,31 @@
 @let locationData = location();
 @let ui = coreUi();
+@let tooltipOptions = options();
 
 <div class="tooltip">
-    <h5 class="tooltip-title">{{ (locationData | localize: 'name') || ui.namePlaceholder }}</h5>
+    <div class="tooltip-header">
+        <div class="tooltip-title">
+            <h5 class="tooltip-title">{{ (locationData | localize: 'name') || ui.namePlaceholder }}</h5>
 
-    @if (locationData.nameVariant) {
-        <div class="tooltip-subtitle name-variant">{{ locationData | localize: 'nameVariant' }}</div>
-    }
+            @if (locationData.nameVariant) {
+                <div class="tooltip-subtitle">{{ locationData | localize: 'nameVariant' }}</div>
+            }
+        </div>
 
-    <coiaf-subtitle [location]="locationData" iconSize="small" class="tooltip-subtitle" />
+        @if (tooltipOptions?.showCloseButton) {
+            <button
+                matIconButton
+                [aria-label]="ui.close"
+                (click)="close()"
+            >
+                <mat-icon>close</mat-icon>
+            </button>
+        }
+    </div>
 
-    @if (showDetailsLink()) {
+    <coiaf-subtitle [location]="locationData" iconSize="small" class="tooltip-caption" />
+
+    @if (tooltipOptions?.showDetailsLink) {
         <a
             class="details-link"
             (click)="setSelectedId()"
