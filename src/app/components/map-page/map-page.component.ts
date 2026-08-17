@@ -120,6 +120,7 @@ import { SearchService } from '../../services';
 })
 export class MapPageComponent {
     protected readonly map = viewChild.required(MapComponent);
+    protected readonly searchComponent = viewChild.required(MapSearchComponent);
 
     protected readonly language = this.store.selectSignal(UserSettingsState.language);
     protected readonly coreUi = this.store.selectSignal(LanguagesState.coreUi);
@@ -417,9 +418,13 @@ export class MapPageComponent {
         const isPolygonFeature =
             feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon';
 
-        isPolygonFeature
-            ? this.showTooltip(event, feature, { showCloseButton: true, showDetailsLink: true })
-            : this.searchService.selectedId.set(feature.properties.id);
+        const isSearchOpen = this.searchComponent().autocomplete().isOpen;
+
+        if (isPolygonFeature && !isSearchOpen) {
+            this.showTooltip(event, feature, { showCloseButton: true, showDetailsLink: true });
+        } else if (!isPolygonFeature) {
+            this.searchService.selectedId.set(feature.properties.id);
+        }
     }
 
     onMapDoubleClick({ lngLat }: MapMouseEvent): void {

@@ -3,7 +3,7 @@ import { Title } from '@angular/platform-browser';
 import { Store } from '@ngxs/store';
 import { UrlService } from './url.service';
 import { FeatureData } from '../models';
-import { GeodataState, UserSettingsState } from '../store';
+import { AddHistoryItem, GeodataState, UserSettingsState } from '../store';
 import { APP_TITLE } from '../constants';
 
 @Injectable({
@@ -26,6 +26,10 @@ export class SearchService {
 
             this.setUrl(featureData);
             this.setTitle(featureData);
+
+            if (featureData) {
+                this.store.dispatch(new AddHistoryItem(featureData));
+            }
         });
 
         const id = this.url.path;

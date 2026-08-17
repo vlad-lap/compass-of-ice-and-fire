@@ -19,24 +19,27 @@ import {
 import { Store } from '@ngxs/store';
 import {
     GeodataState,
+    HISTORY_STATE_TOKEN,
     LanguagesState,
     SetLanguage,
     UserSettingsState,
 } from '../../store';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { map, Observable, startWith } from 'rxjs';
+import { debounceTime, filter, fromEvent, map, Observable, startWith } from 'rxjs';
 import { FeatureData, OptionGroup } from '../../models';
 import { flatten, isEmpty, mapValues, omitBy } from 'lodash';
 import { CommonModule, KeyValue } from '@angular/common';
 import { MatIconButton } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { LocalizePipe, SortByPipe } from '../../pipes';
+import { LocalizePipe, SortSearchOptionsPipe } from '../../pipes';
 import { matchesSearch } from '../../utils';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { AVAILABLE_LANGUAGES } from '../../constants';
+import { AVAILABLE_LANGUAGES, RECENT } from '../../constants';
 import { SearchService } from '../../services';
 
 const OPTIONS_GROUP_ORDER: OptionGroup[] = [
+    RECENT,
+
     'city',
     'castle',
     'ruin',
@@ -59,9 +62,13 @@ const OPTIONS_GROUP_ORDER: OptionGroup[] = [
     'steppes',
     'forests',
     'shores',
+    'vales',
     'swamps',
     'deserts',
+    'wastelands',
 ];
+
+const AUTOCOMPLETE_BLUR_DEBOUNCE_TIME_MS = 100;
 
 @Component({
     selector: 'coiaf-map-search',
@@ -77,8 +84,8 @@ const OPTIONS_GROUP_ORDER: OptionGroup[] = [
         MatOptgroup,
         MatOption,
         MatIconButton,
-        SortByPipe,
         LocalizePipe,
+        SortSearchOptionsPipe,
     ],
     templateUrl: './map-search.component.html',
     styleUrl: './map-search.component.scss',
@@ -88,6 +95,8 @@ export class MapSearchComponent implements OnInit {
     readonly resetSearch = output<void>();
 
     readonly searchInput = viewChild('searchInput', { read: ElementRef });
+    readonly autocomplete = viewChild(MatAutocomplete);
+    readonly autocompleteTrigger = viewChild(MatAutocompleteTrigger);
 
     readonly coreUi = this.store.selectSignal(LanguagesState.coreUi);
     readonly optionGroups = this.store.selectSignal(LanguagesState.optionGroups);
@@ -100,11 +109,15 @@ export class MapSearchComponent implements OnInit {
     readonly filteredOptions$: Observable<Record<string, FeatureData[]>> =
         this.searchControl.valueChanges.pipe(
             startWith(this.searchControl.value),
-            map(() =>
-                mapValues(this.options, features =>
-                    features.filter(feature => this.matchesSearch(feature)),
-                ),
-            ),
+            map(query => {
+                const recent = this.store.selectSnapshot(HISTORY_STATE_TOKEN);
+                const allOptions = { recent, ...this.options };
+                return mapValues(allOptions, (features, group) =>
+                    features.filter(
+                        feature => this.matchesSearch(feature) && (group === RECENT || !!query),
+                    ),
+                );
+            }),
             map(options => omitBy(options, isEmpty)),
         );
 
@@ -131,6 +144,14 @@ export class MapSearchComponent implements OnInit {
                     this.reset();
                 }
             });
+
+        fromEvent(this.searchInput().nativeElement, 'blur')
+            .pipe(
+                debounceTime(AUTOCOMPLETE_BLUR_DEBOUNCE_TIME_MS),
+                filter(() => !this.searchService.selectedId()),
+                takeUntilDestroyed(this.destroyRef),
+            )
+            .subscribe(() => this.autocompleteTrigger().closePanel());
     }
 
     setSelectedId(id: string): void {
@@ -182,7 +203,7 @@ export class MapSearchComponent implements OnInit {
     private matchesSearch({ searchKeys }: FeatureData): boolean {
         const searchValue = this.searchControl.value;
         const query = this.isFeatureData(searchValue) ? searchValue.name : searchValue;
-        return !!query && matchesSearch(searchKeys, query);
+        return matchesSearch(searchKeys, query ?? '');
     }
 
     private isFeatureData(value: FeatureData | string): value is FeatureData {
