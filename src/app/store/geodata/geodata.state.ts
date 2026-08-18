@@ -9,11 +9,37 @@ import { FeatureData, GeodataDict, GeodataType } from '../../models';
 import { getCentralPoint, getLocationsSearchOptions, getMiddleMultiPoint, getSearchOptions } from '../../utils';
 import { flatten, mapValues, omit } from 'lodash';
 
-const EMPTY: FeatureCollection<Point> = { type: 'FeatureCollection', features: [] };
-
 type GeodataStateModel = GeodataDict<FeatureCollection>;
 
 export const GEODATA_STATE_TOKEN = new StateToken<GeodataStateModel>('geodata');
+
+const EMPTY: FeatureCollection<Point> = { type: 'FeatureCollection', features: [] };
+
+const LABEL_POSITIONS: Record<string, Position> = {
+    westeros: [12.61, 18.39],
+    essos: [78.05, 2.9],
+    sothoryos: [66.83, -36],
+    ulthos: [119.25, -37.3],
+    riverlands: [13.65, 10.12],
+    'the-vale': [22.17, 11.84],
+    'the-westerlands': [8.51, 8.8],
+    crownlands: [19.55, 6.19],
+    stormlands: [18.03, -2.06],
+    'the-reach': [11.49, 0.5],
+    dorne: [14.01, -7.87],
+    'the-iron-islands': [5.82, 14.1],
+    'country-valyrian-freehold': [50.77, -21.76],
+    'country-kingdom-of-sarnor': [55.66, 8.37],
+    'country-yi-ti': [105.38, -12.74],
+    'country-ibben': [79.32, 25.23],
+    'country-kingdoms-of-the-ifeqevron': [75.73, 13.04],
+    'country-jogos-nhai': [104.24, 2.76],
+    'country-mossovy': [120.75, 8.19],
+    'country-realm-of-jhogwin': [90.28, 12.11],
+    'region-dornish-marches': [13.72, -3.5],
+    'desert-the-red-waste': [82.14, -9.45],
+    'wasteland-the-grey-waste': [122.35, 0.95],
+};
 
 @State<GeodataStateModel>({
     name: GEODATA_STATE_TOKEN,
@@ -73,8 +99,8 @@ export class GeodataState {
     }
 
     private static getLabelPosition(feature: Feature): Position {
-        if (feature.properties.id === 'country-valyrian-freehold') {
-            return [50.77, -21.76];
+        if (LABEL_POSITIONS[feature.properties.id]) {
+            return LABEL_POSITIONS[feature.properties.id];
         } else if (feature.geometry.type === 'MultiPoint') {
             return getMiddleMultiPoint(feature.geometry);
         } else {
