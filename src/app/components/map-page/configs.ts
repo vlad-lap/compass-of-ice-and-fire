@@ -411,7 +411,7 @@ export const DEFAULT_LABEL_LAYOUT: SymbolLayerSpecification['layout'] = {
 
 const DEFAULT_LABEL_POINT_LABEL_LAYOUT: SymbolLayerSpecification['layout'] = {
     ...DEFAULT_LABEL_LAYOUT,
-    'text-variable-anchor': ['bottom', 'top', 'left', 'right'],
+    'text-variable-anchor': ['center', 'bottom', 'top', 'left', 'right'],
     'text-justify': 'auto',
 };
 
@@ -426,6 +426,7 @@ const POINT_LABEL_OFFSET = 0.45;
 const DEFAULT_POINT_LABEL_LAYOUT: SymbolLayerSpecification['layout'] = {
     ...DEFAULT_LABEL_POINT_LABEL_LAYOUT,
     'text-radial-offset': POINT_LABEL_OFFSET,
+    'text-variable-anchor': ['bottom', 'top', 'left', 'right'],
     'text-font': [
         'match',
         ['get', 'type'],
