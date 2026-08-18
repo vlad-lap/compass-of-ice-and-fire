@@ -1,3 +1,3 @@
 export * from './area-pipe';
 export * from './localize-pipe';
-export * from './sort-by.pipe';
+export * from './sort-search-options-pipe';

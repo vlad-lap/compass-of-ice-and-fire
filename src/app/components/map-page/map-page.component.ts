@@ -47,7 +47,7 @@ import {
     LocationTier,
     PolygonGeodataType,
 } from '../../models';
-import { GEODATA_STATE_TOKEN, GeodataState, LanguagesState } from '../../store';
+import { GEODATA_STATE_TOKEN, GeodataState, LanguagesState, SetPosition, UserSettingsState } from '../../store';
 import {
     DEFAULT_LABEL_LAYOUT,
     DIM_OVERLAY_PAINT,
@@ -120,8 +120,9 @@ import { SearchService } from '../../services';
 })
 export class MapPageComponent {
     protected readonly map = viewChild.required(MapComponent);
+    protected readonly searchComponent = viewChild.required(MapSearchComponent);
 
-    protected readonly language = this.store.selectSignal(LanguagesState.language);
+    protected readonly language = this.store.selectSignal(UserSettingsState.language);
     protected readonly coreUi = this.store.selectSignal(LanguagesState.coreUi);
 
     protected readonly cursorStyle = signal<string>('default');
@@ -326,7 +327,7 @@ export class MapPageComponent {
         if (feature) {
             this.zoomToFeature(feature);
         } else {
-            const position = JSON.parse(localStorage.getItem('position'));
+            const position = this.store.selectSnapshot(UserSettingsState.position);
             if (position) {
                 map.jumpTo(position);
             }
@@ -351,7 +352,7 @@ export class MapPageComponent {
         const map = this.map().mapInstance;
         const zoom = map.getZoom();
         const center = map.getCenter();
-        localStorage.setItem('position', JSON.stringify({ zoom, center }));
+        this.store.dispatch(new SetPosition({ zoom, center }));
     }
 
     zoomIn(): void {
@@ -417,9 +418,13 @@ export class MapPageComponent {
         const isPolygonFeature =
             feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon';
 
-        isPolygonFeature
-            ? this.showTooltip(event, feature, { showCloseButton: true, showDetailsLink: true })
-            : this.searchService.selectedId.set(feature.properties.id);
+        const isSearchOpen = this.searchComponent().autocomplete().isOpen;
+
+        if (isPolygonFeature && !isSearchOpen) {
+            this.showTooltip(event, feature, { showCloseButton: true, showDetailsLink: true });
+        } else if (!isPolygonFeature) {
+            this.searchService.selectedId.set(feature.properties.id);
+        }
     }
 
     onMapDoubleClick({ lngLat }: MapMouseEvent): void {

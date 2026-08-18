@@ -17,7 +17,7 @@ function buildSearchKeys(name: string): string[] {
     ]);
 }
 
-function buildLocalizedSearchKeys(feature: FeatureData): string[] {
+export function buildLocalizedSearchKeys(feature: FeatureData): string[] {
     const nameKeys = [
         'name',
         ...AVAILABLE_LANGUAGES

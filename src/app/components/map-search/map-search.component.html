@@ -5,10 +5,12 @@
     <input
         matInput
         #searchInput
+        type="search"
         [attr.lang]="language()"
         inputmode="search"
         autocomplete="off"
         spellcheck="false"
+        enterkeyhint="search"
         [placeholder]="ui.searchPlaceholder"
         [formControl]="searchControl"
         [matAutocomplete]="autocomplete"
@@ -45,7 +47,7 @@
 
     @for (optionGroup of filteredOptions; track optionGroup.key) {
         <mat-optgroup [label]="groups[optionGroup.key]">
-            @for (option of optionGroup.value | sortBy: 'name'; track option.id) {
+            @for (option of optionGroup.value | sortSearchOptions: optionGroup.key; track option.id) {
                 <mat-option [value]="option">{{ option | localize: 'name' }}</mat-option>
             }
         </mat-optgroup>
