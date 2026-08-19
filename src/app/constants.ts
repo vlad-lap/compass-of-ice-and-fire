@@ -33,3 +33,6 @@ export const GEODATA_URLS: GeodataDict<string> = {
     locations: 'geodata/got_locations.geojson',
     theFiveForts: 'geodata/got_five_forts.geojson',
 };
+
+export const ROAD_NETWORK_URL = 'geodata/road-network.json';
+export const BARRIER_CROSSINGS_URL = 'geodata/barrier-crossings.json';

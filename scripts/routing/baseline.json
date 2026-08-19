@@ -1,0 +1,177 @@
+{
+    "cases": {
+        "Old Ghis -> Morosh": {
+            "note": "spec example 1",
+            "structure": [
+                "grid",
+                "road",
+                "grid"
+            ],
+            "found": true,
+            "distanceKm": 6905.5,
+            "timeHours": 1793.3,
+            "pathPoints": 541,
+            "dragonKm": 2851.8
+        },
+        "King's Landing -> The Eyrie": {
+            "note": "spec example 2",
+            "structure": [
+                "road"
+            ],
+            "found": true,
+            "distanceKm": 1146.2,
+            "timeHours": 286.5,
+            "pathPoints": 220,
+            "dragonKm": 780.1
+        },
+        "Qohor -> Old Ghis": {
+            "note": "spec example 3",
+            "structure": [
+                "road",
+                "grid"
+            ],
+            "found": true,
+            "distanceKm": 7411,
+            "timeHours": 1919.3,
+            "pathPoints": 491,
+            "dragonKm": 2421.8
+        },
+        "Mantarys -> Old Ghis": {
+            "note": "spec example 4",
+            "structure": [
+                "road",
+                "grid"
+            ],
+            "found": true,
+            "distanceKm": 2341.4,
+            "timeHours": 651.9,
+            "pathPoints": 85,
+            "dragonKm": 1188.5
+        },
+        "Pentos -> Vaes Dothrak": {
+            "note": "spec example 5",
+            "structure": [
+                "road"
+            ],
+            "found": true,
+            "distanceKm": 4441.4,
+            "timeHours": 1110.3,
+            "pathPoints": 139,
+            "dragonKm": 4046.1
+        },
+        "Selhorys -> Volon Therys": {
+            "note": "spec rivers 1",
+            "structure": [
+                "grid",
+                "road",
+                "grid"
+            ],
+            "found": true,
+            "distanceKm": 571.3,
+            "timeHours": 143.3,
+            "pathPoints": 15,
+            "dragonKm": 270.7
+        },
+        "Pennytree -> Stone Hedge": {
+            "note": "spec rivers 2",
+            "structure": [
+                "grid",
+                "road",
+                "grid"
+            ],
+            "found": true,
+            "distanceKm": 178.3,
+            "timeHours": 44.8,
+            "pathPoints": 13,
+            "dragonKm": 74.4
+        },
+        "Saath -> Morosh": {
+            "note": "detour guard, x15.9",
+            "structure": [
+                "grid"
+            ],
+            "found": true,
+            "distanceKm": 236.4,
+            "timeHours": 59.1,
+            "pathPoints": 6,
+            "dragonKm": 233.5
+        },
+        "The Sorrows (Chroyane) -> Volon Therys": {
+            "note": "rule 4 gate hole, x15.8",
+            "structure": [
+                "grid"
+            ],
+            "found": true,
+            "distanceKm": 608.9,
+            "timeHours": 154.5,
+            "pathPoints": 26,
+            "dragonKm": 572.7
+        },
+        "Maidenpool -> Saltpans": {
+            "note": "road kept at x2.6 over open ground",
+            "structure": [
+                "road",
+                "grid"
+            ],
+            "found": true,
+            "distanceKm": 1313.5,
+            "timeHours": 328.6,
+            "pathPoints": 159,
+            "dragonKm": 146.5
+        },
+        "Sarhoy -> Volon Therys": {
+            "note": "road variant only reachable via a bridge crossing",
+            "structure": [
+                "grid"
+            ],
+            "found": true,
+            "distanceKm": 203.9,
+            "timeHours": 50.8,
+            "pathPoints": 10,
+            "dragonKm": 192
+        },
+        "Saath -> Vaes Graddakh (Sarys)": {
+            "note": "both on the road, but the road winds x8.8",
+            "structure": [
+                "grid"
+            ],
+            "found": true,
+            "distanceKm": 408,
+            "timeHours": 102.1,
+            "pathPoints": 10,
+            "dragonKm": 284
+        },
+        "King's Landing -> Winterfell": {
+            "note": "long-distance control",
+            "structure": [
+                "road"
+            ],
+            "found": true,
+            "distanceKm": 2208.3,
+            "timeHours": 552.1,
+            "pathPoints": 195,
+            "dragonKm": 2015.8
+        },
+        "King's Landing -> Pentos": {
+            "note": "across the Narrow Sea, must be unreachable",
+            "structure": [],
+            "found": false,
+            "distanceKm": null,
+            "timeHours": null,
+            "pathPoints": 0,
+            "dragonKm": 1114.8
+        },
+        "Winterfell -> Craster's Keep": {
+            "note": "beyond the Wall, must pass a gate",
+            "structure": [
+                "road",
+                "grid"
+            ],
+            "found": true,
+            "distanceKm": 1034.5,
+            "timeHours": 261.3,
+            "pathPoints": 78,
+            "dragonKm": 874.9
+        }
+    }
+}

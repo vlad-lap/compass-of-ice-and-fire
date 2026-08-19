@@ -1,0 +1,55 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+@use '../variables';
+@use '../theme';
+
+$border-radius: 28px;
+$transition-options: 120ms cubic-bezier(0, 0, 0.2, 1);
+
+:host {
+    @include mat.form-field-overrides((
+        outlined-outline-width: 0,
+        outlined-focus-outline-width: 0,
+        outlined-container-shape: $border-radius,
+    ));
+
+    @include mat.autocomplete-overrides((
+        background-color: variables.$white,
+        container-shape: 8px,
+    ));
+
+    position: absolute;
+    z-index: 2;
+    background-color: rgba(255, 255, 255, .7);
+    border-radius: $border-radius;
+    top: 8px;
+    left: 16px;
+    width: 400px;
+    box-shadow: 0 0 3px rgba(0, 0, 0, .2), 0 -1px 0 rgba(0, 0, 0, .02);
+    transition: all 120ms cubic-bezier(0, 0, 0.2, 1);
+    touch-action: pan-x pan-y;
+
+    &:has(input:focus) {
+        background-color: variables.$white;
+    }
+
+    &:has(.mat-mdc-autocomplete-panel:not(:empty)) {
+        background-color: variables.$white;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    :host {
+        width: calc(100% - 32px);
+    }
+}
+
+.mat-mdc-form-field {
+    width: 100%;
+
+    &:has(+ .mat-mdc-form-field) {
+        border-bottom: 1px solid map.get(theme.$primary-palette, 90);
+    }
+}

@@ -1,12 +1,11 @@
 import {
     ChangeDetectionStrategy,
     Component,
-    ComponentRef,
-    signal,
-    ViewContainerRef,
-    viewChild,
     computed,
     effect,
+    signal,
+    viewChild,
+    ViewContainerRef,
 } from '@angular/core';
 import { Store } from '@ngxs/store';
 import {
@@ -14,6 +13,7 @@ import {
     ImageSourceComponent,
     LayerComponent,
     MapComponent,
+    MarkerComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import {
     CircleLayerSpecification,
@@ -25,19 +25,22 @@ import {
     MapLayerMouseEvent,
     MapMouseEvent,
     MapTouchEvent,
-    Popup,
     SymbolLayerSpecification,
 } from 'maplibre-gl';
 import { Feature, FeatureCollection, MultiPolygon, Point, Polygon, Position } from 'geojson';
 import {
-    INITIAL_MAP_CENTER,
     CLICKABLE_LAYER_IDS,
+    GREEN,
+    HitRadiusPx,
+    INITIAL_MAP_CENTER,
     KM_PER_COORD_UNIT,
+    LONG_PRESS_DURATION_MS,
+    RED,
+    ROUTE_LAYER_IDS,
     SCALE_BAR_MAX_WIDTH_PX,
     ZOOM_DURATION,
     ZOOM_STEP,
     ZoomLevel,
-    HitRadiusPx,
 } from './constants';
 import {
     FeatureData,
@@ -46,8 +49,17 @@ import {
     LineGeodataType,
     LocationTier,
     PolygonGeodataType,
+    RouteEndpoints,
+    RoutePlan,
+    RoutePointValue,
 } from '../../models';
-import { GEODATA_STATE_TOKEN, GeodataState, LanguagesState, SetPosition, UserSettingsState } from '../../store';
+import {
+    GEODATA_STATE_TOKEN,
+    GeodataState,
+    LanguagesState,
+    SetPosition,
+    UserSettingsState,
+} from '../../store';
 import {
     DEFAULT_LABEL_LAYOUT,
     DIM_OVERLAY_PAINT,
@@ -73,6 +85,11 @@ import {
     POINTS_PAINT,
     POINTS_SHADOW,
     POLYGONS_PAINT,
+    ROUTE_ENDPOINT_PAINT,
+    ROUTE_ENDPOINT_SHADOW,
+    ROUTE_LINE_LAYOUT,
+    ROUTE_LINE_PAINT,
+    ROUTE_OUTLINE_PAINT,
     SEARCH_HIGHLIGHT_CIRCLE_PAINT,
     SEARCH_HIGHLIGHT_LINE_LAYOUT,
     SEARCH_HIGHLIGHT_LINE_PAINT,
@@ -90,15 +107,12 @@ import { MatIconButton, MatMiniFabButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
 import { AboutDialogComponent } from '../about-dialog/about-dialog.component';
-import { TooltipComponent, TooltipOptions } from '../tooltip/tooltip.component';
 import { MapSearchComponent } from '../map-search/map-search.component';
 import { MapScaleComponent } from '../map-scale/map-scale.component';
 import { KeyValuePipe } from '@angular/common';
-import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
-import { CardComponent } from '../card/card.component';
-import { takeUntil } from 'rxjs';
 import { kebabCase, mapValues } from 'lodash';
-import { SearchService } from '../../services';
+import { MapService, RouteService, SearchService } from '../../services';
+import { RouteControlComponent } from '../route-control/route-control.component';
 
 @Component({
     selector: 'coiaf-map-page',
@@ -108,22 +122,27 @@ import { SearchService } from '../../services';
         GeoJSONSourceComponent,
         ImageSourceComponent,
         LayerComponent,
+        MarkerComponent,
         MatMiniFabButton,
         MatIcon,
         MatIconButton,
         MapSearchComponent,
         MapScaleComponent,
         KeyValuePipe,
+        RouteControlComponent,
     ],
     templateUrl: './map-page.component.html',
     styleUrl: './map-page.component.scss',
 })
 export class MapPageComponent {
     protected readonly map = viewChild.required(MapComponent);
-    protected readonly searchComponent = viewChild.required(MapSearchComponent);
+    protected readonly searchComponent = viewChild(MapSearchComponent);
 
     protected readonly language = this.store.selectSignal(UserSettingsState.language);
     protected readonly coreUi = this.store.selectSignal(LanguagesState.coreUi);
+
+    protected readonly geodata: GeodataDict<FeatureCollection> =
+        this.store.selectSnapshot(GEODATA_STATE_TOKEN);
 
     protected readonly cursorStyle = signal<string>('default');
 
@@ -132,12 +151,13 @@ export class MapPageComponent {
 
     protected readonly searchHighlightFeature = signal<Feature>(null);
 
+    protected readonly routePlan = this.routeService.plan;
+    protected readonly routeMode = this.routeService.selectedMode;
+
     protected readonly mapStyle = MAP_STYLE;
     protected readonly ZoomLevel = ZoomLevel;
     protected readonly maxBounds = MAP_BOUNDS;
     protected readonly initialCenter = INITIAL_MAP_CENTER;
-
-    protected readonly geodata: GeodataDict<FeatureCollection> = this.store.selectSnapshot(GEODATA_STATE_TOKEN);
 
     protected readonly polygonTypes: PolygonGeodataType[] = [
         'continents',
@@ -227,9 +247,9 @@ export class MapPageComponent {
     protected readonly labelsMaxZoom = LABELS_MAX_ZOOM;
     protected readonly locationLabelsFilter = LOCATION_LABELS_FILTER;
     protected readonly locationLabelAnchorOverrideFilter = LOCATION_LABEL_ANCHOR_OVERRIDE_FILTER;
-    protected readonly locationLabelAnchorOverrideLayout = computed<SymbolLayerSpecification['layout']>(() =>
-        this.getLocalizedLabelLayout(LOCATION_LABEL_ANCHOR_OVERRIDE_LAYOUT),
-    );
+    protected readonly locationLabelAnchorOverrideLayout = computed<
+        SymbolLayerSpecification['layout']
+    >(() => this.getLocalizedLabelLayout(LOCATION_LABEL_ANCHOR_OVERRIDE_LAYOUT));
 
     protected readonly gradientUrl = this.buildGradientUrl();
     protected readonly gradientCoordinates = GRADIENT_COORDINATES;
@@ -271,6 +291,63 @@ export class MapPageComponent {
         };
     });
 
+    protected readonly routeEnabled = this.routeService.routeEnabled;
+
+    protected readonly routeEndpointMarkers = computed<{
+        from: LngLatLike | null;
+        to: LngLatLike | null;
+    }>(() => {
+        const { from, to } = this.routeService.endpointPositions();
+        return {
+            from: from ? [from[0], from[1]] : null,
+            to: to ? [to[0], to[1]] : null,
+        };
+    });
+
+    protected readonly routeLine = computed<FeatureCollection>(() => {
+        const mode = this.routeMode();
+        const path = this.routePlan()?.[mode]?.path ?? null;
+
+        return {
+            type: 'FeatureCollection',
+            features: path
+                ? [
+                      {
+                          type: 'Feature',
+                          properties: {},
+                          geometry: { type: 'LineString', coordinates: path },
+                      },
+                  ]
+                : [],
+        };
+    });
+
+    protected readonly routeEndpoints = computed<FeatureCollection<Point>>(() => {
+        const { from, to } = this.routeService.endpointPositions();
+        const features: Feature<Point>[] = [
+            from && {
+                type: 'Feature' as const,
+                properties: { role: 'from' },
+                geometry: { type: 'Point' as const, coordinates: from },
+            },
+            to && {
+                type: 'Feature' as const,
+                properties: { role: 'to' },
+                geometry: { type: 'Point' as const, coordinates: to },
+            },
+        ].filter(Boolean);
+        return { type: 'FeatureCollection', features };
+    });
+
+    protected readonly routeEndpointPaint = ROUTE_ENDPOINT_PAINT;
+    protected readonly routeEndpointShadow = ROUTE_ENDPOINT_SHADOW;
+
+    protected readonly routeLineLayout = ROUTE_LINE_LAYOUT;
+    protected readonly routeLinePaint = ROUTE_LINE_PAINT;
+    protected readonly routeOutlinePaint = ROUTE_OUTLINE_PAINT;
+
+    protected readonly markerColor = { from: RED, to: GREEN };
+
     protected readonly searchHighlightPolygonLayout = computed<LineLayerSpecification['layout']>(
         () => ({
             visibility: this.searchHighlightLayerType() === 'polygon' ? 'visible' : 'none',
@@ -299,28 +376,46 @@ export class MapPageComponent {
     private readonly hasHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     private readonly hitRadius = this.hasHover ? HitRadiusPx.Mouse : HitRadiusPx.Touch;
 
-    private popup: Popup;
-    private tooltipRef: ComponentRef<TooltipComponent>;
-    private bottomSheetRef: MatBottomSheetRef;
+    private longPressTimer: ReturnType<typeof setTimeout>;
+    private longPressHandled = false;
 
     constructor(
         private store: Store,
         private dialog: MatDialog,
-        private bottomSheet: MatBottomSheet,
+        private mapService: MapService,
         private viewContainerRef: ViewContainerRef,
         private searchService: SearchService,
+        private routeService: RouteService,
     ) {
         effect(() => {
             const highlight = this.searchHighlightFeature();
             if (highlight && this.hasCard(highlight)) {
-                this.openCard(highlight);
+                this.mapService.openFeatureCard(highlight);
             } else {
-                this.closeCard();
+                this.mapService.closeCard();
+            }
+        });
+
+        effect(() => {
+            const routePlan = this.routePlan();
+            if (routePlan) {
+                this.zoomToRoute(routePlan);
+            }
+        });
+
+        effect(() => {
+            const routeEnabled = this.routeService.routeEnabled();
+            if (routeEnabled) {
+                this.searchHighlightFeature.set(null);
+            } else {
+                this.mapService.closeCard();
             }
         });
     }
 
     onMapLoad(map: Map): void {
+        this.mapService.viewContainerRef = this.viewContainerRef;
+
         map.touchZoomRotate.disableRotation();
 
         const feature = this.searchHighlightFeature();
@@ -390,15 +485,16 @@ export class MapPageComponent {
         if (this.hasCard(feature)) {
             this.cursorStyle.set('pointer');
         }
-        this.showTooltip(event, feature);
+        this.mapService.showTooltip(event, feature);
     }
 
     onFeatureLeave(): void {
         this.cursorStyle.set('default');
-        this.hideTooltip();
+        this.mapService.hideTooltip();
     }
 
     onMapDragStart(): void {
+        this.cancelLongPress();
         this.cursorStyle.set('grabbing');
     }
 
@@ -408,20 +504,32 @@ export class MapPageComponent {
     }
 
     onMapClick(event: MapMouseEvent): void {
+        if (this.longPressHandled) {
+            return;
+        }
+
+        if (this.routeEnabled()) {
+            this.setRouteEndpoint(event);
+            return;
+        }
+
         const feature = this.queryRenderedFeature(event, CLICKABLE_LAYER_IDS);
 
         if (!feature?.properties?.name) {
-            this.hideTooltip();
+            this.mapService.hideTooltip();
             return;
         }
 
         const isPolygonFeature =
             feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon';
 
-        const isSearchOpen = this.searchComponent().autocomplete().isOpen;
+        const isSearchOpen = this.searchComponent()?.autocomplete().isOpen;
 
         if (isPolygonFeature && !isSearchOpen) {
-            this.showTooltip(event, feature, { showCloseButton: true, showDetailsLink: true });
+            this.mapService.showTooltip(event, feature, {
+                showCloseButton: true,
+                showDetailsLink: true,
+            });
         } else if (!isPolygonFeature) {
             this.searchService.selectedId.set(feature.properties.id);
         }
@@ -434,6 +542,26 @@ export class MapPageComponent {
             zoom: map.getZoom() + ZOOM_STEP,
             duration: ZOOM_DURATION,
         });
+    }
+
+    onLongPressStart(event: MapMouseEvent | MapTouchEvent): void {
+        this.cancelLongPress();
+        this.longPressHandled = false;
+
+        this.longPressTimer = setTimeout(() => {
+            this.mapService.hideTooltip();
+
+            if (!this.routeService.routeEnabled()) {
+                this.routeService.routeEnabled.set(true);
+            }
+
+            this.setRouteEndpoint(event);
+            this.longPressHandled = true;
+        }, LONG_PRESS_DURATION_MS);
+    }
+
+    onLongPressEnd(): void {
+        this.cancelLongPress();
     }
 
     search({ id }: FeatureData): void {
@@ -454,6 +582,38 @@ export class MapPageComponent {
         this.dialog.open(AboutDialogComponent);
     }
 
+    toggleRoute(): void {
+        const routeEnabled = this.routeService.routeEnabled();
+        this.routeService.routeEnabled.set(!routeEnabled);
+    }
+
+    private cancelLongPress(): void {
+        if (this.longPressTimer) {
+            clearTimeout(this.longPressTimer);
+            this.longPressTimer = null;
+        }
+    }
+
+    private setRouteEndpoint(event: MapMouseEvent | MapTouchEvent): void {
+        const feature = this.queryRenderedFeature(event, ROUTE_LAYER_IDS);
+
+        const routePoint = feature
+            ? (feature.properties as RoutePointValue)
+            : [event.lngLat.lng, event.lngLat.lat];
+
+        const newEndpoints = this.getUpdatedEndpoints(routePoint);
+        this.routeService.endpoints.set(newEndpoints);
+    }
+
+    private getUpdatedEndpoints(point: RoutePointValue): RouteEndpoints {
+        const endpoints = this.routeService.endpoints();
+        const positions = this.routeService.endpointPositions();
+
+        return !!positions.from === !!positions.to
+            ? { from: point, to: null }
+            : { ...endpoints, to: point };
+    }
+
     private queryRenderedFeature(
         { target, point: { x, y } }: MapMouseEvent | MapTouchEvent,
         layers: string[],
@@ -466,20 +626,21 @@ export class MapPageComponent {
             ],
             { layers },
         );
-        const feature = features
-            .find(geoJsonFeature => !this.isBelowLocationMinZoom(geoJsonFeature, zoom));
+        const feature = features.find(
+            geoJsonFeature => !this.isBelowLocationMinZoom(geoJsonFeature, zoom),
+        );
 
         return feature
             ? {
-                type: 'Feature',
-                properties: feature.properties,
-                geometry: feature.geometry,
-            }
+                  type: 'Feature',
+                  properties: feature.properties,
+                  geometry: feature.geometry,
+              }
             : null;
     }
 
     private isBelowLocationMinZoom({ layer }: MapGeoJSONFeature, zoom: number): boolean {
-        const tier = this.locationTiers.find((locationTier) => layer.id === `${locationTier}-point`);
+        const tier = this.locationTiers.find(locationTier => layer.id === `${locationTier}-point`);
         return !!tier && zoom < (LOCATIONS_MIN_ZOOM[tier] ?? 0);
     }
 
@@ -490,9 +651,8 @@ export class MapPageComponent {
             return;
         }
 
-        const bounds = getGeometryPositions(feature.geometry as HighlightableGeometry).reduce(
-            (initialBounds, position) => initialBounds.extend(position as LngLatLike),
-            new LngLatBounds(),
+        const bounds = this.getBounds(
+            getGeometryPositions(feature.geometry as HighlightableGeometry),
         );
 
         const verticalOffset = this.hasCard(feature) ? -80 : 0;
@@ -502,6 +662,34 @@ export class MapPageComponent {
             padding: 30,
             offset: [0, verticalOffset],
         });
+    }
+
+    private zoomToRoute(plan: RoutePlan): void {
+        const mapInstance = this.map().mapInstance;
+
+        if (!mapInstance) {
+            return;
+        }
+
+        const bounds = this.getBounds(plan.foot?.path ?? plan.dragon.path);
+
+        mapInstance.fitBounds(bounds, {
+            maxZoom: ZoomLevel.High + 0.5,
+            padding: {
+                top: 60,
+                left: 60,
+                right: 60,
+                bottom: 270,
+            },
+            offset: [0, 0],
+        });
+    }
+
+    private getBounds(positions: Position[]): LngLatBounds {
+        return positions.reduce(
+            (initialBounds, position) => initialBounds.extend(position as LngLatLike),
+            new LngLatBounds(),
+        );
     }
 
     private getHighlightLayerType(
@@ -520,65 +708,6 @@ export class MapPageComponent {
 
     private hasCard({ properties }: Feature): boolean {
         return !!properties.description;
-    }
-
-    private openCard(feature: Feature): void {
-        this.onFeatureLeave();
-
-        const bottomSheetRef = (this.bottomSheetRef = this.bottomSheet.open(CardComponent, {
-            hasBackdrop: false,
-            data: feature.properties as FeatureData,
-            panelClass: 'coiaf-card-panel',
-        }));
-
-        bottomSheetRef.instance.goToLocation$
-            .pipe(takeUntil(bottomSheetRef.afterDismissed()))
-            .subscribe(() => this.zoomToFeature(feature));
-
-        bottomSheetRef.afterDismissed().subscribe(() => {
-            if (this.bottomSheetRef === bottomSheetRef) {
-                this.searchService.selectedId.set(null);
-            }
-        });
-    }
-
-    private closeCard(): void {
-        this.bottomSheet.dismiss();
-    }
-
-    private showTooltip(
-        { target: map, lngLat }: MapLayerMouseEvent | MapMouseEvent | MapTouchEvent,
-        { geometry, properties }: Feature,
-        options?: TooltipOptions,
-    ): void {
-        const anchor = geometry.type === 'Point' ? (geometry.coordinates as LngLatLike) : lngLat;
-
-        this.hideTooltip();
-        this.popup = new Popup({
-            closeButton: false,
-            closeOnClick: false,
-            focusAfterOpen: false,
-            className: 'coiaf-map-popup',
-        })
-            .setLngLat(anchor)
-            .setDOMContent(this.buildTooltip(properties as FeatureData, options))
-            .addTo(map);
-    }
-
-    private hideTooltip(): void {
-        this.popup?.remove();
-        this.popup = null;
-        this.tooltipRef?.destroy();
-        this.tooltipRef = null;
-    }
-
-    private buildTooltip(location: FeatureData, options: TooltipOptions): HTMLElement {
-        this.tooltipRef = this.viewContainerRef.createComponent(TooltipComponent);
-        this.tooltipRef.setInput('location', location);
-        this.tooltipRef.setInput('options', options);
-        this.tooltipRef.instance.close$.subscribe(() => this.hideTooltip());
-        this.tooltipRef.changeDetectorRef.detectChanges();
-        return this.tooltipRef.location.nativeElement;
     }
 
     private buildGradientUrl(): string {

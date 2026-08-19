@@ -1,0 +1,53 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+@use '../../../variables';
+@use '../../../mixins';
+@use '../../../theme';
+
+:host {
+    @include mat.tabs-overrides((
+        label-text-size: 12px,
+        inactive-label-text-color: map.get(theme.$primary-palette, 50),
+    ));
+}
+
+.route-tab-icon {
+    @include mixins.icon-size(14px);
+    margin-right: 4px;
+}
+
+.route-placeholder {
+    width: 100%;
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: map.get(theme.$primary-palette, 50);
+    font-size: 12px;
+}
+
+.route-info {
+    margin-top: 16px;
+}
+
+.route-distance {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+.route-speed {
+    color: variables.$grey;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    .mat-icon {
+        @include mixins.icon-size(16px);
+    }
+}
+
+::ng-deep .mdc-tab.mat-mdc-tab {
+    padding: 0 12px;
+}

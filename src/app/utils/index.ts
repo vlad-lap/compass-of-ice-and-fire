@@ -2,3 +2,8 @@ export * from './geometry';
 export * from './search';
 export * from './localize';
 export * from './scale';
+export * from './grid';
+export * from './raster';
+export * from './routing';
+export * from './is-feature-data';
+export * from './display-value';

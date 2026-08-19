@@ -5,6 +5,8 @@ import { UrlService } from './url.service';
 import { FeatureData } from '../models';
 import { AddHistoryItem, GeodataState, UserSettingsState } from '../store';
 import { APP_TITLE } from '../constants';
+import { getDisplayName } from '../utils';
+import { RouteService } from './route.service';
 
 @Injectable({
     providedIn: 'root',
@@ -17,9 +19,15 @@ export class SearchService {
         private title: Title,
         private store: Store,
         private url: UrlService,
+        private routeService: RouteService,
     ) {
         effect(() => {
             const selectedId = this.selectedId();
+
+            if (this.routeService.routeEnabled()) {
+                return;
+            }
+
             const featureData = selectedId
                 ? this.store.selectSnapshot(GeodataState.byId(selectedId))?.properties as FeatureData
                 : null;
@@ -38,17 +46,12 @@ export class SearchService {
         }
     }
 
-    displayFn = (option: FeatureData): string => {
-        const language = this.language();
-        return option?.[`name_${language}`] ?? option?.name;
-    };
-
     setUrl(value: FeatureData): void {
         this.url.path = value?.id;
     }
 
     setTitle(value: FeatureData): void {
-        const title = value ? `${this.displayFn(value)} | ${APP_TITLE}` : APP_TITLE;
+        const title = value ? `${getDisplayName(value, this.language())} | ${APP_TITLE}` : APP_TITLE;
         this.title.setTitle(title);
     }
 }

@@ -1,0 +1,25 @@
+@let ui = coreUi();
+
+<coiaf-card>
+    <div coiafCardTitle>
+        <h3>{{ data | localize: 'name' }}</h3>
+        @if (data.nameVariant) {
+            <div class="card-subtitle">{{ data | localize: 'nameVariant' }}</div>
+        }
+    </div>
+
+    <div coiafCardActions>
+        <button
+            matIconButton
+            [aria-label]="ui.route"
+            (click)="setRouteEndpoint();"
+        >
+            <mat-icon>directions</mat-icon>
+        </button>
+    </div>
+
+    <div coiafCardBody>
+        <coiaf-caption [location]="data" class="card-caption" />
+        <div class="description">{{ data | localize: 'description' }}</div>
+    </div>
+</coiaf-card>

@@ -2,38 +2,68 @@ import {
     ChangeDetectionStrategy,
     Component,
     computed,
+    Directive,
     ElementRef,
     Inject,
     OnDestroy,
     signal,
     viewChild,
+    ViewEncapsulation,
 } from '@angular/core';
 import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet';
-import { FeatureData } from '../../models';
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton } from '@angular/material/button';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { Clipboard } from '@angular/cdk/clipboard';
 import { Subject } from 'rxjs';
-import { LocalizePipe } from '../../pipes';
-import { APP_TITLE } from '../../constants';
 import { Store } from '@ngxs/store';
-import { LanguagesState, UserSettingsState } from '../../store';
-import { SubtitleComponent } from '../subtitle/subtitle.component';
-import { localizeProperty } from '../../utils';
+import { LanguagesState } from '../../store';
+import { isNil } from 'lodash';
+import { Clipboard } from '@angular/cdk/clipboard';
+import { Title } from '@angular/platform-browser';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 const MAX_CARD_HEIGHT_VIEWPORT_RATIO = 0.8;
-const DEFAULT_MAX_CARD_HEIGHT = 300;
 
 const CARD_HEIGHT_ABOVE_HEADER = 28;
+
+export interface CardData {
+    height?: number;
+    minHeight?: number;
+    maxHeight?: number;
+}
+
+@Directive({
+    selector: '[coiafCardTitle]',
+    host: {
+        class: 'card-title',
+    },
+})
+export class CardTitleDirective {}
+
+@Directive({
+    selector: '[coiafCardActions]',
+    host: {
+        class: 'card-actions',
+    },
+})
+export class CardActionsDirective {}
+
+@Directive({
+    selector: '[coiafCardBody]',
+    host: {
+        class: 'card-body',
+    },
+})
+export class CardBodyDirective {}
 
 @Component({
     selector: 'coiaf-card',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [MatIcon, MatIconButton, LocalizePipe, SubtitleComponent],
+    imports: [MatIcon, MatIconButton],
     templateUrl: './card.component.html',
     styleUrl: './card.component.scss',
+    encapsulation: ViewEncapsulation.None,
     host: {
+        class: 'coiaf-card',
         '[style.height.px]': 'cardHeight()',
         '[style.max-height.px]': 'maxCardHeight()',
         '[class.resizing]': 'isResizing()',
@@ -45,27 +75,29 @@ export class CardComponent implements OnDestroy {
     readonly header = viewChild('header', { read: ElementRef });
     readonly coreUi = this.store.selectSignal(LanguagesState.coreUi);
 
-    protected readonly cardHeight = signal<number | null>(null);
+    protected readonly cardHeight = signal<number | null>(this.limitByViewport(this.data.height));
     protected readonly maxCardHeight = computed<number>(() =>
-        Math.max(this.cardHeight() ?? 0, DEFAULT_MAX_CARD_HEIGHT),
+        this.limitByViewport(Math.max(this.cardHeight() ?? 0, this.data.maxHeight ?? 0)),
     );
     protected readonly isResizing = signal(false);
-    protected readonly minCardHeight = computed<number>(
-        () =>
+    protected readonly minCardHeight = computed<number>(() => {
+        const headerHeight =
             parseInt(getComputedStyle(this.header()?.nativeElement).height) +
-            CARD_HEIGHT_ABOVE_HEADER,
-    );
+            CARD_HEIGHT_ABOVE_HEADER;
+        return this.limitByViewport(Math.max(headerHeight, this.data.minHeight ?? 0));
+    });
 
     private resizeStartY = 0;
     private resizeStartHeight = 0;
 
     constructor(
-        @Inject(MAT_BOTTOM_SHEET_DATA) protected data: FeatureData,
+        @Inject(MAT_BOTTOM_SHEET_DATA) protected data: CardData,
         private bottomSheetRef: MatBottomSheetRef,
-        private clipboard: Clipboard,
-        private snackBar: MatSnackBar,
         private store: Store,
         private elementRef: ElementRef<HTMLElement>,
+        private title: Title,
+        private clipboard: Clipboard,
+        private snackBar: MatSnackBar,
     ) {}
 
     ngOnDestroy(): void {
@@ -84,13 +116,8 @@ export class CardComponent implements OnDestroy {
 
     async share(): Promise<void> {
         if (navigator.share) {
-            const language = this.store.selectSnapshot(UserSettingsState.language);
-            const name = localizeProperty(this.data, language, 'name');
-            const type = localizeProperty(this.data, language, 'type');
-
             await navigator.share({
-                title: `${name} | ${APP_TITLE}`,
-                text: `${name} • ${type}`,
+                title: this.title.getTitle(),
                 url: window.location.href,
             });
         } else {
@@ -114,8 +141,7 @@ export class CardComponent implements OnDestroy {
 
     private onResize = (event: PointerEvent): void => {
         const height = this.resizeStartHeight + this.resizeStartY - event.clientY;
-        const maxHeight = window.innerHeight * MAX_CARD_HEIGHT_VIEWPORT_RATIO;
-        this.cardHeight.set(Math.min(Math.max(height, this.minCardHeight()), maxHeight));
+        this.cardHeight.set(this.limitByViewport(Math.max(height, this.minCardHeight())));
     };
 
     private stopResize = (): void => {
@@ -123,4 +149,12 @@ export class CardComponent implements OnDestroy {
         document.removeEventListener('pointermove', this.onResize);
         document.removeEventListener('pointerup', this.stopResize);
     };
+
+    private limitByViewport(height: number): number {
+        if (isNil(height)) {
+            return null;
+        }
+        const maxHeight = window.innerHeight * MAX_CARD_HEIGHT_VIEWPORT_RATIO;
+        return Math.min(height, maxHeight);
+    }
 }

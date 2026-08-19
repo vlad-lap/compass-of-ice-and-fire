@@ -1,6 +1,6 @@
 @use '../../../variables';
 
-:host {
+.coiaf-card {
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -56,7 +56,7 @@
         margin: 0;
     }
 
-    .name-variant {
+    .card-subtitle {
         color: variables.$grey;
     }
 
@@ -65,7 +65,15 @@
     }
 }
 
-.card-subtitle {
+.card-actions {
+    display: contents;
+}
+
+.mat-icon.share-icon {
+    bottom: 2px;
+}
+
+.card-caption {
     font-size: 14px;
     color: variables.$grey;
     margin-bottom: 12px;

@@ -12,6 +12,7 @@ import {
 } from 'maplibre-gl';
 import {
     BLACK,
+    BLUE,
     FontSize,
     FontStyle,
     LabelColor,
@@ -575,4 +576,31 @@ export const SEARCH_HIGHLIGHT_CIRCLE_PAINT: CircleLayerSpecification['paint'] = 
 export const DIM_OVERLAY_PAINT: FillLayerSpecification['paint'] = {
     'fill-color': BLACK,
     'fill-opacity': 0.05,
+};
+
+export const ROUTE_LINE_LAYOUT: LineLayerSpecification['layout'] = DEFAULT_LINE_LAYOUT;
+
+export const ROUTE_LINE_PAINT: LineLayerSpecification['paint'] = {
+    'line-width': 3,
+    'line-color': BLUE,
+};
+
+export const ROUTE_OUTLINE_PAINT: LineLayerSpecification['paint'] = {
+    'line-width': 5,
+    'line-color': BLACK,
+};
+
+export const ROUTE_ENDPOINT_PAINT: CircleLayerSpecification['paint'] = {
+    'circle-radius': LocationRadius.LG,
+    'circle-color': WHITE,
+    'circle-stroke-color': BLACK,
+    'circle-stroke-width': 2,
+};
+
+export const ROUTE_ENDPOINT_SHADOW: CircleLayerSpecification['paint'] = {
+    'circle-radius': LocationRadius.LG + 3,
+    'circle-color': BLACK,
+    'circle-opacity': 0.3,
+    'circle-blur': 0.8,
+    'circle-translate': [1.5, 1.5],
 };

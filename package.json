@@ -8,8 +8,9 @@
         "start:broadcast": "npm run build-geodata && ng serve --host=0.0.0.0",
         "build": "npm run build-geodata && ng build",
         "watch": "npm run build-geodata && ng build --watch --configuration development",
-        "test": "ng test",
-        "lint": "ng lint"
+        "test": "ng test --watch=false",
+        "lint": "ng lint",
+        "check-routing": "node scripts/routing/check-routing.mjs"
     },
     "private": true,
     "packageManager": "npm@10.9.0",

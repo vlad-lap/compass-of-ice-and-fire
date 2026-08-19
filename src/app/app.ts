@@ -10,6 +10,9 @@ import {
 import { filter } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SpinnerComponent } from './components/spinner/spinner.component';
+import { MatIconRegistry } from '@angular/material/icon';
+import { SVG_ICONS } from './svg-icons';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
     selector: 'coiaf-app-root',
@@ -23,10 +26,13 @@ export class App implements OnInit {
     constructor(
         private router: Router,
         private destroyRef: DestroyRef,
+        private iconRegistry: MatIconRegistry,
+        private sanitizer: DomSanitizer,
     ) {}
 
     ngOnInit(): void {
         this.enableNavigationalLoader();
+        this.registerSvgIcons();
     }
 
     private enableNavigationalLoader(): void {
@@ -47,5 +53,11 @@ export class App implements OnInit {
                 takeUntilDestroyed(this.destroyRef),
             )
             .subscribe(() => this.loading.set(false));
+    }
+
+    private registerSvgIcons(): void {
+        Object.entries(SVG_ICONS).forEach(([name, svg]) => {
+            this.iconRegistry.addSvgIconLiteral(name, this.sanitizer.bypassSecurityTrustHtml(svg));
+        });
     }
 }

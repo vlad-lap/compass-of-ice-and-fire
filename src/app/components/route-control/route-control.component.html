@@ -1,0 +1,71 @@
+@let ui = coreUi();
+@let shouldCloseOnBlur = shouldClose();
+
+<ng-container [formGroup]="form">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-icon matPrefix class="route-prefix-icon from">place</mat-icon>
+        <input
+            #fromInput
+            matInput
+            type="search"
+            [attr.lang]="language()"
+            inputmode="search"
+            autocomplete="off"
+            spellcheck="false"
+            enterkeyhint="search"
+            formControlName="from"
+            tabindex="-1"
+            [placeholder]="ui.placeFrom"
+            [coiafAutocomplete]="fromAutocomplete.matAutocomplete()"
+            [shouldCloseOnBlur]="shouldCloseOnBlur.from"
+        />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-icon matPrefix class="route-prefix-icon to">place</mat-icon>
+        <input
+            #toInput
+            matInput
+            type="search"
+            [attr.lang]="language()"
+            inputmode="search"
+            autocomplete="off"
+            spellcheck="false"
+            enterkeyhint="search"
+            formControlName="to"
+            tabindex="-1"
+            [placeholder]="ui.placeTo"
+            [coiafAutocomplete]="toAutocomplete.matAutocomplete()"
+            [shouldCloseOnBlur]="shouldCloseOnBlur.to"
+        />
+    </mat-form-field>
+</ng-container>
+
+@let formValue = formValue$ | async;
+@let selected = selectedIds();
+
+<coiaf-autocomplete
+    #fromAutocomplete
+    [query]="formValue.from"
+    [availableGroups]="availableGroups"
+    [excludedIds]="selected.to"
+/>
+<coiaf-autocomplete
+    #toAutocomplete
+    [query]="formValue.to"
+    [availableGroups]="availableGroups"
+    [excludedIds]="selected.from"
+/>
+
+@let positions = endpointPositions();
+
+@if (positions.from && positions.to) {
+    <button
+        matIconButton
+        class="swap-button"
+        [aria-label]="ui.swap"
+        (click)="swap()"
+    >
+        <mat-icon>import_export</mat-icon>
+    </button>
+}
