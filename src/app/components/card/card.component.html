@@ -9,19 +9,8 @@
 </div>
 
 <div class="card-header" #header>
-    <div class="card-title">
-        <h3>{{ data | localize: 'name' }}</h3>
-        @if (data.nameVariant) {
-            <div class="name-variant">{{ data | localize: 'nameVariant' }}</div>
-        }
-    </div>
-    <button
-        matIconButton
-        [aria-label]="ui.showOnMap"
-        (click)="goToLocation$.next();"
-    >
-        <mat-icon>my_location</mat-icon>
-    </button>
+    <ng-content select="[coiafCardTitle]" />
+    <ng-content select="[coiafCardActions]" />
     <button
         matIconButton
         [aria-label]="ui.share"
@@ -38,7 +27,4 @@
     </button>
 </div>
 
-<div class="card-body">
-    <coiaf-subtitle [location]="data" class="card-subtitle" />
-    <div class="description">{{ data | localize: 'description' }}</div>
-</div>
+<ng-content select="[coiafCardBody]" />

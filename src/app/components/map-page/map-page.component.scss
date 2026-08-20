@@ -1,4 +1,6 @@
+@use 'sass:map';
 @use '../../../variables';
+@use '../../../theme';
 
 :host {
     position: relative;
@@ -32,7 +34,17 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    opacity: .75;
+
+    button.mdc-fab {
+        &.active {
+            background: map.get(theme.$primary-palette, 30);
+            color: map.get(theme.$primary-palette, 90);
+        }
+
+        &:not(.active) {
+            opacity: .75;
+        }
+    }
 }
 
 .map-scale {

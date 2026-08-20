@@ -1,0 +1,20 @@
+@use '../../../mixins';
+@use '../../../variables';
+
+.route-prefix-icon {
+    @include mixins.icon-size(16px);
+
+    &.from {
+        color: variables.$red;
+    }
+
+    &.to {
+        color: variables.$green;
+    }
+}
+
+.swap-button {
+    position: absolute;
+    right: 8px;
+    top: calc(50% - 20px);
+}

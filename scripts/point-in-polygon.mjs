@@ -1,3 +1,10 @@
+/**
+ * Tests whether a point lies inside a linear ring using the ray casting algorithm.
+ *
+ * @param {[number, number]} point - Position as `[x, y]`.
+ * @param {[number, number][]} ring - Ring vertices as `[x, y]` positions.
+ * @returns {boolean} `true` if the point is inside the ring.
+ */
 function pointInRing(point, ring) {
     const [pointX, pointY] = point;
     let inside = false;
@@ -20,6 +27,13 @@ function pointInRing(point, ring) {
     return inside;
 }
 
+/**
+ * Tests whether a point lies inside a GeoJSON polygonal geometry, excluding its holes.
+ *
+ * @param {import('geojson').Position} point - Position as `[x, y]`.
+ * @param {import('geojson').Polygon | import('geojson').MultiPolygon} geometry - Geometry to test against.
+ * @returns {boolean} `true` if the point is inside the geometry; `false` for any other geometry type.
+ */
 export function pointInPolygon(point, geometry) {
     if (geometry.type === 'Polygon') {
         const [outerRing, ...holes] = geometry.coordinates;
@@ -34,6 +48,14 @@ export function pointInPolygon(point, geometry) {
     return false;
 }
 
+/**
+ * Tests whether a line is mostly contained by a polygonal geometry, i.e. at least half of its
+ * vertices lie inside it.
+ *
+ * @param {import('geojson').LineString | import('geojson').MultiLineString} line - Line to test.
+ * @param {import('geojson').Polygon | import('geojson').MultiPolygon} geometry - Geometry to test against.
+ * @returns {boolean} `true` if at least half of the line vertices are inside the geometry; `false` for an empty line.
+ */
 export function lineInPolygon(line, geometry) {
     const points = line.type === 'MultiLineString' ? line.coordinates.flat() : line.coordinates;
     if (points.length === 0) {

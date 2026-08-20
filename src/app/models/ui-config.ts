@@ -9,8 +9,21 @@ export interface UiConfig<T> {
     share: T;
     close: T;
     clear: T;
+    swap: T;
     language: T;
     formerly: T;
     details: T;
     km: T;
+    route: T;
+    routeNotFound: T;
+    foot: T;
+    horse: T;
+    dragon: T;
+    placeFrom: T;
+    placeTo: T;
+    clearRoute: T;
+    weeks: T;
+    days: T;
+    hours: T;
+    minutes: T;
 }

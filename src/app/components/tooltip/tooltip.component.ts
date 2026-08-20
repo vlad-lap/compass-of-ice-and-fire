@@ -3,7 +3,7 @@ import { FeatureData } from '../../models';
 import { LocalizePipe } from '../../pipes';
 import { Store } from '@ngxs/store';
 import { LanguagesState } from '../../store';
-import { SubtitleComponent } from '../subtitle/subtitle.component';
+import { CaptionComponent } from '../subtitle/caption.component';
 import { SearchService } from '../../services';
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton } from '@angular/material/button';
@@ -19,7 +19,7 @@ export interface TooltipOptions {
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: 'tooltip.component.html',
     styleUrl: './tooltip.component.scss',
-    imports: [LocalizePipe, SubtitleComponent, MatIcon, MatIconButton],
+    imports: [LocalizePipe, CaptionComponent, MatIcon, MatIconButton],
 })
 export class TooltipComponent {
     readonly location = input.required<FeatureData>();
