@@ -2,14 +2,18 @@ import { FeatureCollection, Feature, Point, Polygon, MultiPolygon, Position } fr
 import { Action, createSelector, Selector, State, StateContext, StateToken } from '@ngxs/store';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { GetGeodata } from './geodata.actions';
+import { GetBarrierCrossings, GetGeodata, GetRoadNetwork } from './geodata.actions';
 import { Observable, tap } from 'rxjs';
-import { GEODATA_URLS } from '../../constants';
-import { FeatureData, GeodataDict, GeodataType } from '../../models';
+import { GEODATA_URLS, BARRIER_CROSSINGS_URL, ROAD_NETWORK_URL } from '../../constants';
+import { FeatureData, GeodataDict, GeodataType, BarrierCrossing, BarrierCrossings, RoadNetwork } from '../../models';
 import { getCentralPoint, getLocationsSearchOptions, getMiddleMultiPoint, getSearchOptions } from '../../utils';
 import { flatten, mapValues, omit } from 'lodash';
 
-type GeodataStateModel = GeodataDict<FeatureCollection>;
+type GeodataStateModel = GeodataDict<FeatureCollection> & {
+    roadNetwork?: RoadNetwork;
+    barrierCrossings?: BarrierCrossing[];
+};
+
 
 export const GEODATA_STATE_TOKEN = new StateToken<GeodataStateModel>('geodata');
 
@@ -49,7 +53,10 @@ const LABEL_POSITIONS: Record<string, Position> = {
 export class GeodataState {
     @Selector()
     static searchOptions(state: GeodataStateModel): Record<string, FeatureData[]> {
-        const allOptionsDict = mapValues(state, value => getSearchOptions(value));
+        const allOptionsDict = mapValues(
+            omit(state, 'roadNetwork', 'barrierCrossings'),
+            value => getSearchOptions(value)
+        );
         const locationsOptionsDict = getLocationsSearchOptions(
             state.locations ?? ({} as FeatureCollection),
         );
@@ -57,6 +64,16 @@ export class GeodataState {
             ...omit(allOptionsDict, ['locations', 'kingdomBorders', 'mountainRidges']),
             ...locationsOptionsDict,
         };
+    }
+
+    @Selector()
+    static roadNetwork({ roadNetwork }: GeodataStateModel): RoadNetwork {
+        return roadNetwork;
+    }
+
+    @Selector()
+    static barrierCrossings({ barrierCrossings }: GeodataStateModel): BarrierCrossing[] {
+        return barrierCrossings;
     }
 
     static geodata(key: GeodataType) {
@@ -93,7 +110,7 @@ export class GeodataState {
 
     static byId(id: string) {
         return createSelector([GeodataState], (state: GeodataStateModel): Feature => {
-            const allFeatures = Object.values(state).map(({ features }) => features);
+            const allFeatures = Object.values(omit(state, 'roadNetwork', 'barrierCrossings')).map(({ features }) => features);
             return flatten(allFeatures).find(feature => feature.properties.id === id);
         });
     }
@@ -118,5 +135,23 @@ export class GeodataState {
         return this.http
             .get<FeatureCollection>(GEODATA_URLS[key])
             .pipe(tap(geodata => patchState({ [key]: geodata })));
+    }
+
+    @Action(GetRoadNetwork)
+    getRoadNetwork(
+        { patchState }: StateContext<GeodataStateModel>,
+    ): Observable<RoadNetwork> {
+        return this.http
+            .get<RoadNetwork>(ROAD_NETWORK_URL)
+            .pipe(tap(roadNetwork => patchState({ roadNetwork })));
+    }
+
+    @Action(GetBarrierCrossings)
+    getBarrierCrossings(
+        { patchState }: StateContext<GeodataStateModel>,
+    ): Observable<BarrierCrossings> {
+        return this.http
+            .get<BarrierCrossings>(BARRIER_CROSSINGS_URL)
+            .pipe(tap(({ crossings }) => patchState({ barrierCrossings: crossings })));
     }
 }

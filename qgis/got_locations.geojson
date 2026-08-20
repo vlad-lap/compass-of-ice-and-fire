@@ -2,7 +2,6 @@
 "type": "FeatureCollection",
 "name": "got_locations",
 "features": [
-{ "type": "Feature", "properties": { "id": 315, "name": "Bridge of Skulls", "size": 1, "confirmed": 1, "type": "other" }, "geometry": { "type": "Point", "coordinates": [ 14.5103862776584, 34.924113479198283 ] } },
 { "type": "Feature", "properties": { "id": 1, "name": "King's Landing", "size": 5, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 18.432066083848635, 3.736014024094777 ] } },
 { "type": "Feature", "properties": { "id": 2, "name": "Hayford Castle", "size": 3, "confirmed": 0, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 18.306671191450057, 4.783014234685957 ] } },
 { "type": "Feature", "properties": { "id": 3, "name": "Rosby", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 19.111838395272535, 4.56899438074251 ] } },
@@ -32,7 +31,7 @@
 { "type": "Feature", "properties": { "id": 37, "name": "Lord Harroway's Town", "size": 4, "confirmed": 0, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 16.624762524980707, 10.069994975451104 ] } },
 { "type": "Feature", "properties": { "id": 38, "name": "Crossroads Inn", "size": 1, "confirmed": 0, "type": "other" }, "geometry": { "type": "Point", "coordinates": [ 16.955361679658328, 10.045686830312304 ] } },
 { "type": "Feature", "properties": { "id": 39, "name": "Saltpans", "size": 4, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 18.813907673483417, 9.239718417904792 ] } },
-{ "type": "Feature", "properties": { "id": 40, "name": "Quiet Isle", "size": 1, "confirmed": 1, "type": "other" }, "geometry": { "type": "Point", "coordinates": [ 19.208350169587998, 8.672128321069017 ] } },
+{ "type": "Feature", "properties": { "id": 40, "name": "Quiet Isle", "size": 1, "confirmed": 1, "type": "other" }, "geometry": { "type": "Point", "coordinates": [ 19.191020395808383, 8.689911129929216 ] } },
 { "type": "Feature", "properties": { "id": 41, "name": "Wickenden", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 22.005349107838324, 8.913974543290426 ] } },
 { "type": "Feature", "properties": { "id": 42, "name": "Maidenpool", "size": 4, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 20.016001566778105, 8.015468284223861 ] } },
 { "type": "Feature", "properties": { "id": 43, "name": "Rook's Rest", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 21.582966312390464, 7.094334375401252 ] } },
@@ -71,7 +70,7 @@
 { "type": "Feature", "properties": { "id": 76, "name": "Honeyholt", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 6.214794534653829, -4.99753776132606 ] } },
 { "type": "Feature", "properties": { "id": 77, "name": "Oldtown", "size": 5, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 5.698356183583523, -6.026874026937739 ] } },
 { "type": "Feature", "properties": { "id": 78, "name": "Blackcrown", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 4.031857960688973, -6.755576575520638 ] } },
-{ "type": "Feature", "properties": { "id": 79, "name": "Three Towers", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 4.801669748441173, -7.576980959315466 ] } },
+{ "type": "Feature", "properties": { "id": 79, "name": "Three Towers", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 4.483787369094077, -7.49443603258219 ] } },
 { "type": "Feature", "properties": { "id": 80, "name": "Uplands", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 7.377436744939006, -5.99219336970751 ] } },
 { "type": "Feature", "properties": { "id": 81, "name": "Sunflower Hall", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 6.924077781090705, -9.323506141654159 ] } },
 { "type": "Feature", "properties": { "id": 82, "name": "Blackmont", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 10.323321641993838, -6.047800782970986 ] } },
@@ -116,7 +115,6 @@
 { "type": "Feature", "properties": { "id": 122, "name": "The Crag", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 6.886506787045773, 9.163209095487554 ] } },
 { "type": "Feature", "properties": { "id": 123, "name": "Banefort", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 7.056162918844755, 10.711013950088429 ] } },
 { "type": "Feature", "properties": { "id": 124, "name": "Ashemark", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 7.879855732651412, 8.263293961597297 ] } },
-{ "type": "Feature", "properties": { "id": 135, "name": "Bridge of Skulls", "size": 1, "confirmed": 1, "type": "other" }, "geometry": { "type": "Point", "coordinates": [ 21.564787032192704, 10.79764855560666 ] } },
 { "type": "Feature", "properties": { "id": 126, "name": "Stone Mill", "size": 1, "confirmed": 0, "type": "other" }, "geometry": { "type": "Point", "coordinates": [ 12.094532171109025, 9.243804972982817 ] } },
 { "type": "Feature", "properties": { "id": 127, "name": "Stone Hedge", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 13.967794149595031, 10.105965666160113 ] } },
 { "type": "Feature", "properties": { "id": 128, "name": "Fairmarket", "size": 4, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 14.710759761050028, 11.706971023549707 ] } },
@@ -134,7 +132,7 @@
 { "type": "Feature", "properties": { "id": 141, "name": "Snakewood", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 21.916959850978461, 14.946128840780322 ] } },
 { "type": "Feature", "properties": { "id": 142, "name": "Baelish Keep", "size": 3, "confirmed": 0, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 21.135761103936773, 17.343707825188453 ] } },
 { "type": "Feature", "properties": { "id": 143, "name": "Coldwater", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 21.979960345063706, 15.757478150181742 ] } },
-{ "type": "Feature", "properties": { "id": 144, "name": "Seagard", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 12.445818584110999, 13.553368853851104 ] } },
+{ "type": "Feature", "properties": { "id": 144, "name": "Seagard", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 12.263094650583604, 13.509518536121016 ] } },
 { "type": "Feature", "properties": { "id": 145, "name": "The Twins", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 13.371838052403584, 14.398995861423588 ] } },
 { "type": "Feature", "properties": { "id": 147, "name": "Greywater Watch", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 13.018221984598744, 16.972184050752187 ] } },
 { "type": "Feature", "properties": { "id": 148, "name": "Moat Cailin", "size": 3, "confirmed": 1, "type": "ruin" }, "geometry": { "type": "Point", "coordinates": [ 14.317958861681893, 20.265825105053455 ] } },
@@ -191,7 +189,7 @@
 { "type": "Feature", "properties": { "id": 204, "name": "The Sorrows (Chroyane)", "size": 4, "confirmed": 1, "type": "ruin" }, "geometry": { "type": "Point", "coordinates": [ 40.641609547013502, -2.390705823835672 ] } },
 { "type": "Feature", "properties": { "id": 205, "name": "Selhorys", "size": 4, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 41.464920831017999, -5.836919175778385 ] } },
 { "type": "Feature", "properties": { "id": 206, "name": "Valysar", "size": 4, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 41.162541412726576, -7.412475092138928 ] } },
-{ "type": "Feature", "properties": { "id": 207, "name": "Volon Therys", "size": 4, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 41.942362017793918, -8.972116302273609 ] } },
+{ "type": "Feature", "properties": { "id": 207, "name": "Volon Therys", "size": 4, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 42.002355099852025, -8.809371834607539 ] } },
 { "type": "Feature", "properties": { "id": 208, "name": "Sar Mell", "size": 4, "confirmed": 1, "type": "ruin" }, "geometry": { "type": "Point", "coordinates": [ 42.44293720482419, -8.405020504581293 ] } },
 { "type": "Feature", "properties": { "id": 209, "name": "Volantis", "size": 5, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 43.66186593588543, -9.658285256235807 ] } },
 { "type": "Feature", "properties": { "id": 210, "name": null, "size": 4, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 47.173987528944288, -8.954258480319467 ] } },
@@ -295,6 +293,7 @@
 { "type": "Feature", "properties": { "id": 311, "name": "Harvest Hall", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 13.887979270768971, -3.716633254272738 ] } },
 { "type": "Feature", "properties": { "id": 312, "name": "Vaes Gorqoyi (Mardosh)", "size": 4, "confirmed": 0, "type": "ruin" }, "geometry": { "type": "Point", "coordinates": [ 54.82773054860462, 4.033967506320956 ] } },
 { "type": "Feature", "properties": { "id": 313, "name": "Field of Crows", "size": 1, "confirmed": 0, "type": "other" }, "geometry": { "type": "Point", "coordinates": [ 60.97349142568234, 3.913502426006143 ] } },
-{ "type": "Feature", "properties": { "id": 314, "name": "Sarhoy", "size": 4, "confirmed": 1, "type": "ruin" }, "geometry": { "type": "Point", "coordinates": [ 43.245600382365275, -10.805644748527511 ] } }
+{ "type": "Feature", "properties": { "id": 314, "name": "Sarhoy", "size": 4, "confirmed": 1, "type": "ruin" }, "geometry": { "type": "Point", "coordinates": [ 43.245600382365275, -10.805644748527511 ] } },
+{ "type": "Feature", "properties": { "id": 315, "name": "Bridge of Skulls", "size": 1, "confirmed": 1, "type": "other" }, "geometry": { "type": "Point", "coordinates": [ 14.5103862776584, 34.924113479198283 ] } }
 ]
 }

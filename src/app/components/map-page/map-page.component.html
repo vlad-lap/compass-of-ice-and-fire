@@ -1,11 +1,24 @@
-<coiaf-map-search
-    (applySearch)="search($event)"
-    (resetSearch)="resetSearch()"
-/>
+@if (routeEnabled()) {
+    <coiaf-route-control />
+} @else {
+    <coiaf-map-search
+        (applySearch)="search($event)"
+        (resetSearch)="resetSearch()"
+    />
+}
 
 @let ui = coreUi();
 
 <div class="map-menu">
+    <button
+        matMiniFab
+        [title]="ui.route"
+        [aria-label]="ui.route"
+        [class.active]="routeEnabled()"
+        (click)="toggleRoute()"
+    >
+        <mat-icon>directions</mat-icon>
+    </button>
     <button
         matMiniFab
         [title]="ui.resetMapView"
@@ -65,6 +78,12 @@
     (mapDblClick)="onMapDoubleClick($event)"
     (mapDragStart)="onMapDragStart()"
     (mapDragEnd)="onMapDragEnd()"
+    (mapMouseDown)="onLongPressStart($event)"
+    (mapMouseUp)="onLongPressEnd()"
+    (mapTouchStart)="onLongPressStart($event)"
+    (mapTouchEnd)="onLongPressEnd()"
+    (mapTouchCancel)="onLongPressEnd()"
+    (mapTouchMove)="onLongPressEnd()"
     (zoomEnd)="saveCurrentPosition(); updateScaleBar()"
 >
     @for (polygonType of polygonTypes; track polygonType) {
@@ -332,4 +351,55 @@
         [paint]="pointsShadow"
         [layout]="searchHighPointLayout()"
     />
+
+    <mgl-geojson-source
+        id="route-line"
+        [data]="routeLine()"
+    />
+    <mgl-layer
+        id="route-line-layer"
+        before="tier1-point-shadow"
+        type="line"
+        source="route-line"
+        [layout]="routeLineLayout"
+        [paint]="routeLinePaint"
+    />
+    <mgl-layer
+        id="route-outline-layer"
+        before="route-line-layer"
+        type="line"
+        source="route-line"
+        [layout]="routeLineLayout"
+        [paint]="routeOutlinePaint"
+    />
+
+    <mgl-geojson-source
+        id="route-endpoints"
+        [data]="routeEndpoints()"
+    />
+    <mgl-layer
+        id="route-endpoint-point"
+        type="circle"
+        source="route-endpoints"
+        before="tier1-point-label"
+        [paint]="routeEndpointPaint"
+    />
+    <mgl-layer
+        id="route-endpoint-point-shadow"
+        type="circle"
+        source="route-endpoints"
+        before="route-endpoint-point"
+        [paint]="routeEndpointShadow"
+    />
+
+    @let markers = routeEndpointMarkers() | keyvalue;
+    @for (marker of markers; track marker.key) {
+        @if (marker.value) {
+            <mgl-marker
+                [lngLat]="marker.value"
+                [scale]="0.75"
+                [color]="markerColor[marker.key]"
+            />
+        }
+    }
 </mgl-map>

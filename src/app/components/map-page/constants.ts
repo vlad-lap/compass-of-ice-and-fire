@@ -1,5 +1,3 @@
-import { LngLatLike } from 'maplibre-gl';
-
 export enum MapBounds {
     North = 48.7,
     South = -39.3,
@@ -7,7 +5,7 @@ export enum MapBounds {
     West = -7.1,
 }
 
-export const INITIAL_MAP_CENTER: LngLatLike = [15, 10];
+export const INITIAL_MAP_CENTER: [number, number] = [15, 10];
 
 export enum ZoomLevel {
     Initial = 3.4,
@@ -19,8 +17,7 @@ export enum ZoomLevel {
 
 export const ZOOM_DURATION = 300;
 export const ZOOM_STEP = 0.5;
-export const LONG_PRESS_TOOLTIP_TIMEOUT_MS = 150;
-export const LONG_PRESS_DURATION_MS = 800;
+export const LONG_PRESS_DURATION_MS = 500;
 
 export const KM_PER_COORD_UNIT = 85.371;
 export const SCALE_BAR_MAX_WIDTH_PX = 100;
@@ -32,6 +29,8 @@ export const WHITE = '#faf7ef';
 export const RED = '#ff3b30';
 export const ORANGE = '#ffa80d';
 export const BROWN = '#6d4106';
+export const GREEN = '#669d77';
+export const BLUE = '#2f6fed';
 
 export enum LandscapeColor {
     Land = '#d2fade',
@@ -78,13 +77,17 @@ export enum HitRadiusPx {
     Touch = 15,
 }
 
-export const CLICKABLE_LAYER_IDS = [
+export const ROUTE_LAYER_IDS = [
     'tier1-point',
     'tier2-point',
     'tier3-point',
     'tier4-point',
-    'the-wall-line',
     'the-five-forts-point',
+];
+
+export const CLICKABLE_LAYER_IDS = [
+    ...ROUTE_LAYER_IDS,
+    'the-wall-line',
     'kingdoms-fill',
     'countries-fill',
     'regions-fill',

@@ -7,13 +7,13 @@ import { MatIcon } from '@angular/material/icon';
 import { CommonModule, TitleCasePipe } from '@angular/common';
 
 @Component({
-    selector: 'coiaf-subtitle',
+    selector: 'coiaf-caption',
     imports: [CommonModule, AreaPipe, LocalizePipe, MatIcon, TitleCasePipe],
-    templateUrl: './subtitle.component.html',
-    styleUrl: './subtitle.component.scss',
+    templateUrl: './caption.component.html',
+    styleUrl: './caption.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SubtitleComponent {
+export class CaptionComponent {
     readonly location = input.required<FeatureData>();
     readonly iconSize = input<'small' | 'medium'>('medium');
     readonly coreUi = this.store.selectSignal(LanguagesState.coreUi);

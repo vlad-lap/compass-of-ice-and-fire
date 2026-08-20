@@ -11,6 +11,10 @@
         "en": "Clear",
         "ru": "Очистить"
     },
+    "swap": {
+        "en": "Swap",
+        "ru": "Поменять местами"
+    },
     "zoomIn": {
         "en": "Zoom in",
         "ru": "Приблизить"
@@ -54,5 +58,53 @@
     "km": {
         "en": "km",
         "ru": "км"
+    },
+    "route": {
+        "en": "Route",
+        "ru": "Маршрут"
+    },
+    "routeNotFound": {
+        "en": "Unable to find a route",
+        "ru": "Не удалось построить маршрут"
+    },
+    "foot": {
+        "en": "On foot",
+        "ru": "Пешком"
+    },
+    "horse": {
+        "en": "On horseback",
+        "ru": "На коне"
+    },
+    "dragon": {
+        "en": "By dragon",
+        "ru": "На драконе"
+    },
+    "placeFrom": {
+        "en": "From",
+        "ru": "Откуда"
+    },
+    "placeTo": {
+        "en": "To",
+        "ru": "Куда"
+    },
+    "clearRoute": {
+        "en": "Clear route",
+        "ru": "Очистить маршрут"
+    },
+    "weeks": {
+        "en": "w",
+        "ru": "нед"
+    },
+    "days": {
+        "en": "d",
+        "ru": "д"
+    },
+    "hours": {
+        "en": "h",
+        "ru": "ч"
+    },
+    "minutes": {
+        "en": "m",
+        "ru": "мин"
     }
 }

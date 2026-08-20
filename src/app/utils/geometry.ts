@@ -10,6 +10,7 @@ import {
 import { flatten, flattenDepth } from 'lodash';
 
 export { getCentralPoint, getMiddleMultiPoint } from '../../../scripts/geometry-utils.mjs';
+export { pointInPolygon } from '../../../scripts/point-in-polygon.mjs';
 
 export type HighlightableGeometry = Polygon | MultiPolygon | LineString | MultiLineString | Point | MultiPoint;
 

@@ -1,0 +1,23 @@
+@use '../../../variables';
+
+:host {
+    display: contents;
+
+    &.loading {
+        display: block;
+        background-color: variables.$light-grey;
+        border-radius: 4px;
+        animation: pulse 2s cubic-bezier(.4, 0, .6, 1) infinite;
+        opacity: .8;
+
+        ::ng-deep * {
+            visibility: hidden;
+        }
+    }
+}
+
+@keyframes pulse {
+    50% {
+        opacity: .5;
+    }
+}

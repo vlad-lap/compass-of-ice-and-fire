@@ -6,6 +6,8 @@ import { addContinentId, filterGeodata, getContainingPolygonId, getLocationConti
 import { generateIds } from './generate-ids.mjs';
 import { buildKingdomBorders } from './build-kingdom-borders.mjs';
 import { buildMountainRidges, buildMountainUnion } from './build-mountain-ridges.mjs';
+import { buildRoadNetwork } from './build-road-network.mjs';
+import { buildBarrierCrossings } from './build-barrier-crossings.mjs';
 import { readJSON, writeJSON } from './json-utils.mjs';
 import {
     addFeatureLanguageProperties,
@@ -118,8 +120,12 @@ writeGeoJSON('got_mountain.geojson', mountainUnion);
 syncLanguage(mountains, 'mountains.json');
 
 processGeoJSON('got_lakes.geojson', 'lakes.json');
-processGeoJSON('got_rivers.geojson', 'rivers.json');
-processGeoJSON('got_roads.geojson', 'roads.json');
+const rivers = processGeoJSON('got_rivers.geojson', 'rivers.json');
+const roads = processGeoJSON('got_roads.geojson', 'roads.json');
+
+const roadNetwork = buildRoadNetwork(roads);
+writeJSON(join(GEODATA, 'road-network.json'), roadNetwork);
+console.log(`${getConsolePrefix('geodata', 'road-network.json')} ${roadNetwork.nodes.length} nodes, ${roadNetwork.edges.length} edges, ${new Set(roadNetwork.nodeGroups).size} groups`);
 processGeoJSON('got_volcanoes.geojson', null, {
     mapFn: feature => ({
         ...feature,
@@ -246,6 +252,12 @@ const locations = processGeoJSON('got_locations.geojson', 'locations.json', {
         };
     },
 });
+
+const barrierCrossings = buildBarrierCrossings(roads, rivers, theWall, locations);
+writeJSON(join(GEODATA, 'barrier-crossings.json'), barrierCrossings);
+const countByKind = kind => barrierCrossings.crossings.filter(crossing => crossing.kind === kind).length;
+console.log(`${getConsolePrefix('geodata', 'barrier-crossings.json')} ${barrierCrossings.crossings.length} crossings `
+    + `(${countByKind('bridge')} bridges, ${countByKind('location')} on locations, ${countByKind('gate')} Wall gates)`);
 
 const wallData = getFeatureProperties(theWall);
 const fiveFortsData = getFeatureProperties(theFiveForts);
