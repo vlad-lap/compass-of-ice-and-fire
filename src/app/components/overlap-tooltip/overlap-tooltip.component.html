@@ -1,0 +1,13 @@
+<mat-action-list class="menu-list">
+    @for (feature of overlapFeatures(); track feature.id) {
+        <button mat-list-item (click)="setSelectedId(feature.id)">
+            <span class="menu-item">
+                <span>
+                    <span class="menu-item-title">{{ feature | localize: 'name' }}</span>
+                    <span class="menu-item-caption">{{ feature | localize: 'type' | titlecase }}</span>
+                </span>
+                <mat-icon class="menu-item-icon">arrow_forward_ios</mat-icon>
+            </span>
+        </button>
+    }
+</mat-action-list>

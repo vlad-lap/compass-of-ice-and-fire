@@ -3,7 +3,7 @@ import { FeatureData } from '../../models';
 import { LocalizePipe } from '../../pipes';
 import { Store } from '@ngxs/store';
 import { LanguagesState } from '../../store';
-import { CaptionComponent } from '../subtitle/caption.component';
+import { CaptionComponent } from '../caption/caption.component';
 import { SearchService } from '../../services';
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton } from '@angular/material/button';
