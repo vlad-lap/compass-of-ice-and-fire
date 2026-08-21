@@ -77,10 +77,6 @@ export enum HitRadiusPx {
     Touch = 15,
 }
 
-export const LOCATION_OVERLAPS = [
-    ['castle-casterly-rock', 'city-lannisport'],
-];
-
 export const ROUTE_LAYER_IDS = [
     'tier1-point',
     'tier2-point',

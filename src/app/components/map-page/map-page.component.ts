@@ -34,7 +34,6 @@ import {
     HitRadiusPx,
     INITIAL_MAP_CENTER,
     KM_PER_COORD_UNIT,
-    LOCATION_OVERLAPS,
     LONG_PRESS_DURATION_MS,
     RED,
     ROUTE_LAYER_IDS,
@@ -519,7 +518,7 @@ export class MapPageComponent {
         const feature = this.queryRenderedFeature(event, CLICKABLE_LAYER_IDS);
 
         if (!feature?.properties?.name) {
-            this.mapService.hideTooltip(true);
+            this.mapService.hideTooltip();
             return;
         }
 
@@ -529,16 +528,12 @@ export class MapPageComponent {
         const isSearchOpen = this.searchComponent()?.autocomplete().isOpen;
 
         if (isPolygonFeature && !isSearchOpen) {
-            this.mapService.hideTooltip(true);
             this.mapService.showTooltip(event, feature, {
                 showCloseButton: true,
                 showDetailsLink: true,
             });
         } else if (!isPolygonFeature) {
-            const overlap = LOCATION_OVERLAPS.find(o => o.includes(feature.properties.id));
-            overlap
-                ? this.mapService.showOverlapTooltip(event, overlap)
-                : this.searchService.selectedId.set(feature.properties.id);
+            this.searchService.selectedId.set(feature.properties.id);
         }
     }
 
@@ -556,7 +551,7 @@ export class MapPageComponent {
         this.longPressHandled = false;
 
         this.longPressTimer = setTimeout(() => {
-            this.mapService.hideTooltip(true);
+            this.mapService.hideTooltip();
 
             if (!this.routeService.routeEnabled()) {
                 this.routeService.routeEnabled.set(true);
