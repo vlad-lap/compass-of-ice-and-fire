@@ -5,7 +5,7 @@
 <div class="tooltip">
     <div class="tooltip-header">
         <div class="tooltip-title">
-            <h5>{{ (locationData | localize: 'name') || ui.namePlaceholder }}</h5>
+            <h5 class="tooltip-title">{{ (locationData | localize: 'name') || ui.namePlaceholder }}</h5>
 
             @if (locationData.nameVariant) {
                 <div class="tooltip-subtitle">{{ locationData | localize: 'nameVariant' }}</div>

@@ -10,7 +10,7 @@ import { LocalizePipe } from '../../pipes';
 import { APP_TITLE } from '../../constants';
 import { Store } from '@ngxs/store';
 import { GeodataState, LanguagesState, UserSettingsState } from '../../store';
-import { CaptionComponent } from '../caption/caption.component';
+import { CaptionComponent } from '../subtitle/caption.component';
 import { localizeProperty } from '../../utils';
 import {
     CardActionsDirective,
