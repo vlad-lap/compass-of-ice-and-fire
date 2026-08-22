@@ -172,6 +172,24 @@
             "timeHours": 261.6,
             "pathPoints": 78,
             "dragonKm": 874.9
+        },
+        "Castle Black -> Dragonstone": {
+            "note": "an island, unreachable however coarse the grid gets",
+            "structure": [],
+            "found": false,
+            "distanceKm": null,
+            "timeHours": null,
+            "pathPoints": 0,
+            "dragonKm": 2511
+        },
+        "King's Landing -> Pyke": {
+            "note": "an island a short hop off the shore, still unreachable",
+            "structure": [],
+            "found": false,
+            "distanceKm": null,
+            "timeHours": null,
+            "pathPoints": 0,
+            "dragonKm": 1258.7
         }
     }
 }

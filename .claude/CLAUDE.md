@@ -67,6 +67,11 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - All geodata URLs are in `src/app/constants.ts` (`GEODATA_URLS`); sources and layers are declared in the template; paint/layout configs live in `src/app/components/map-page/configs.ts`, map-specific constants (bounds, zoom levels, colors) live in `src/app/components/map-page/constants.ts`
 - Search is a separate `MapSearchComponent` (`src/app/components/map-search/`) using a Material autocomplete; it emits `applySearch`/`resetSearch` outputs that `MapPageComponent` handles to highlight and zoom to the selected feature (via a dedicated `search-highlight` GeoJSON source/layers) and show its tooltip
 
+## Routing
+
+- `src/app/utils/{routing,raster,road-network,min-heap}.ts` carry **no comments by design** — the whole explanation lives in `.claude/docs/` (start at `.claude/docs/README.md`, one document per module). Read the matching document before changing any of these four files, and update it in the same change: the reasoning, the measured numbers and the rejected alternatives are not recoverable from the code
+- `npm run check-routing` runs `scripts/routing/check-routing.mjs` against real geodata: spec requirements, invariants, and a snapshot baseline in `scripts/routing/baseline.json`. It also runs in CI and fails the build. An intended change of route results means `npm run check-routing -- --update` and committing the new baseline
+
 ## Geodata State
 
 - GeoJSON data is loaded by `mapResolver` (attached to the map route) before the route activates; it dispatches `GetGeodata` for each key into `GeodataState`

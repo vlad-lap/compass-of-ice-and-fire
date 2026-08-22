@@ -1,17 +1,21 @@
-import { Feature, FeatureCollection, LineString, Polygon } from 'geojson';
+import { Feature, FeatureCollection, LineString, MultiPolygon, Polygon, Position } from 'geojson';
 import { BarrierCrossing, BarrierCrossingKind, Grid, RoadNetwork, RoutingGeodata } from '../models';
 import { KM_PER_COORD_UNIT, MapBounds } from '../components/map-page/constants';
 import { buildGrid, cellCount, getCellCenter, getCellIndexAt, toFlatIndex } from './grid';
 import {
     buildRoutingIndex,
     classifyCell,
+    getLandmass,
+    labelComponents,
     MOUNTAIN_K_BY_HEIGHT,
+    NO_COMPONENT,
     rasterizeGrid,
     TerrainK,
 } from './raster';
 import {
     calculateDragonRoute,
     findPath,
+    MARGIN_RETRY_STEPS,
     placePoint,
     planRoutes,
     pullTautPath,
@@ -141,6 +145,7 @@ function collection<T extends Feature>(features: T[]): FeatureCollection<T['geom
 
 // Water is the default now, so every fixture needs land under the area it exercises.
 const TEST_LAND = rect([-60, -60], 120, 120);
+const TEST_LAND_EAST = 60;
 
 const geodata: RoutingGeodata = {
     continents: collection([TEST_LAND]),
@@ -219,6 +224,78 @@ describe('detours to a crossing', () => {
 
         expect(plan.foot).not.toBeNull();
         expect(plan.foot.path.some(([lng]) => lng > 4)).toBe(true);
+    });
+});
+
+describe('landmasses', () => {
+    // Narrow enough that the coarse grids the search falls back to bridge it, which is the whole
+    // point: reachability is decided by the geometry, not by whatever resolution the search picked.
+    const STRAIT = 0.3;
+    const ISLAND = square([TEST_LAND_EAST + STRAIT, 0], 4);
+    const MAINLAND_POINT: Position = [0, 2];
+    const ISLAND_POINT: Position = [TEST_LAND_EAST + STRAIT + 2, 2];
+    const withIsland = (island: Feature<Polygon | MultiPolygon>): RoutingGeodata =>
+        ({ ...emptyRoutingGeodata(), islands: collection([island]) });
+
+    it('puts an island of its own in a separate landmass', () => {
+        const index = buildRoutingIndex(withIsland(ISLAND));
+
+        expect(getLandmass(MAINLAND_POINT, index.land)).not.toBeNull();
+        expect(getLandmass(ISLAND_POINT, index.land)).not.toBe(getLandmass(MAINLAND_POINT, index.land));
+    });
+
+    it('has no ground route to an island, on any grid', () => {
+        const plan = planRoutes(MAINLAND_POINT, ISLAND_POINT, withIsland(ISLAND));
+
+        expect(plan.foot).toBeNull();
+        expect(plan.dragon.distanceKm).toBeGreaterThan(0);
+    });
+
+    // Without this the test above would prove nothing: it has to be the landmass rule that refuses
+    // the route, not the raster - and on the widest fallback grid the raster does not refuse it.
+    it('is the rule that refuses the route, not the grid, which bridges the strait when coarse', () => {
+        const index = buildRoutingIndex(withIsland(ISLAND));
+        const widest = MARGIN_RETRY_STEPS[MARGIN_RETRY_STEPS.length - 1];
+        const grid = buildGrid(MAINLAND_POINT, ISLAND_POINT,
+            widest.cellBudget, widest.marginRatio, widest.minMargin);
+        const labels = labelComponents(grid, rasterizeGrid(grid, index));
+        const labelAt = (point: Position) => {
+            const { col, row } = getCellIndexAt(grid, point);
+            return labels[toFlatIndex(grid, col, row)];
+        };
+
+        expect(grid.cellSize).toBeGreaterThan(STRAIT);
+        expect(labelAt(ISLAND_POINT)).not.toBe(NO_COMPONENT);
+        expect(labelAt(ISLAND_POINT)).toBe(labelAt(MAINLAND_POINT));
+    });
+
+    it('joins land polygons that touch into one landmass', () => {
+        const index = buildRoutingIndex(withIsland(square([TEST_LAND_EAST, 0], 4)));
+
+        expect(getLandmass([TEST_LAND_EAST + 2, 2], index.land)).toBe(getLandmass(MAINLAND_POINT, index.land));
+    });
+
+    it('joins a polygon drawn inside another into one landmass', () => {
+        const index = buildRoutingIndex(withIsland(square([10, 10], 2)));
+
+        expect(getLandmass([11, 11], index.land)).toBe(getLandmass(MAINLAND_POINT, index.land));
+    });
+
+    it('keeps the islands of one multipolygon apart', () => {
+        const index = buildRoutingIndex(withIsland({
+            type: 'Feature',
+            properties: {},
+            geometry: {
+                type: 'MultiPolygon',
+                coordinates: [
+                    ISLAND.geometry.coordinates,
+                    square([TEST_LAND_EAST + STRAIT, 20], 4).geometry.coordinates,
+                ],
+            },
+        }));
+
+        expect(getLandmass(ISLAND_POINT, index.land))
+            .not.toBe(getLandmass([TEST_LAND_EAST + STRAIT + 2, 22], index.land));
     });
 });
 

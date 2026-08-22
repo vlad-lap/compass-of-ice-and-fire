@@ -45,6 +45,8 @@ const CASES = [
     { from: "King's Landing", to: 'Winterfell', note: 'long-distance control' },
     { from: "King's Landing", to: 'Pentos', note: 'across the Narrow Sea, must be unreachable' },
     { from: 'Winterfell', to: 'Craster\'s Keep', note: 'beyond the Wall, must pass a gate' },
+    { from: 'Castle Black', to: 'Dragonstone', note: 'an island, unreachable however coarse the grid gets' },
+    { from: 'King\'s Landing', to: 'Pyke', note: 'an island a short hop off the shore, still unreachable' },
 ];
 
 async function bundle(entry, name) {
@@ -144,6 +146,44 @@ function checkLocationsPassable(routing, index, locations, cellSize) {
         .map(([name]) => name);
 }
 
+// Every step of the drawn route has to stand on land, tested against the polygons rather than against
+// any raster: a cell coarser than a strait bridges it, so the grid that built a route cannot be the
+// judge of whether it walked on water. That is how Castle Black reached Dragonstone - the widest
+// fallback grid is 40 km per cell, and Blackwater Bay simply vanished. Sampling is fixed at a
+// kilometre, well below anything the map draws.
+const LAND_SAMPLE_KM = 1;
+
+function checkPathOnLand(routing, index, results) {
+    const offenders = [];
+
+    for (const result of results.filter(({ found }) => found)) {
+        const path = result.plan.foot.path;
+        let onWater = 0;
+        let firstOffender = null;
+
+        for (let i = 0; i < path.length - 1; i++) {
+            const [from, to] = [path[i], path[i + 1]];
+            const steps = Math.max(1, Math.ceil(distanceKm(from, to) / LAND_SAMPLE_KM));
+
+            for (let step = 0; step <= steps; step++) {
+                const t = step / steps;
+                const point = [from[0] + (to[0] - from[0]) * t, from[1] + (to[1] - from[1]) * t];
+
+                if (!routing.isPointInAreas(point, index.land) || routing.isPointInAreas(point, index.lakes)) {
+                    onWater++;
+                    firstOffender ??= point;
+                }
+            }
+        }
+
+        if (onWater) {
+            offenders.push(`${result.name}: ${onWater} sampled points on water, e.g. ${firstOffender.map(v => v.toFixed(3))}`);
+        }
+    }
+
+    return offenders;
+}
+
 // A route may prefer a road over open ground, but only in proportion to how much of the route the
 // road carries. Checked against the real alternative - the same route planned with no road network at
 // all - rather than against the straight line. Routes that are entirely road are checked too: their
@@ -154,7 +194,7 @@ function getRoadTimeTolerance(roadShare) {
     return 1 + (ROAD_TIME_TOLERANCE - 1) * roadShare;
 }
 
-function checkDetourGuard(routing, geodata, locations, results) {
+function checkDetourGuard(routing, index, locations, results) {
     const offenders = [];
 
     for (const result of results) {
@@ -162,10 +202,10 @@ function checkDetourGuard(routing, geodata, locations, results) {
             continue;
         }
 
-        const gridOnly = routing.planRoutes(
+        const gridOnly = routing.planRoutesWithIndex(
             locations.get(result.name.split(' -> ')[0]),
             locations.get(result.name.split(' -> ')[1]),
-            geodata,
+            index,
             null,
         );
         if (!gridOnly.foot) {
@@ -415,11 +455,13 @@ function minDistanceToPathKm(path, point) {
     return nearest * KM_PER_COORD_UNIT;
 }
 
-function runCase(routing, geodata, roadNetwork, locations, testCase) {
+// The index is built once and shared, as the worker does: building it per case would fold its cost
+// into every reported time and hide what a route actually takes.
+function runCase(routing, index, roadNetwork, locations, testCase) {
     const from = locations.get(testCase.from);
     const to = locations.get(testCase.to);
     const startedAt = performance.now();
-    const plan = routing.planRoutes(from, to, geodata, roadNetwork);
+    const plan = routing.planRoutesWithIndex(from, to, index, roadNetwork);
     const ms = Math.round(performance.now() - startedAt);
 
     return {
@@ -498,6 +540,18 @@ function buildRequirements(locations) {
             check: result => !result.found && result.dragonKm > 0,
         },
         {
+            case: 'Castle Black -> Dragonstone',
+            label: 'no ground route to an island, however coarse the grid that searches for one',
+            expectNoRoute: true,
+            check: result => !result.found && result.dragonKm > 0,
+        },
+        {
+            case: "King's Landing -> Pyke",
+            label: 'no ground route to an island a short hop off the shore either',
+            expectNoRoute: true,
+            check: result => !result.found && result.dragonKm > 0,
+        },
+        {
             case: "Winterfell -> Craster's Keep",
             label: 'the Wall is crossed at one of its four gates, not wherever the route pleases',
             check: result => ['Castle Black', 'Eastwatch-by-the-Sea', 'Shadow Tower', 'Nightfort']
@@ -560,8 +614,10 @@ const locations = new Map(
         .map(feature => [feature.properties.name, feature.geometry.coordinates]),
 );
 
+const routingIndex = routing.buildRoutingIndex(geodata);
+
 const results = CASES.map(testCase => {
-    const result = runCase(routing, geodata, roadNetwork, locations, testCase);
+    const result = runCase(routing, routingIndex, roadNetwork, locations, testCase);
     const summary = result.found
         ? `${String(result.distanceKm).padStart(7)}km ${String(result.timeHours).padStart(6)}h ${String(result.pathPoints).padStart(4)}pts`
         : '                 no route';
@@ -593,7 +649,7 @@ for (const requirement of buildRequirements(locations)) {
     }
 }
 
-const guardOffenders = checkDetourGuard(routing, geodata, locations, results);
+const guardOffenders = checkDetourGuard(routing, routingIndex, locations, results);
 if (guardOffenders.length) {
     failed++;
     console.log('  FAIL     road-assisted routes detouring beyond what their road share earns:');
@@ -611,13 +667,21 @@ if (tooFast.length) {
     console.log(`  OK       no route averages more than the base ${BASE_SPEED_KMH} km/h, so distance and time agree`);
 }
 
-const routingIndex = routing.buildRoutingIndex(geodata);
 const blockedLocations = checkLocationsPassable(routing, routingIndex, locations, routing.MIN_CELL_SIZE);
 if (blockedLocations.length) {
     failed++;
     console.log(`  FAIL     ${blockedLocations.length} locations are impassable: ${blockedLocations.slice(0, 8).join(', ')}`);
 } else {
     console.log(`  OK       all ${locations.size} locations are passable, none blocked by water or a barrier`);
+}
+
+const onWater = checkPathOnLand(routing, routingIndex, results);
+if (onWater.length) {
+    failed++;
+    console.log('  FAIL     routes walking on water:');
+    onWater.forEach(offender => console.log(`             ${offender}`));
+} else {
+    console.log('  OK       every drawn route stays on land, sampled every kilometre against the polygons');
 }
 
 const legPartition = checkLegPartition(results);

@@ -82,6 +82,13 @@ export interface IndexedArea {
     k: number | null;
 }
 
+// A single land polygon, together with the landmass it belongs to: the group of polygons that touch
+// each other, and so can be walked between. Two points on different landmasses have no ground route
+// however the grid is resolved.
+export interface IndexedLandmass extends IndexedArea {
+    landmass: number;
+}
+
 // A line that blocks movement, together with the crossings declared for it. Keeping them attached is
 // what stops a bridge over one river from opening a hole in another one near a confluence.
 export interface IndexedBarrier {
@@ -91,7 +98,7 @@ export interface IndexedBarrier {
 }
 
 export interface RoutingIndex {
-    land: IndexedArea[];
+    land: IndexedLandmass[];
     mountains: IndexedArea[];
     swamps: IndexedArea[];
     deserts: IndexedArea[];
