@@ -1,7 +1,24 @@
 import { Feature, LineString, MultiLineString, MultiPolygon, Polygon, Position } from 'geojson';
-import { BarrierCrossing, BBox, Grid, IndexedArea, IndexedBarrier, RoutingGeodata, RoutingIndex } from '../models';
+import { flatten } from 'lodash';
+import {
+    BarrierCrossing,
+    BBox,
+    Grid,
+    IndexedArea,
+    IndexedBarrier,
+    IndexedLandmass,
+    RoutingGeodata,
+    RoutingIndex,
+} from '../models';
 import { getGeometryPositions, pointInPolygon } from './geometry';
-import { getCellCenter, getColAtLng, getRowAtLat, NEIGHBOR_OFFSETS, toFlatIndex } from './grid';
+import {
+    getCellCenter,
+    getColAtLng,
+    getRowAtLat,
+    MIN_CELL_SIZE,
+    NEIGHBOR_OFFSETS,
+    toFlatIndex,
+} from './grid';
 import { MapBounds } from '../components/map-page/constants';
 
 export const MOUNTAIN_K_BY_HEIGHT: Record<number, number> = { 1: 0.5, 2: 0.35, 3: 0.2 };
@@ -17,15 +34,7 @@ export const IMPASSABLE = 0;
 
 export const RIVER_BAND_FACTOR = Math.SQRT2 / 2;
 
-// How wide a hole a crossing opens in the river it crosses. Crossings are snapped onto the river at
-// build time, so the radius only has to punch through the blocked band rather than also cover an
-// offset from the bank - but it stays absolute with a cell-size floor, because a purely relative
-// radius would make reachability depend on grid resolution.
 export const CROSSING_GATE_RADIUS = 0.02;
-// A gate has to contain at least one cell center on each bank to be passable at all, and the blocked
-// band is RIVER_BAND_FACTOR (~0.71) cells wide, so ~1.5 cells is the smallest radius that reliably
-// punches through. Anything larger opens kilometres of river around the crossing: at 2.5 cells a
-// coarse grid let routes hop a river 5 km from the nearest crossing.
 export const CROSSING_GATE_FACTOR = 1.5;
 
 export function getCrossingGateRadius(cellSize: number): number {
@@ -39,10 +48,7 @@ export function buildRoutingIndex(geodata: RoutingGeodata): RoutingIndex {
     const wetLakes = geodata.lakes.features.filter(feature => feature.properties?.variant !== 'dry');
 
     return {
-        land: [
-            ...geodata.continents.features.map(feature => indexArea(feature, TerrainK.Default)),
-            ...geodata.islands.features.map(feature => indexArea(feature, TerrainK.Default)),
-        ],
+        land: indexLandmasses([...geodata.continents.features, ...geodata.islands.features]),
         mountains: geodata.mountains.features.map(feature =>
             indexArea(feature, MOUNTAIN_K_BY_HEIGHT[feature.properties?.height] ?? TerrainK.Default),
         ),
@@ -61,9 +67,6 @@ export function buildRoutingIndex(geodata: RoutingGeodata): RoutingIndex {
     };
 }
 
-// Nothing lies beyond the mapped world, so the geodata has no polygon there and the terrain default
-// would make it open ground - which let routes walk off the north of Westeros, around the outside of
-// the map, and back in through eastern Essos. The edge of the map is a hard wall.
 export function isWithinMapBounds([lng, lat]: Position): boolean {
     return lng >= MapBounds.West && lng <= MapBounds.East
         && lat >= MapBounds.South && lat <= MapBounds.North;
@@ -87,16 +90,10 @@ export function classifyCell(point: Position, index: RoutingIndex, cellSize: num
 }
 
 function classifyLandscape(point: Position, index: RoutingIndex): number | null {
-    // Water is the default and land is what the map actually draws. Testing for the absence of land
-    // rather than the presence of a sea polygon is what keeps unmapped gaps from acting as open
-    // ground: anywhere the geodata says nothing, there is nothing to walk on.
     if (!findContaining(point, index.land)) {
         return null;
     }
 
-    // Only lakes need testing, because they are drawn inside the land. Sea polygons are not: the map
-    // draws islands on top of them without cutting holes, so a cell inside a sea polygon may well be
-    // an island, and "off the land" already covers every stretch of real water.
     if (findContaining(point, index.lakes)) {
         return null;
     }
@@ -112,9 +109,6 @@ function classifyLandscape(point: Position, index: RoutingIndex): number | null 
     return TerrainK.Default;
 }
 
-// Cell-for-cell equivalent of calling classifyCell on every cell center, with the loop inverted:
-// features are painted into the grid instead of every cell being tested against every feature.
-// The equivalence is asserted by scripts/routing/check-routing.mjs.
 export function rasterizeGrid(grid: Grid, index: RoutingIndex): Float64Array {
     const cells = grid.cols * grid.rows;
     const k = new Float64Array(cells).fill(TerrainK.Default);
@@ -122,17 +116,12 @@ export function rasterizeGrid(grid: Grid, index: RoutingIndex): Float64Array {
     const rowMask = new Uint8Array(grid.cols);
     const extent = getGridBBox(grid);
 
-    // Painted low priority first: classifyLandscape checks mountains before swamps before deserts
-    // before forests and returns the first match, so later paints must win. Within the mountains
-    // layer the k varies by height, so it is reversed to keep the first matching polygon winning.
     fillAreas(grid, rowMask, index.forests, extent, (flatIndex, value) => { k[flatIndex] = value; });
     fillAreas(grid, rowMask, index.deserts, extent, (flatIndex, value) => { k[flatIndex] = value; });
     fillAreas(grid, rowMask, index.swamps, extent, (flatIndex, value) => { k[flatIndex] = value; });
     fillAreas(grid, rowMask, [...index.mountains].reverse(), extent, (flatIndex, value) => { k[flatIndex] = value; });
     fillAreas(grid, rowMask, index.lakes, extent, (flatIndex, value) => { k[flatIndex] = value; });
 
-    // The land mask is applied as a constraint rather than painted first, so that a terrain polygon
-    // whose edge spills past the coastline cannot open a passable cell out in the water.
     fillAreas(grid, rowMask, index.land, extent, flatIndex => { land[flatIndex] = 1; });
     for (let flatIndex = 0; flatIndex < cells; flatIndex++) {
         if (!land[flatIndex]) {
@@ -167,9 +156,6 @@ function blockOutsideMap(k: Float64Array, grid: Grid): void {
 
 export const NO_COMPONENT = -1;
 
-// Labels every passable cell with the id of its 8-connected component. Two cells share a label
-// exactly when a grid path between them exists, which turns "is the goal reachable at all" into an
-// array lookup instead of an exhaustive A* that has to prove a negative.
 export function labelComponents(grid: Grid, k: Float64Array): Int32Array {
     const labels = new Int32Array(grid.cols * grid.rows).fill(NO_COMPONENT);
     const stack: number[] = [];
@@ -327,9 +313,6 @@ function fillPolygon(
     }
 }
 
-// A ring's edges ordered so that a row scan only looks at the ones it can cross. Rings here run to
-// thousands of vertices - the Westeros and Essos outlines are ~14 000 between them - so rescanning
-// every edge for every row is what a continent-sized polygon costs without this.
 interface EdgeTable {
     edges: { currLng: number; currLat: number; prevLng: number; prevLat: number; minLat: number; maxLat: number }[];
 }
@@ -357,10 +340,6 @@ function buildEdgeTable(ring: Position[]): EdgeTable {
     return { edges };
 }
 
-// Column ranges whose cell centers fall inside the ring on the given latitude, using the same
-// ray-casting convention as pointInRing in scripts/point-in-polygon.mjs: a crossing counts only
-// when the cell center is strictly left of the intersection, so a center sitting exactly on the
-// left edge of a span is inside and one on the right edge is not.
 function getRowSpans(grid: Grid, { edges }: EdgeTable, centerLat: number): [number, number][] {
     const crossings: number[] = [];
 
@@ -407,6 +386,133 @@ function getLineParts(geometry: LineString | MultiLineString): Position[][] {
 
 function indexArea(feature: Feature<Polygon | MultiPolygon>, k: number | null): IndexedArea {
     return { bbox: getBBox(feature.geometry), geometry: feature.geometry, k };
+}
+
+const LANDMASS_BUCKET_SIZE = 0.25;
+const LANDMASS_BUCKET_ROW_STRIDE = 100_000;
+const LANDMASS_JOIN_DISTANCE = MIN_CELL_SIZE * Math.SQRT2;
+
+function indexLandmasses(features: Feature<Polygon | MultiPolygon>[]): IndexedLandmass[] {
+    const polygons = flatten(features.map(feature => getPolygonRings(feature.geometry)))
+        .map(rings => ({ rings, bbox: getRingBBox(rings[0]) }));
+    const roots = new Int32Array(polygons.length).map((_, index) => index);
+
+    joinTouchingPolygons(polygons, roots);
+    joinNestedPolygons(polygons, roots);
+
+    return polygons.map((polygon, index) => ({
+        bbox: polygon.bbox,
+        geometry: { type: 'Polygon', coordinates: polygon.rings },
+        k: TerrainK.Default,
+        landmass: findRoot(roots, index),
+    }));
+}
+
+function findRoot(roots: Int32Array, index: number): number {
+    let root = index;
+    while (roots[root] !== root) {
+        root = roots[root] = roots[roots[root]];
+    }
+    return root;
+}
+
+function join(roots: Int32Array, a: number, b: number): void {
+    roots[findRoot(roots, a)] = findRoot(roots, b);
+}
+
+interface LandPolygon {
+    rings: Position[][];
+    bbox: BBox;
+}
+
+function joinTouchingPolygons(polygons: LandPolygon[], roots: Int32Array): void {
+    const buckets = new Map<number, { polygon: number; from: Position; to: Position }[]>();
+
+    polygons.forEach((polygon, index) => {
+        const ring = polygon.rings[0];
+        for (let i = 0; i < ring.length - 1; i++) {
+            const [from, to] = [ring[i], ring[i + 1]];
+            forEachBucketNearSegment(from, to, key => {
+                const edges = buckets.get(key);
+                if (edges) {
+                    edges.push({ polygon: index, from, to });
+                } else {
+                    buckets.set(key, [{ polygon: index, from, to }]);
+                }
+            });
+        }
+    });
+
+    for (const edges of buckets.values()) {
+        for (let i = 0; i < edges.length; i++) {
+            for (let j = i + 1; j < edges.length; j++) {
+                if (findRoot(roots, edges[i].polygon) === findRoot(roots, edges[j].polygon)) {
+                    continue;
+                }
+                const distance = segmentToSegmentDistance(edges[i].from, edges[i].to, edges[j].from, edges[j].to);
+                if (distance <= LANDMASS_JOIN_DISTANCE) {
+                    join(roots, edges[i].polygon, edges[j].polygon);
+                }
+            }
+        }
+    }
+}
+
+function joinNestedPolygons(polygons: LandPolygon[], roots: Int32Array): void {
+    polygons.forEach((polygon, index) => {
+        polygons.forEach((outer, outerIndex) => {
+            if (outerIndex === index
+                || findRoot(roots, outerIndex) === findRoot(roots, index)
+                || !bboxContains(outer.bbox, polygon.bbox)) {
+                return;
+            }
+            if (pointInPolygon(polygon.rings[0][0], { type: 'Polygon', coordinates: outer.rings })) {
+                join(roots, index, outerIndex);
+            }
+        });
+    });
+}
+
+function forEachBucketNearSegment(from: Position, to: Position, visit: (key: number) => void): void {
+    const toBucket = (value: number) => Math.floor(value / LANDMASS_BUCKET_SIZE);
+    const minCol = toBucket(Math.min(from[0], to[0]) - LANDMASS_JOIN_DISTANCE);
+    const maxCol = toBucket(Math.max(from[0], to[0]) + LANDMASS_JOIN_DISTANCE);
+    const minRow = toBucket(Math.min(from[1], to[1]) - LANDMASS_JOIN_DISTANCE);
+    const maxRow = toBucket(Math.max(from[1], to[1]) + LANDMASS_JOIN_DISTANCE);
+
+    for (let col = minCol; col <= maxCol; col++) {
+        for (let row = minRow; row <= maxRow; row++) {
+            visit(col * LANDMASS_BUCKET_ROW_STRIDE + row);
+        }
+    }
+}
+
+function segmentToSegmentDistance(a: Position, b: Position, c: Position, d: Position): number {
+    if (segmentsCross(a, b, c, d)) {
+        return 0;
+    }
+
+    return Math.min(
+        pointToSegmentDistance(a, c, d),
+        pointToSegmentDistance(b, c, d),
+        pointToSegmentDistance(c, a, b),
+        pointToSegmentDistance(d, a, b),
+    );
+}
+
+function segmentsCross(a: Position, b: Position, c: Position, d: Position): boolean {
+    const side = (from: Position, to: Position, point: Position) =>
+        (to[0] - from[0]) * (point[1] - from[1]) - (to[1] - from[1]) * (point[0] - from[0]);
+
+    return side(a, b, c) * side(a, b, d) < 0 && side(c, d, a) * side(c, d, b) < 0;
+}
+
+function bboxContains(outer: BBox, inner: BBox): boolean {
+    return outer[0] <= inner[0] && outer[1] <= inner[1] && outer[2] >= inner[2] && outer[3] >= inner[3];
+}
+
+export function getLandmass(point: Position, land: IndexedLandmass[]): number | null {
+    return findContaining(point, land)?.landmass ?? null;
 }
 
 function indexBarrier(
@@ -458,7 +564,7 @@ function expandBBox([minLng, minLat, maxLng, maxLat]: BBox, margin: number): BBo
     return [minLng - margin, minLat - margin, maxLng + margin, maxLat + margin];
 }
 
-function findContaining(point: Position, areas: IndexedArea[]): IndexedArea | undefined {
+function findContaining<T extends IndexedArea>(point: Position, areas: T[]): T | undefined {
     return areas.find(area => isInBBox(point, area.bbox) && pointInPolygon(point, area.geometry));
 }
 

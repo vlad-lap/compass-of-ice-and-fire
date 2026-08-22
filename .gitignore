@@ -36,6 +36,7 @@ __screenshots__/
 !.claude/skills
 !.claude/skills/**
 !.claude/CLAUDE.md
+!.claude/docs
 
 # System files
 .DS_Store

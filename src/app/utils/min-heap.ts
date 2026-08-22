@@ -1,6 +1,3 @@
-// Same sift order as MinHeap, but over two parallel typed arrays instead of one object per entry.
-// Used by the grid A*, where the heap sees hundreds of thousands of pushes per route and the
-// per-entry allocation dominated the search.
 export class NumericMinHeap {
     private priorities: Float64Array;
     private values: Int32Array;

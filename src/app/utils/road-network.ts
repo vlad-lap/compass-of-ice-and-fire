@@ -68,9 +68,6 @@ interface NetworkSearch {
     cameFrom: Int32Array;
 }
 
-// Route planning asks for distances from a handful of candidate nodes and then for the paths of the
-// few it settles on, so each source is searched once and reused. Capped rather than unbounded: the
-// network object outlives a single request, and one search costs ~8 bytes plus 4 per node.
 const MAX_CACHED_SEARCHES = 64;
 const searchesByNetwork = new WeakMap<RoadNetwork, Map<number, NetworkSearch>>();
 
