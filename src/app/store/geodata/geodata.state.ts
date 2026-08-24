@@ -31,7 +31,7 @@ const LABEL_POSITIONS: Record<string, Position> = {
     stormlands: [18.03, -2.06],
     'the-reach': [11.49, 0.5],
     dorne: [14.01, -7.87],
-    'the-iron-islands': [5.82, 14.1],
+    'the-iron-islands': [5.82, 14.32],
     'country-valyrian-freehold': [50.77, -21.76],
     'country-kingdom-of-sarnor': [55.66, 8.37],
     'country-yi-ti': [105.38, -12.74],

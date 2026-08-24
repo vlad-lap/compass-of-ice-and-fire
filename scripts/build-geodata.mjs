@@ -186,6 +186,8 @@ const { country, region } = splitAndProcess('got_regions.geojson', 'regions.json
     },
 });
 
+splitAndProcess('got_water.geojson', 'water.json');
+
 function getContainingLandscapeId(feature) {
     return Object.values(landscape)
         .map(collection => getContainingPolygonId(feature.geometry, collection))

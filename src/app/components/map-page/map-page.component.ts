@@ -76,7 +76,6 @@ import {
     LINES_OUTLINE,
     LINES_PAINT,
     LINES_SHADOW,
-    LOCATION_LABEL_ANCHOR_OVERRIDE_FILTER,
     LOCATION_LABEL_ANCHOR_OVERRIDE_LAYOUT,
     LOCATION_LABELS_FILTER,
     LOCATIONS_FILTER,
@@ -97,6 +96,7 @@ import {
     SEARCH_HIGHLIGHT_POLYGON_PAINT,
     VOLCANOES_PAINT,
     VOLCANOES_SMOKE_PAINT,
+    LOCATION_LABELS_ANCHORS_OVERRIDE_FILTER,
 } from './configs';
 import {
     buildMaskPolygon,
@@ -166,6 +166,8 @@ export class MapPageComponent {
         'countries',
         'regions',
         'seas',
+        'bays',
+        'straits',
         'islands',
         'shores',
         'vales',
@@ -192,6 +194,8 @@ export class MapPageComponent {
         'deserts',
         'swamps',
         'seas',
+        'bays',
+        'straits',
         'islands',
         'shores',
         'vales',
@@ -247,7 +251,7 @@ export class MapPageComponent {
     protected readonly labelsMinZoom = LABELS_MIN_ZOOM;
     protected readonly labelsMaxZoom = LABELS_MAX_ZOOM;
     protected readonly locationLabelsFilter = LOCATION_LABELS_FILTER;
-    protected readonly locationLabelAnchorOverrideFilter = LOCATION_LABEL_ANCHOR_OVERRIDE_FILTER;
+    protected readonly locationLabelsAnchorOverrideFilter = LOCATION_LABELS_ANCHORS_OVERRIDE_FILTER;
     protected readonly locationLabelAnchorOverrideLayout = computed<
         SymbolLayerSpecification['layout']
     >(() => this.getLocalizedLabelLayout(LOCATION_LABEL_ANCHOR_OVERRIDE_LAYOUT));

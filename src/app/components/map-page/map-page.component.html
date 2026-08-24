@@ -187,7 +187,7 @@
             />
             <mgl-layer
                 [id]="kebab + '-label'"
-                before="location-label-anchor-override"
+                before="tier1-point-label"
                 type="symbol"
                 [source]="kebab + '-label-points'"
                 [layout]="labelLayout()[type] || defaultLabelLayout()"
@@ -198,7 +198,7 @@
         } @else {
             <mgl-layer
                 [id]="kebab + '-label'"
-                before="location-label-anchor-override"
+                before="tier1-point-label"
                 type="symbol"
                 [source]="kebab"
                 [layout]="labelLayout()[type] || defaultLabelLayout()"
@@ -238,7 +238,7 @@
 
         <mgl-layer
             [id]="tier + '-point-label'"
-            before="location-label-anchor-override"
+            before="north-gradient-layer"
             type="symbol"
             source="locations"
             [filter]="locationLabelsFilter[tier]"
@@ -246,17 +246,18 @@
             [layout]="labelLayout().locations"
             [paint]="labelPaint.locations"
         />
-    }
 
-    <mgl-layer
-        id="location-label-anchor-override"
-        before="north-gradient-layer"
-        type="symbol"
-        source="locations"
-        [filter]="locationLabelAnchorOverrideFilter"
-        [layout]="locationLabelAnchorOverrideLayout()"
-        [paint]="labelPaint.locations"
-    />
+        <mgl-layer
+            [id]="tier + '-point-label-anchor-override'"
+            before="north-gradient-layer"
+            type="symbol"
+            source="locations"
+            [filter]="locationLabelsAnchorOverrideFilter[tier]"
+            [minzoom]="locationsMinZoom[tier] || 0"
+            [layout]="locationLabelAnchorOverrideLayout()"
+            [paint]="labelPaint.locations"
+        />
+    }
 
     <mgl-geojson-source
         id="the-five-forts"

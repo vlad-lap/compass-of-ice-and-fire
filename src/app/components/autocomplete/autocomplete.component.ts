@@ -30,6 +30,8 @@ const OPTIONS_GROUP_ORDER: OptionGroup[] = [
     'seas',
     'rivers',
     'lakes',
+    'bays',
+    'straits',
     'mountains',
     'steppes',
     'forests',
