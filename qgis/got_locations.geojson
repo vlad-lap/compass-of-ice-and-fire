@@ -21,8 +21,6 @@
 { "type": "Feature", "properties": { "id": 21, "name": "Acorn Hall", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 13.559814541045789, 8.244573238004884 ] } },
 { "type": "Feature", "properties": { "id": 22, "name": "Pinkmaiden", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 11.914474242350243, 7.592459357897832 ] } },
 { "type": "Feature", "properties": { "id": 23, "name": "Mummer's Ford", "size": 1, "confirmed": 0, "type": "other" }, "geometry": { "type": "Point", "coordinates": [ 11.64463882853973, 8.046697470146258 ] } },
-{ "type": "Feature", "properties": { "id": 24, "name": "Sherrer", "size": 1, "confirmed": 0, "type": "ruin" }, "geometry": { "type": "Point", "coordinates": [ 11.491058611094779, 8.377410654915145 ] } },
-{ "type": "Feature", "properties": { "id": 25, "name": "Wendish Town", "size": 1, "confirmed": 0, "type": "ruin" }, "geometry": { "type": "Point", "coordinates": [ 11.568456596672911, 8.699902261490699 ] } },
 { "type": "Feature", "properties": { "id": 27, "name": "Sallydance", "size": 2, "confirmed": 0, "type": "settlement" }, "geometry": { "type": "Point", "coordinates": [ 13.608521071755261, 9.144046014413103 ] } },
 { "type": "Feature", "properties": { "id": 29, "name": "Lord Lychester's Keep", "size": 3, "confirmed": 0, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 13.740835739094873, 9.707827922234973 ] } },
 { "type": "Feature", "properties": { "id": 32, "name": "Riverrun", "size": 5, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 12.722426792694867, 9.967301929864634 ] } },
