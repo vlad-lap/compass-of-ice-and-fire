@@ -15,7 +15,9 @@ export type PolygonGeodataType =
     | 'wastelands'
     | 'swamps'
     | 'lakes'
-    | 'seas';
+    | 'seas'
+    | 'bays'
+    | 'straits';
 
 export type LineGeodataType = 'rivers' | 'kingdomBorders' | 'roads' | 'theWall';
 

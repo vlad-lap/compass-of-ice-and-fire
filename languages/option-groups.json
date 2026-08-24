@@ -56,8 +56,16 @@
         "ru": "Острова"
     },
     "seas": {
-        "en": "Seas and bays",
-        "ru": "Моря и заливы"
+        "en": "Seas",
+        "ru": "Моря"
+    },
+    "bays": {
+        "en": "Bays",
+        "ru": "Заливы"
+    },
+    "straits": {
+        "en": "Straits",
+        "ru": "Проливы"
     },
     "rivers": {
         "en": "Rivers",

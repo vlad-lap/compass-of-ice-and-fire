@@ -174,6 +174,12 @@ export const POLYGONS_PAINT: GeodataDict<FillLayerSpecification['paint']> = {
     seas: {
         'fill-opacity': 0,
     },
+    bays: {
+        'fill-opacity': 0,
+    },
+    straits: {
+        'fill-opacity': 0,
+    },
     shores: {
         'fill-opacity': 0,
     },
@@ -240,21 +246,27 @@ export const LINES_SHADOW: GeodataDict<LineLayerSpecification['paint']> = {
 export const LOCATIONS_FILTER: LocationDict<ExpressionSpecification> = {
     tier1: ['==', ['get', 'size'], 5],
     tier2: ['==', ['get', 'size'], 4],
-    tier3: ['==', ['get', 'size'], 3],
-    tier4: ['any', ['==', ['get', 'size'], 2], ['==', ['get', 'size'], 1]],
+    tier3: ['any', ['==', ['get', 'size'], 3], ['==', ['get', 'size'], 2]],
+    tier4: ['==', ['get', 'size'], 1],
 };
 
 export const LABEL_SIZE_FILTER: ExpressionSpecification = ['>', ['number', ['get', 'size']], 1];
 
-export const LOCATION_LABEL_ANCHOR_OVERRIDE_FILTER: ExpressionSpecification = ['has', 'labelAnchor'];
-
-const NO_LABEL_ANCHOR_OVERRIDE_FILTER: ExpressionSpecification = ['!', LOCATION_LABEL_ANCHOR_OVERRIDE_FILTER];
+const HAS_LABEL_ANCHOR: ExpressionSpecification = ['has', 'labelAnchor'];
+const NO_LABEL_ANCHOR: ExpressionSpecification = ['!', HAS_LABEL_ANCHOR];
 
 export const LOCATION_LABELS_FILTER: LocationDict<ExpressionSpecification> = {
-    tier1: ['all', LOCATIONS_FILTER.tier1, LABEL_SIZE_FILTER, NO_LABEL_ANCHOR_OVERRIDE_FILTER],
-    tier2: ['all', LOCATIONS_FILTER.tier2, LABEL_SIZE_FILTER, NO_LABEL_ANCHOR_OVERRIDE_FILTER],
-    tier3: ['all', LOCATIONS_FILTER.tier3, LABEL_SIZE_FILTER, NO_LABEL_ANCHOR_OVERRIDE_FILTER],
-    tier4: ['all', LOCATIONS_FILTER.tier4, LABEL_SIZE_FILTER, NO_LABEL_ANCHOR_OVERRIDE_FILTER],
+    tier1: ['all', LOCATIONS_FILTER.tier1, LABEL_SIZE_FILTER, NO_LABEL_ANCHOR],
+    tier2: ['all', LOCATIONS_FILTER.tier2, LABEL_SIZE_FILTER, NO_LABEL_ANCHOR],
+    tier3: ['all', LOCATIONS_FILTER.tier3, LABEL_SIZE_FILTER, NO_LABEL_ANCHOR],
+    tier4: ['all', LOCATIONS_FILTER.tier4, LABEL_SIZE_FILTER, NO_LABEL_ANCHOR],
+};
+
+export const LOCATION_LABELS_ANCHORS_OVERRIDE_FILTER: LocationDict<ExpressionSpecification> = {
+    tier1: ['all', LOCATIONS_FILTER.tier1, LABEL_SIZE_FILTER, HAS_LABEL_ANCHOR],
+    tier2: ['all', LOCATIONS_FILTER.tier2, LABEL_SIZE_FILTER, HAS_LABEL_ANCHOR],
+    tier3: ['all', LOCATIONS_FILTER.tier3, LABEL_SIZE_FILTER, HAS_LABEL_ANCHOR],
+    tier4: ['all', LOCATIONS_FILTER.tier4, LABEL_SIZE_FILTER, HAS_LABEL_ANCHOR],
 };
 
 export const LOCATIONS_MIN_ZOOM: LocationDict<ZoomLevel> = {
@@ -264,28 +276,34 @@ export const LOCATIONS_MIN_ZOOM: LocationDict<ZoomLevel> = {
 };
 
 const POINT_CIRCLE_RADIUS: DataDrivenPropertyValueSpecification<number> = [
-    'case',
-    LOCATIONS_FILTER.tier1,
+    'match',
+    ['get', 'size'],
+    5,
     LocationRadius.LG,
-    LOCATIONS_FILTER.tier2,
+    4,
     LocationRadius.MD,
-    LOCATIONS_FILTER.tier3,
+    3,
     LocationRadius.MD,
-    LOCATIONS_FILTER.tier4,
+    2,
+    LocationRadius.SM,
+    1,
     LocationRadius.SM,
     LocationRadius.MD,
 ];
 
 const POINT_SHADOW_BLUR = 2;
 const POINT_SHADOW_RADIUS: DataDrivenPropertyValueSpecification<number> = [
-    'case',
-    LOCATIONS_FILTER.tier1,
+    'match',
+    ['get', 'size'],
+    5,
     LocationRadius.LG + POINT_SHADOW_BLUR,
-    LOCATIONS_FILTER.tier2,
+    4,
     LocationRadius.MD + POINT_SHADOW_BLUR,
-    LOCATIONS_FILTER.tier3,
+    3,
     LocationRadius.MD + POINT_SHADOW_BLUR,
-    LOCATIONS_FILTER.tier4,
+    2,
+    LocationRadius.SM + POINT_SHADOW_BLUR,
+    1,
     LocationRadius.SM + POINT_SHADOW_BLUR,
     LocationRadius.MD + POINT_SHADOW_BLUR,
 ];
@@ -360,6 +378,8 @@ export const LABELS_MIN_ZOOM: GeodataDict<ZoomLevel> = {
     islands: ZoomLevel.Low,
     lakes: ZoomLevel.Low,
     rivers: ZoomLevel.Low,
+    bays: ZoomLevel.Low,
+    straits: ZoomLevel.Low,
     roads: ZoomLevel.Medium,
 };
 
@@ -433,17 +453,22 @@ const DEFAULT_POINT_LABEL_LAYOUT: SymbolLayerSpecification['layout'] = {
         ['get', 'type'],
         'city',
         ['literal', [FontStyle.Bold]],
+        'settlement',
+        ['literal', [FontStyle.Bold]],
         ['literal', [FontStyle.Regular]],
     ],
     'text-size': [
-        'case',
-        LOCATIONS_FILTER.tier1,
+        'match',
+        ['get', 'size'],
+        5,
         FontSize.LG,
-        LOCATIONS_FILTER.tier2,
+        4,
         FontSize.MD,
-        LOCATIONS_FILTER.tier3,
-        FontSize.MD,
-        LOCATIONS_FILTER.tier4,
+        3,
+        FontSize.SM,
+        2,
+        FontSize.SM,
+        1,
         FontSize.SM,
         FontSize.MD,
     ],
@@ -534,6 +559,8 @@ export const LABEL_PAINT: Partial<GeodataDict<SymbolLayerSpecification['paint']>
         ],
     },
     seas: DEFAULT_WATER_LABEL_PAINT,
+    bays: DEFAULT_WATER_LABEL_PAINT,
+    straits: DEFAULT_WATER_LABEL_PAINT,
     rivers: DEFAULT_WATER_LABEL_PAINT,
     mountains: { ...DEFAULT_LABEL_PAINT, 'text-color': LabelColor.Mountain },
     wastelands: { ...DEFAULT_LABEL_PAINT, 'text-color': LabelColor.Wasteland },

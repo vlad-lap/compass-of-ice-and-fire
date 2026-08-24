@@ -10,11 +10,10 @@ import {
 } from '@angular/core';
 import { MatInput } from '@angular/material/input';
 import { MatIcon } from '@angular/material/icon';
-import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { Store } from '@ngxs/store';
 import { GeodataState, LanguagesState, SetLanguage, UserSettingsState } from '../../store';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { debounceTime, filter, fromEvent, Observable, startWith } from 'rxjs';
+import { Observable, startWith } from 'rxjs';
 import { FeatureData } from '../../models';
 import { flatten } from 'lodash';
 import { CommonModule } from '@angular/common';
@@ -27,8 +26,6 @@ import { AutocompleteComponent } from '../autocomplete/autocomplete.component';
 import { isFeatureData } from '../../utils';
 import { AutocompleteTriggerDirective } from '../../directives';
 
-const AUTOCOMPLETE_BLUR_DEBOUNCE_TIME_MS = 100;
-
 @Component({
     selector: 'coiaf-map-search',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -38,7 +35,6 @@ const AUTOCOMPLETE_BLUR_DEBOUNCE_TIME_MS = 100;
         MatFormFieldModule,
         MatInput,
         MatIcon,
-        MatAutocompleteTrigger,
         MatIconButton,
         AutocompleteComponent,
         AutocompleteTriggerDirective,
@@ -52,7 +48,6 @@ export class MapSearchComponent implements OnInit {
 
     readonly searchInput = viewChild('searchInput', { read: ElementRef });
     readonly autocomplete = viewChild(AutocompleteComponent);
-    readonly autocompleteTrigger = viewChild(MatAutocompleteTrigger);
 
     readonly coreUi = this.store.selectSignal(LanguagesState.coreUi);
     readonly language = this.store.selectSignal(UserSettingsState.language);
@@ -88,14 +83,6 @@ export class MapSearchComponent implements OnInit {
                     this.reset();
                 }
             });
-
-        fromEvent(this.searchInput().nativeElement, 'blur')
-            .pipe(
-                debounceTime(AUTOCOMPLETE_BLUR_DEBOUNCE_TIME_MS),
-                filter(() => !this.searchService.selectedId()),
-                takeUntilDestroyed(this.destroyRef),
-            )
-            .subscribe(() => this.autocompleteTrigger().closePanel());
     }
 
     setSelectedId(id: string): void {
