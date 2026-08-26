@@ -2,7 +2,6 @@
 "type": "FeatureCollection",
 "name": "got_locations",
 "features": [
-{ "type": "Feature", "properties": { "id": 385, "name": "Pearl Palace", "size": 4, "confirmed": 0, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 27.804093712163546, -27.469353546586149 ] } },
 { "type": "Feature", "properties": { "id": 1, "name": "King's Landing", "size": 5, "confirmed": 1, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 18.432066083848635, 3.736014024094777 ] } },
 { "type": "Feature", "properties": { "id": 2, "name": "Hayford Castle", "size": 3, "confirmed": 0, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 18.306671191450057, 4.783014234685957 ] } },
 { "type": "Feature", "properties": { "id": 3, "name": "Rosby", "size": 3, "confirmed": 1, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 19.111838395272535, 4.56899438074251 ] } },
@@ -348,10 +347,11 @@
 { "type": "Feature", "properties": { "id": 377, "name": "Great Labyrinth at Lorassyon", "size": 1, "confirmed": 1, "type": "other" }, "geometry": { "type": "Point", "coordinates": [ 38.157681625111692, 14.782371077488584 ] } },
 { "type": "Feature", "properties": { "id": 378, "name": "Entrance to the Underworld", "size": 1, "confirmed": 0, "type": "other" }, "geometry": { "type": "Point", "coordinates": [ 35.617327182778112, 10.183351829116599 ] } },
 { "type": "Feature", "properties": { "id": 379, "name": "Toad Stone", "size": 1, "confirmed": 0, "type": "other" }, "geometry": { "type": "Point", "coordinates": [ 60.22353408041797, -31.513355077547178 ] } },
-{ "type": "Feature", "properties": { "id": 380, "name": "Barter Beach", "size": 4, "confirmed": 0, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 56.418902377467148, -29.530125481392247 ] } },
+{ "type": "Feature", "properties": { "id": 380, "name": "Barter Beach", "size": 4, "confirmed": 0, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 56.332088672238129, -29.483768648502952 ] } },
 { "type": "Feature", "properties": { "id": 381, "name": "Rathylar", "size": 4, "confirmed": 0, "type": "ruin" }, "geometry": { "type": "Point", "coordinates": [ 53.89371926226098, 6.149464516240509 ] } },
 { "type": "Feature", "properties": { "id": 382, "name": "Hornoth", "size": 4, "confirmed": 0, "type": "ruin" }, "geometry": { "type": "Point", "coordinates": [ 55.506061030943549, 7.940665456414953 ] } },
 { "type": "Feature", "properties": { "id": 383, "name": "Kyth", "size": 4, "confirmed": 0, "type": "ruin" }, "geometry": { "type": "Point", "coordinates": [ 54.729827957282517, 9.38601430342065 ] } },
-{ "type": "Feature", "properties": { "id": 384, "name": "Si Qo", "size": 4, "confirmed": 0, "type": "ruin" }, "geometry": { "type": "Point", "coordinates": [ 98.065881045213274, -16.497955478949706 ] } }
+{ "type": "Feature", "properties": { "id": 384, "name": "Si Qo", "size": 4, "confirmed": 0, "type": "ruin" }, "geometry": { "type": "Point", "coordinates": [ 98.065881045213274, -16.497955478949706 ] } },
+{ "type": "Feature", "properties": { "id": 385, "name": "Pearl Palace", "size": 4, "confirmed": 0, "type": "city" }, "geometry": { "type": "Point", "coordinates": [ 27.804093712163546, -27.469353546586149 ] } }
 ]
 }

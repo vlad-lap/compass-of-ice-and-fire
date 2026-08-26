@@ -1,5 +1,4 @@
 {
-  "city-pearl-palace": "Жемчужный дворец",
   "city-kings-landing": "Королевская Гавань",
   "castle-hayford-castle": "Хейфорд",
   "castle-rosby": "Росби",
@@ -345,5 +344,6 @@
   "ruin-rathylar": "Рафилар",
   "ruin-hornoth": "Хорнот",
   "ruin-kyth": "Киф",
-  "ruin-si-qo": "Си-Цо"
+  "ruin-si-qo": "Си-Цо",
+  "city-pearl-palace": "Жемчужный дворец"
 }
