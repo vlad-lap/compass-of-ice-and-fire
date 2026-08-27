@@ -43,6 +43,7 @@ const LABEL_POSITIONS: Record<string, Position> = {
     'region-dornish-marches': [13.72, -3.5],
     'desert-the-red-waste': [82.14, -9.45],
     'wasteland-the-grey-waste': [122.35, 0.95],
+    'great-wyk': [4.44, 12.99],
 };
 
 @State<GeodataStateModel>({

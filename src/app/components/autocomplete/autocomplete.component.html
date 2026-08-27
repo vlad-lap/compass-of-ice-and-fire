@@ -1,6 +1,7 @@
 <mat-autocomplete
     [displayWith]="displayFn"
     hideSingleSelectionIndicator
+    class="coiaf-autocomplete"
 >
     @let filtered = filteredOptions() | keyvalue: sortOptionsGroup;
     @let groups = optionGroups();
@@ -8,7 +9,13 @@
     @for (optionGroup of filtered; track optionGroup.key) {
         <mat-optgroup [label]="groups[optionGroup.key]">
             @for (option of optionGroup.value | sortSearchOptions: optionGroup.key; track option.id) {
-                <mat-option [value]="option">{{ option | localize: 'name' }}</mat-option>
+                <mat-option [value]="option">
+                    <span>{{ option | localize: 'name' }}</span>
+
+                    @if (option.isPort) {
+                        <mat-icon>anchor</mat-icon>
+                    }
+                </mat-option>
             }
         </mat-optgroup>
     }

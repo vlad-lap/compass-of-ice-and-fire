@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, input, viewChild } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    input,
+    viewChild,
+    ViewEncapsulation,
+} from '@angular/core';
 import { KeyValue, KeyValuePipe } from '@angular/common';
 import { LocalizePipe, SortSearchOptionsPipe } from '../../pipes';
 import { MatAutocomplete, MatOptgroup, MatOption } from '@angular/material/autocomplete';
@@ -8,6 +15,7 @@ import { Store } from '@ngxs/store';
 import { GeodataState, HISTORY_STATE_TOKEN, LanguagesState, UserSettingsState } from '../../store';
 import { RECENT } from '../../constants';
 import { findKey, isEmpty, mapValues, omitBy, pick } from 'lodash';
+import { MatIcon } from '@angular/material/icon';
 
 const OPTIONS_GROUP_ORDER: OptionGroup[] = [
     RECENT,
@@ -52,9 +60,12 @@ const OPTIONS_GROUP_ORDER: OptionGroup[] = [
         MatOptgroup,
         MatOption,
         SortSearchOptionsPipe,
+        MatIcon,
     ],
     templateUrl: './autocomplete.component.html',
+    styleUrl: './autocomplete.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    encapsulation: ViewEncapsulation.None,
 })
 export class AutocompleteComponent {
     readonly query = input<RoutePointValue>();

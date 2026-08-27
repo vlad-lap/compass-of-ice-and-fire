@@ -5,7 +5,13 @@
 <div class="tooltip">
     <div class="tooltip-header">
         <div class="tooltip-title">
-            <h5 class="tooltip-title">{{ (locationData | localize: 'name') || ui.namePlaceholder }}</h5>
+            <h5>
+                <span>{{ (locationData | localize: 'name') || ui.namePlaceholder }}</span>
+
+                @if (locationData.isPort) {
+                    <mat-icon>anchor</mat-icon>
+                }
+            </h5>
 
             @if (locationData.nameVariant) {
                 <div class="tooltip-subtitle">{{ locationData | localize: 'nameVariant' }}</div>

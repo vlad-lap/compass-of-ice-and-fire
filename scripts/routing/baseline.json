@@ -54,10 +54,10 @@
                 "road"
             ],
             "found": true,
-            "distanceKm": 4441.4,
-            "timeHours": 1110.3,
+            "distanceKm": 4468.2,
+            "timeHours": 1117,
             "pathPoints": 139,
-            "dragonKm": 4046.1
+            "dragonKm": 4072.6
         },
         "Selhorys -> Volon Therys": {
             "note": "spec rivers 1",
@@ -67,8 +67,8 @@
                 "grid"
             ],
             "found": true,
-            "distanceKm": 571.9,
-            "timeHours": 143,
+            "distanceKm": 594.3,
+            "timeHours": 148.6,
             "pathPoints": 18,
             "dragonKm": 257.9
         },
@@ -159,7 +159,7 @@
             "distanceKm": null,
             "timeHours": null,
             "pathPoints": 0,
-            "dragonKm": 1114.8
+            "dragonKm": 1088.5
         },
         "Winterfell -> Craster's Keep": {
             "note": "beyond the Wall, must pass a gate",
@@ -189,7 +189,7 @@
             "distanceKm": null,
             "timeHours": null,
             "pathPoints": 0,
-            "dragonKm": 1258.7
+            "dragonKm": 1242.9
         }
     }
 }
