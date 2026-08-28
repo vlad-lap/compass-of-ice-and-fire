@@ -43,12 +43,13 @@ export class RouteCardComponent {
         () => this.modes.indexOf(this.routeService.selectedMode())
     );
 
-    protected readonly modes: TravelMode[] = ['foot', 'horse', 'dragon'];
+    protected readonly modes: TravelMode[] = ['foot', 'horse', 'ship', 'dragon'];
 
     protected readonly SpeedKmH = SpeedKmH;
 
     protected readonly icons: Partial<Record<TravelMode, string>> = {
         foot: 'directions_walk',
+        ship: 'sailing',
     };
 
     protected readonly svgIcons: Partial<Record<TravelMode, string>> = {

@@ -8,9 +8,13 @@
                 "grid"
             ],
             "found": true,
-            "distanceKm": 6905.5,
-            "timeHours": 1793.6,
-            "pathPoints": 541,
+            "distanceKm": 6906.5,
+            "timeHours": 1793.9,
+            "pathPoints": 546,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
             "dragonKm": 2851.8
         },
         "King's Landing -> The Eyrie": {
@@ -22,6 +26,10 @@
             "distanceKm": 1146.2,
             "timeHours": 286.5,
             "pathPoints": 220,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
             "dragonKm": 780.1
         },
         "Qohor -> Old Ghis": {
@@ -34,6 +42,10 @@
             "distanceKm": 7411,
             "timeHours": 1919.1,
             "pathPoints": 491,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
             "dragonKm": 2421.8
         },
         "Mantarys -> Old Ghis": {
@@ -46,6 +58,10 @@
             "distanceKm": 2341.4,
             "timeHours": 651.7,
             "pathPoints": 85,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
             "dragonKm": 1188.5
         },
         "Pentos -> Vaes Dothrak": {
@@ -57,6 +73,10 @@
             "distanceKm": 4468.2,
             "timeHours": 1117,
             "pathPoints": 139,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
             "dragonKm": 4072.6
         },
         "Selhorys -> Volon Therys": {
@@ -70,6 +90,10 @@
             "distanceKm": 594.3,
             "timeHours": 148.6,
             "pathPoints": 18,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
             "dragonKm": 257.9
         },
         "Pennytree -> Stone Hedge": {
@@ -83,6 +107,10 @@
             "distanceKm": 178.3,
             "timeHours": 46.5,
             "pathPoints": 13,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
             "dragonKm": 74.4
         },
         "Saath -> Morosh": {
@@ -94,6 +122,10 @@
             "distanceKm": 236.4,
             "timeHours": 59.1,
             "pathPoints": 6,
+            "shipFound": true,
+            "shipDistanceKm": 296.4,
+            "shipTimeHours": 29.6,
+            "shipPathPoints": 7,
             "dragonKm": 233.5
         },
         "The Sorrows (Chroyane) -> Volon Therys": {
@@ -105,6 +137,10 @@
             "distanceKm": 598.5,
             "timeHours": 149.6,
             "pathPoints": 25,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
             "dragonKm": 560.1
         },
         "Maidenpool -> Saltpans": {
@@ -117,6 +153,10 @@
             "distanceKm": 1313.5,
             "timeHours": 328.4,
             "pathPoints": 159,
+            "shipFound": true,
+            "shipDistanceKm": 174.9,
+            "shipTimeHours": 17.5,
+            "shipPathPoints": 11,
             "dragonKm": 146.5
         },
         "Sarhoy -> Volon Therys": {
@@ -128,6 +168,10 @@
             "distanceKm": 214.3,
             "timeHours": 53.6,
             "pathPoints": 10,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
             "dragonKm": 200.8
         },
         "Saath -> Vaes Graddakh (Sarys)": {
@@ -138,7 +182,11 @@
             "found": true,
             "distanceKm": 408,
             "timeHours": 102,
-            "pathPoints": 10,
+            "pathPoints": 14,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
             "dragonKm": 284
         },
         "King's Landing -> Winterfell": {
@@ -150,6 +198,10 @@
             "distanceKm": 2208.3,
             "timeHours": 552.1,
             "pathPoints": 195,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
             "dragonKm": 2015.8
         },
         "King's Landing -> Pentos": {
@@ -159,6 +211,10 @@
             "distanceKm": null,
             "timeHours": null,
             "pathPoints": 0,
+            "shipFound": true,
+            "shipDistanceKm": 1207.2,
+            "shipTimeHours": 120.7,
+            "shipPathPoints": 23,
             "dragonKm": 1088.5
         },
         "Winterfell -> Craster's Keep": {
@@ -171,6 +227,10 @@
             "distanceKm": 1034.5,
             "timeHours": 261.6,
             "pathPoints": 78,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
             "dragonKm": 874.9
         },
         "Castle Black -> Dragonstone": {
@@ -180,6 +240,10 @@
             "distanceKm": null,
             "timeHours": null,
             "pathPoints": 0,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
             "dragonKm": 2511
         },
         "King's Landing -> Pyke": {
@@ -189,7 +253,113 @@
             "distanceKm": null,
             "timeHours": null,
             "pathPoints": 0,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
             "dragonKm": 1242.9
+        },
+        "Lordsport -> Lannisport": {
+            "note": "sea: island port to the mainland across Ironman's Bay",
+            "structure": [],
+            "found": false,
+            "distanceKm": null,
+            "timeHours": null,
+            "pathPoints": 0,
+            "shipFound": true,
+            "shipDistanceKm": 859.8,
+            "shipTimeHours": 86,
+            "shipPathPoints": 15,
+            "dragonKm": 504.3
+        },
+        "King's Landing -> Lannisport": {
+            "note": "sea: around Dorne, a detour no from-to box would hold",
+            "structure": [
+                "road"
+            ],
+            "found": true,
+            "distanceKm": 1271.4,
+            "timeHours": 317.8,
+            "pathPoints": 145,
+            "shipFound": true,
+            "shipDistanceKm": 5163.7,
+            "shipTimeHours": 516.4,
+            "shipPathPoints": 71,
+            "dragonKm": 1107.2
+        },
+        "Meereen -> Volantis": {
+            "note": "sea: past Valyria, where the Smoking Sea costs x10",
+            "structure": [
+                "road"
+            ],
+            "found": true,
+            "distanceKm": 1908.4,
+            "timeHours": 477.1,
+            "pathPoints": 9,
+            "shipFound": true,
+            "shipDistanceKm": 3632.3,
+            "shipTimeHours": 363.2,
+            "shipPathPoints": 48,
+            "dragonKm": 1876.4
+        },
+        "Oldtown -> Sunspear": {
+            "note": "sea: along a coast the whole way",
+            "structure": [
+                "grid"
+            ],
+            "found": true,
+            "distanceKm": 1873.4,
+            "timeHours": 739.7,
+            "pathPoints": 29,
+            "shipFound": true,
+            "shipDistanceKm": 2138.6,
+            "shipTimeHours": 213.9,
+            "shipPathPoints": 31,
+            "dragonKm": 1635.6
+        },
+        "Eastwatch-by-the-Sea -> Oldtown": {
+            "note": "sea: around all of Westeros",
+            "structure": [
+                "grid",
+                "road"
+            ],
+            "found": true,
+            "distanceKm": 4849.3,
+            "timeHours": 1212.3,
+            "pathPoints": 513,
+            "shipFound": true,
+            "shipDistanceKm": 6392.8,
+            "shipTimeHours": 639.3,
+            "shipPathPoints": 82,
+            "dragonKm": 3756
+        },
+        "Braavos -> Pentos": {
+            "note": "sea: two ports a short hop apart",
+            "structure": [],
+            "found": false,
+            "distanceKm": null,
+            "timeHours": null,
+            "pathPoints": 0,
+            "shipFound": true,
+            "shipDistanceKm": 1305.7,
+            "shipTimeHours": 130.6,
+            "shipPathPoints": 26,
+            "dragonKm": 985.1
+        },
+        "Winterfell -> Oldtown": {
+            "note": "sea: Winterfell is no port, so there is no sea route",
+            "structure": [
+                "road"
+            ],
+            "found": true,
+            "distanceKm": 3820.5,
+            "timeHours": 955.1,
+            "pathPoints": 431,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
+            "dragonKm": 2904.4
         }
     }
 }

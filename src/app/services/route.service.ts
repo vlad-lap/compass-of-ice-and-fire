@@ -42,6 +42,10 @@ function buildRoutingGeodata(
         swamps: geodata.swamps,
         mountains: geodata.mountains,
         lakes: geodata.lakes,
+        seas: geodata.seas,
+        bays: geodata.bays,
+        straits: geodata.straits,
+        locations: geodata.locations,
         barrierCrossings,
     } as RoutingGeodata;
 }
@@ -113,7 +117,7 @@ export class RouteService implements OnDestroy {
         effect(() => {
             const plan = this.plan();
             if (plan && !plan.foot && !plan.horse) {
-                this.selectedMode.set('dragon');
+                this.selectedMode.set(plan.ship ? 'ship' : 'dragon');
             }
         });
 

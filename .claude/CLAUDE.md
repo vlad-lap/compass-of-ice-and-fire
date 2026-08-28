@@ -70,6 +70,7 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 ## Routing
 
 - `src/app/utils/{routing,raster,road-network,min-heap}.ts` carry **no comments by design** — the whole explanation lives in `.claude/docs/` (start at `.claude/docs/README.md`, one document per module). Read the matching document before changing any of these four files, and update it in the same change: the reasoning, the measured numbers and the rejected alternatives are not recoverable from the code
+- Ground routes and sea routes are planned independently by `planGroundRoute` and `planSeaRoute` and land in the same `RoutePlan` (`foot`/`horse`, `ship`, `dragon`); `RoutePlan.legs` describes the ground route only. A ship is searched on one fixed grid covering the whole map, built once per index and cached (`getSeaRaster`)
 - `npm run check-routing` runs `scripts/routing/check-routing.mjs` against real geodata: spec requirements, invariants, and a snapshot baseline in `scripts/routing/baseline.json`. It also runs in CI and fails the build. An intended change of route results means `npm run check-routing -- --update` and committing the new baseline
 
 ## Geodata State

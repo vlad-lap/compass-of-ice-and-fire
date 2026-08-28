@@ -1,7 +1,7 @@
-import { FeatureCollection, LineString, MultiLineString, MultiPolygon, Polygon, Position } from 'geojson';
+import { FeatureCollection, LineString, MultiLineString, MultiPolygon, Point, Polygon, Position } from 'geojson';
 import { FeatureData } from './location';
 
-export type TravelMode = 'foot' | 'horse' | 'dragon';
+export type TravelMode = 'foot' | 'horse' | 'ship' | 'dragon';
 
 export type RoutePointValue = FeatureData | Position | string;
 
@@ -16,7 +16,7 @@ export interface RouteResult {
     timeHours: number;
 }
 
-export type RouteLegKind = 'road' | 'grid';
+export type RouteLegKind = 'road' | 'grid' | 'sea';
 
 // The stretches a route is made of. Their paths partition `RouteResult.path` exactly: concatenating
 // them in order reproduces the drawn route, and every point belongs to one leg.
@@ -26,9 +26,12 @@ export interface RouteLeg {
     cost: number;
 }
 
+// `legs` breaks down the ground route only - the one `foot` and `horse` share. The sea route is a
+// separate line over separate terrain, and the dragon flies straight.
 export interface RoutePlan {
     foot: RouteResult | null;
     horse: RouteResult | null;
+    ship: RouteResult | null;
     dragon: RouteResult;
     legs: RouteLeg[];
 }
@@ -58,6 +61,10 @@ export interface RoutingGeodata {
     swamps: FeatureCollection<Polygon | MultiPolygon>;
     mountains: FeatureCollection<Polygon | MultiPolygon>;
     lakes: FeatureCollection<Polygon | MultiPolygon>;
+    seas: FeatureCollection<Polygon | MultiPolygon>;
+    bays: FeatureCollection<Polygon | MultiPolygon>;
+    straits: FeatureCollection<Polygon | MultiPolygon>;
+    locations: FeatureCollection<Point>;
     barrierCrossings: BarrierCrossing[];
 }
 
@@ -97,13 +104,25 @@ export interface IndexedBarrier {
     crossings: Position[];
 }
 
+export interface CoastSegment {
+    from: Position;
+    to: Position;
+}
+
+// Every land ring edge, hashed into square buckets, so that "how far is this point from land" - asked
+// once per sample of a sea route - does not scan a continent's outline.
+export type Coastline = Map<number, CoastSegment[]>;
+
 export interface RoutingIndex {
     land: IndexedLandmass[];
+    coastline: Coastline;
     mountains: IndexedArea[];
     swamps: IndexedArea[];
     deserts: IndexedArea[];
     forests: IndexedArea[];
     lakes: IndexedArea[];
+    water: IndexedArea[];
+    ports: Position[];
     barriers: IndexedBarrier[];
 }
 

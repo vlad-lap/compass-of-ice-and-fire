@@ -24,12 +24,16 @@ import {
     buildRoutingIndex,
     classifyCell,
     getLandmass,
+    isPassablePoint,
     IMPASSABLE,
     TerrainK,
     isPointInAreas,
+    isSeaEndpoint,
+    keepsSeaClearance,
     labelComponents,
     pointToSegmentDistance,
     rasterizeGrid,
+    rasterizeSeaGrid,
 } from './raster';
 import { NumericMinHeap } from './min-heap';
 import {
@@ -40,11 +44,12 @@ import {
     NetworkAnchor,
     RoadNetworkPath,
 } from './road-network';
-import { KM_PER_COORD_UNIT } from '../components/map-page/constants';
+import { KM_PER_COORD_UNIT, MapBounds } from '../components/map-page/constants';
 
 export enum SpeedKmH {
     foot = 4,
     horse = 8,
+    ship = 10,
     dragon = 100,
 }
 
@@ -56,7 +61,7 @@ function getRoadTimeTolerance(roadShare: number): number {
     return 1 + (ROAD_TIME_TOLERANCE - 1) * roadShare;
 }
 
-function getRoadShare(route: GroundRoute): number {
+function getRoadShare(route: PlannedRoute): number {
     if (route.cost === 0) {
         return 0;
     }
@@ -222,7 +227,12 @@ export function placePoint(
     return findNearestPassableCell(grid, k, cell);
 }
 
-function findNearestPassableCell(grid: Grid, k: Float64Array, origin: CellIndex): CellIndex | null {
+function findNearestPassableCell(
+    grid: Grid,
+    k: Float64Array,
+    origin: CellIndex,
+    isAcceptable: (cell: CellIndex) => boolean = () => true,
+): CellIndex | null {
     const visited = new Set<number>([toFlatIndex(grid, origin.col, origin.row)]);
     let ring: CellIndex[] = [origin];
 
@@ -243,7 +253,7 @@ function findNearestPassableCell(grid: Grid, k: Float64Array, origin: CellIndex)
                 }
                 visited.add(flatIndex);
 
-                if (k[flatIndex] !== IMPASSABLE) {
+                if (k[flatIndex] !== IMPASSABLE && isAcceptable({ col, row })) {
                     return { col, row };
                 }
                 nextRing.push({ col, row });
@@ -308,13 +318,112 @@ export function planRoutesWithIndex(
     roadNetwork: RoadNetwork | null = null,
 ): RoutePlan {
     const groundRoute = planGroundRoute(from, to, index, roadNetwork);
+    const seaRoute = planSeaRoute(from, to, index);
 
     return {
         foot: groundRoute ? toRouteResult(groundRoute, SpeedKmH.foot) : null,
         horse: groundRoute ? toRouteResult(groundRoute, SpeedKmH.horse) : null,
+        ship: seaRoute ? toRouteResult(seaRoute, SpeedKmH.ship) : null,
         dragon: calculateDragonRoute(from, to),
         legs: groundRoute ? groundRoute.legs : [],
     };
+}
+
+export const SEA_CELL_SIZE = 0.1;
+
+export interface SeaRaster {
+    grid: Grid;
+    k: Float64Array;
+    costK: Float64Array;
+    labels: Int32Array;
+}
+
+const seaRasters = new WeakMap<RoutingIndex, SeaRaster>();
+
+export function getSeaRaster(index: RoutingIndex): SeaRaster {
+    const cached = seaRasters.get(index);
+    if (cached) {
+        return cached;
+    }
+
+    const grid: Grid = {
+        minLng: MapBounds.West,
+        minLat: MapBounds.South,
+        cellSize: SEA_CELL_SIZE,
+        cols: Math.ceil((MapBounds.East - MapBounds.West) / SEA_CELL_SIZE),
+        rows: Math.ceil((MapBounds.North - MapBounds.South) / SEA_CELL_SIZE),
+    };
+    const { k, costK } = rasterizeSeaGrid(grid, index);
+    const raster: SeaRaster = { grid, k, costK, labels: labelComponents(grid, k) };
+
+    seaRasters.set(index, raster);
+
+    return raster;
+}
+
+function planSeaRoute(from: Position, to: Position, index: RoutingIndex): PlannedRoute | null {
+    if (!isSeaEndpoint(from, index) || !isSeaEndpoint(to, index)) {
+        return null;
+    }
+
+    const { grid, k, costK, labels } = getSeaRaster(index);
+    const placedFrom = placeSeaPoint(from, grid, k, index);
+    const placedTo = placeSeaPoint(to, grid, k, index);
+    if (!placedFrom || !placedTo) {
+        return null;
+    }
+    if (getCellLabel(grid, labels, placedFrom) !== getCellLabel(grid, labels, placedTo)) {
+        return null;
+    }
+
+    const seaPath = findPath(grid, k, placedFrom, placedTo);
+    if (!seaPath) {
+        return null;
+    }
+
+    const path = pullTautPath(seaPath.path, getSeaPassability(index, grid, k));
+    const cost = measurePathCost(path, grid, costK);
+
+    return anchorRoute({ path, cost, legs: [{ kind: 'sea', path, cost }] }, from, to);
+}
+
+function placeSeaPoint(
+    point: Position,
+    grid: Grid,
+    k: Float64Array,
+    index: RoutingIndex,
+): CellIndex | null {
+    const cell = getCellIndexAt(grid, point);
+    if (!cell) {
+        return null;
+    }
+    if (k[toFlatIndex(grid, cell.col, cell.row)] !== IMPASSABLE) {
+        return cell;
+    }
+
+    return findNearestPassableCell(grid, k, cell, candidate =>
+        isStubNavigable(point, getCellCenter(grid, candidate.col, candidate.row), index, grid.cellSize));
+}
+
+const STUB_SAMPLE_FACTOR = 0.25;
+
+function isStubNavigable(from: Position, to: Position, index: RoutingIndex, cellSize: number): boolean {
+    const distance = Math.hypot(to[0] - from[0], to[1] - from[1]);
+    const sampleCount = Math.max(1, Math.ceil(distance / (cellSize * STUB_SAMPLE_FACTOR)));
+    let ashore = true;
+
+    for (let i = 1; i <= sampleCount; i++) {
+        const t = i / sampleCount;
+        const point: Position = [from[0] + (to[0] - from[0]) * t, from[1] + (to[1] - from[1]) * t];
+        const onLand = isPointInAreas(point, index.land);
+
+        if (onLand && !ashore) {
+            return false;
+        }
+        ashore = ashore && onLand;
+    }
+
+    return true;
 }
 
 interface RoadCandidate {
@@ -325,11 +434,11 @@ interface RoadCandidate {
 interface PlanContext {
     index: RoutingIndex;
     roadNetwork: RoadNetwork;
-    gridRoute: (from: Position, to: Position) => GroundRoute | null;
+    gridRoute: (from: Position, to: Position) => PlannedRoute | null;
 }
 
 function createPlanContext(index: RoutingIndex, roadNetwork: RoadNetwork): PlanContext {
-    const legs = new Map<string, GroundRoute | null>();
+    const legs = new Map<string, PlannedRoute | null>();
 
     return {
         index,
@@ -344,7 +453,7 @@ function createPlanContext(index: RoutingIndex, roadNetwork: RoadNetwork): PlanC
     };
 }
 
-interface GroundRoute {
+interface PlannedRoute {
     path: Position[];
     cost: number;
     legs: RouteLeg[];
@@ -355,7 +464,7 @@ function planGroundRoute(
     to: Position,
     index: RoutingIndex,
     roadNetwork: RoadNetwork | null,
-): GroundRoute | null {
+): PlannedRoute | null {
     if (!isOnOneLandmass(from, to, index)) {
         return null;
     }
@@ -410,7 +519,7 @@ function planSameGroupRoute(
     toAnchor: NetworkAnchor,
     fromOnNetwork: boolean,
     toOnNetwork: boolean,
-): GroundRoute | null {
+): PlannedRoute | null {
     const entries = fromOnNetwork ? [onNetworkEntry(fromAnchor)] : findCostedCandidates(context, from);
     const exits = toOnNetwork ? [onNetworkEntry(toAnchor)] : findCostedCandidates(context, to);
 
@@ -425,7 +534,7 @@ function planCrossGroupRoute(
     toAnchor: NetworkAnchor,
     fromOnNetwork: boolean,
     toOnNetwork: boolean,
-): GroundRoute | null {
+): PlannedRoute | null {
     if (!fromOnNetwork || !toOnNetwork) {
         return null;
     }
@@ -492,7 +601,7 @@ function planRoadMiddleRoute(
     context: PlanContext,
     entries: RoadCandidate[],
     exits: RoadCandidate[],
-): GroundRoute | null {
+): PlannedRoute | null {
     const { roadNetwork } = context;
     const variants: { entry: RoadCandidate; exit: RoadCandidate; bound: number }[] = [];
 
@@ -531,11 +640,11 @@ function planRoadMiddleRoute(
 
 function pickCheapestVariant<T extends { bound: number }>(
     variants: T[],
-    build: (variant: T) => GroundRoute | null,
-): GroundRoute | null {
+    build: (variant: T) => PlannedRoute | null,
+): PlannedRoute | null {
     variants.sort((a, b) => a.bound - b.bound);
 
-    let best: GroundRoute | null = null;
+    let best: PlannedRoute | null = null;
 
     for (const variant of variants) {
         if (best && variant.bound >= best.cost) {
@@ -650,7 +759,7 @@ function isSamePosition(a: Position, b: Position): boolean {
     return Math.abs(a[0] - b[0]) <= JOINT_EPSILON && Math.abs(a[1] - b[1]) <= JOINT_EPSILON;
 }
 
-function anchorRoute(route: GroundRoute | null, from: Position, to: Position): GroundRoute | null {
+function anchorRoute(route: PlannedRoute | null, from: Position, to: Position): PlannedRoute | null {
     if (!route) {
         return null;
     }
@@ -705,8 +814,8 @@ function getPathLength(path: Position[]): number {
     return length;
 }
 
-function combineRoutes(...pieces: (GroundRoute | null | false)[]): GroundRoute {
-    const combined: GroundRoute = { path: [], cost: 0, legs: [] };
+function combineRoutes(...pieces: (PlannedRoute | null | false)[]): PlannedRoute {
+    const combined: PlannedRoute = { path: [], cost: 0, legs: [] };
 
     for (const piece of pieces) {
         if (!piece) {
@@ -720,7 +829,7 @@ function combineRoutes(...pieces: (GroundRoute | null | false)[]): GroundRoute {
     return combined;
 }
 
-function roadSegmentRoute(roadPath: RoadNetworkPath): GroundRoute {
+function roadSegmentRoute(roadPath: RoadNetworkPath): PlannedRoute {
     return {
         path: roadPath.path,
         cost: roadPath.distance,
@@ -728,14 +837,18 @@ function roadSegmentRoute(roadPath: RoadNetworkPath): GroundRoute {
     };
 }
 
-function buildGridRoute(gridFrom: Position, gridTo: Position, index: RoutingIndex): GroundRoute | null {
+function buildGridRoute(gridFrom: Position, gridTo: Position, index: RoutingIndex): PlannedRoute | null {
     const { groundPath, grid, k } = findGroundPathWithRetry(gridFrom, gridTo, index);
     if (!groundPath) {
         return null;
     }
 
-    const simplifiedPath = simplifyPath(groundPath.path, grid.cellSize * SIMPLIFY_EPSILON_FACTOR);
-    const smoothedGridPath = pullTautPath(simplifiedPath, index, grid.cellSize);
+    const simplifiedPath = simplifyPath(
+        groundPath.path,
+        grid.cellSize * SIMPLIFY_EPSILON_FACTOR,
+        getGroundClearance(index, grid.cellSize),
+    );
+    const smoothedGridPath = pullTautPath(simplifiedPath, getGroundPassability(index, grid.cellSize));
     const cost = measurePathCost(smoothedGridPath, grid, k);
 
     return {
@@ -810,7 +923,7 @@ function getCellLabel(grid: Grid, labels: Int32Array, { col, row }: CellIndex): 
     return labels[toFlatIndex(grid, col, row)];
 }
 
-function toRouteResult(route: GroundRoute, speedKmh: number): RouteResult {
+function toRouteResult(route: PlannedRoute, speedKmh: number): RouteResult {
     return {
         path: route.path,
         distanceKm: getPathDistanceKm(route.path),
@@ -828,7 +941,11 @@ function getPathDistanceKm(path: Position[]): number {
     return totalCoordDistance * KM_PER_COORD_UNIT;
 }
 
-export function simplifyPath(path: Position[], epsilon: number): Position[] {
+export function simplifyPath(
+    path: Position[],
+    epsilon: number,
+    isShortcutPassable?: SegmentPassability,
+): Position[] {
     if (path.length < 3) {
         return path;
     }
@@ -846,12 +963,13 @@ export function simplifyPath(path: Position[], epsilon: number): Position[] {
         }
     }
 
-    if (maxDistance <= epsilon) {
+    if (maxDistance <= epsilon && (!isShortcutPassable || isShortcutPassable(first, last))) {
         return [first, last];
     }
 
-    const left = simplifyPath(path.slice(0, maxIndex + 1), epsilon);
-    const right = simplifyPath(path.slice(maxIndex), epsilon);
+    const splitIndex = maxDistance > epsilon ? maxIndex : Math.floor((path.length - 1) / 2);
+    const left = simplifyPath(path.slice(0, splitIndex + 1), epsilon, isShortcutPassable);
+    const right = simplifyPath(path.slice(splitIndex), epsilon, isShortcutPassable);
 
     return [...left.slice(0, -1), ...right];
 }
@@ -859,7 +977,9 @@ export function simplifyPath(path: Position[], epsilon: number): Position[] {
 const VISIBILITY_SAMPLE_FACTOR = 0.5;
 const MAX_PULL_DISTANCE_CELLS = 10;
 
-export function pullTautPath(path: Position[], index: RoutingIndex, cellSize: number): Position[] {
+export type SegmentPassability = (from: Position, to: Position) => boolean;
+
+export function pullTautPath(path: Position[], isShortcutPassable: SegmentPassability): Position[] {
     if (path.length < 3) {
         return path;
     }
@@ -870,7 +990,7 @@ export function pullTautPath(path: Position[], index: RoutingIndex, cellSize: nu
     while (anchor < path.length - 1) {
         let farthest = anchor + 1;
 
-        while (farthest + 1 < path.length && isSegmentPassable(path[anchor], path[farthest + 1], index, cellSize)) {
+        while (farthest + 1 < path.length && isShortcutPassable(path[anchor], path[farthest + 1])) {
             farthest++;
         }
 
@@ -881,22 +1001,48 @@ export function pullTautPath(path: Position[], index: RoutingIndex, cellSize: nu
     return taut;
 }
 
-function isSegmentPassable(from: Position, to: Position, index: RoutingIndex, cellSize: number): boolean {
-    const distance = Math.hypot(to[0] - from[0], to[1] - from[1]);
-    if (distance > cellSize * MAX_PULL_DISTANCE_CELLS) {
-        return false;
-    }
+export function getGroundClearance(index: RoutingIndex, cellSize: number): SegmentPassability {
+    return (from, to) => everySample(from, to, cellSize, point => isPassablePoint(point, index, cellSize));
+}
 
+export function getGroundPassability(index: RoutingIndex, cellSize: number): SegmentPassability {
+    const isClear = getGroundClearance(index, cellSize);
+
+    return (from, to) => isWithinPullDistance(from, to, cellSize) && isClear(from, to);
+}
+
+function getSeaPassability(index: RoutingIndex, grid: Grid, k: Float64Array): SegmentPassability {
+    return (from, to) => isWithinPullDistance(from, to, grid.cellSize)
+        && everySample(from, to, grid.cellSize, point => getCellK(grid, k, point) !== IMPASSABLE)
+        && keepsSeaClearance(from, to, index);
+}
+
+function isWithinPullDistance(from: Position, to: Position, cellSize: number): boolean {
+    return Math.hypot(to[0] - from[0], to[1] - from[1]) <= cellSize * MAX_PULL_DISTANCE_CELLS;
+}
+
+function everySample(
+    from: Position,
+    to: Position,
+    cellSize: number,
+    isPassable: (point: Position) => boolean,
+): boolean {
+    const distance = Math.hypot(to[0] - from[0], to[1] - from[1]);
     const sampleCount = Math.ceil(distance / (cellSize * VISIBILITY_SAMPLE_FACTOR));
 
     for (let i = 1; i < sampleCount; i++) {
         const t = i / sampleCount;
-        const point: Position = [from[0] + (to[0] - from[0]) * t, from[1] + (to[1] - from[1]) * t];
 
-        if (classifyCell(point, index, cellSize) === null) {
+        if (!isPassable([from[0] + (to[0] - from[0]) * t, from[1] + (to[1] - from[1]) * t])) {
             return false;
         }
     }
 
     return true;
+}
+
+function getCellK(grid: Grid, k: Float64Array, point: Position): number {
+    const cell = getCellIndexAt(grid, point);
+
+    return cell ? k[toFlatIndex(grid, cell.col, cell.row)] : IMPASSABLE;
 }

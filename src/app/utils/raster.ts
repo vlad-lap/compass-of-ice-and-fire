@@ -3,6 +3,8 @@ import { flatten } from 'lodash';
 import {
     BarrierCrossing,
     BBox,
+    Coastline,
+    CoastSegment,
     Grid,
     IndexedArea,
     IndexedBarrier,
@@ -19,7 +21,7 @@ import {
     NEIGHBOR_OFFSETS,
     toFlatIndex,
 } from './grid';
-import { MapBounds } from '../components/map-page/constants';
+import { KM_PER_COORD_UNIT, MapBounds } from '../components/map-page/constants';
 
 export const MOUNTAIN_K_BY_HEIGHT: Record<number, number> = { 1: 0.5, 2: 0.35, 3: 0.2 };
 
@@ -28,6 +30,23 @@ export enum TerrainK {
     Desert = 0.7,
     Forest = 0.9,
     Default = 1,
+}
+
+export enum WaterK {
+    SmokingSea = 0.1,
+    Default = 1,
+}
+
+const SMOKING_SEA_ID = 'sea-the-smoking-sea';
+
+export const SEA_CLEARANCE_KM = 10;
+export const SEA_CLEARANCE = SEA_CLEARANCE_KM / KM_PER_COORD_UNIT;
+export const SEA_MARGIN_FACTOR = Math.SQRT2 / 2;
+export const COASTAL_K_FACTOR = 1e-4;
+export const COASTAL_K_FALLOFF = 3;
+
+export function getSeaClearanceThreshold(cellSize: number): number {
+    return SEA_CLEARANCE + cellSize * SEA_MARGIN_FACTOR;
 }
 
 export const IMPASSABLE = 0;
@@ -46,9 +65,11 @@ const BLOCKING_RIVER_SIZES = [2, 3];
 export function buildRoutingIndex(geodata: RoutingGeodata): RoutingIndex {
     const dryLakes = geodata.lakes.features.filter(feature => feature.properties?.variant === 'dry');
     const wetLakes = geodata.lakes.features.filter(feature => feature.properties?.variant !== 'dry');
+    const land = indexLandmasses([...geodata.continents.features, ...geodata.islands.features]);
 
     return {
-        land: indexLandmasses([...geodata.continents.features, ...geodata.islands.features]),
+        land,
+        coastline: indexCoastline(land),
         mountains: geodata.mountains.features.map(feature =>
             indexArea(feature, MOUNTAIN_K_BY_HEIGHT[feature.properties?.height] ?? TerrainK.Default),
         ),
@@ -59,6 +80,14 @@ export function buildRoutingIndex(geodata: RoutingGeodata): RoutingIndex {
         ],
         forests: geodata.forests.features.map(feature => indexArea(feature, TerrainK.Forest)),
         lakes: wetLakes.map(feature => indexArea(feature, null)),
+        water: [
+            ...geodata.seas.features,
+            ...geodata.bays.features,
+            ...geodata.straits.features,
+        ].map(feature => indexArea(feature, getWaterK(feature))),
+        ports: geodata.locations.features
+            .filter(feature => feature.properties?.isPort)
+            .map(feature => feature.geometry.coordinates),
         barriers: [
             ...geodata.rivers.features
                 .filter(feature => BLOCKING_RIVER_SIZES.includes(feature.properties?.size)),
@@ -73,31 +102,28 @@ export function isWithinMapBounds([lng, lat]: Position): boolean {
 }
 
 export function classifyCell(point: Position, index: RoutingIndex, cellSize: number): number | null {
-    if (!isWithinMapBounds(point)) {
-        return null;
-    }
+    return isPassablePoint(point, index, cellSize) ? classifyLandscape(point, index) : null;
+}
 
+export function isPassablePoint(point: Position, index: RoutingIndex, cellSize: number): boolean {
+    return isWithinMapBounds(point)
+        && !isBlockedByBarrier(point, index, cellSize)
+        && isPointInAreas(point, index.land)
+        && !isPointInAreas(point, index.lakes);
+}
+
+function isBlockedByBarrier(point: Position, index: RoutingIndex, cellSize: number): boolean {
     const riverThreshold = cellSize * RIVER_BAND_FACTOR;
     const gateRadius = getCrossingGateRadius(cellSize);
 
-    const blocked = index.barriers.some(barrier =>
+    return index.barriers.some(barrier =>
         isInBBox(point, expandBBox(barrier.bbox, riverThreshold))
         && isNearLineGeometry(point, barrier.geometry, riverThreshold)
         && !isNearAnyPoint(point, barrier.crossings, gateRadius),
     );
-
-    return blocked ? null : classifyLandscape(point, index);
 }
 
-function classifyLandscape(point: Position, index: RoutingIndex): number | null {
-    if (!findContaining(point, index.land)) {
-        return null;
-    }
-
-    if (findContaining(point, index.lakes)) {
-        return null;
-    }
-
+function classifyLandscape(point: Position, index: RoutingIndex): number {
     const layersByPriority = [index.mountains, index.swamps, index.deserts, index.forests];
     for (const layer of layersByPriority) {
         const area = findContaining(point, layer);
@@ -107,6 +133,164 @@ function classifyLandscape(point: Position, index: RoutingIndex): number | null 
     }
 
     return TerrainK.Default;
+}
+
+export function classifySeaCell(point: Position, index: RoutingIndex, cellSize: number): number | null {
+    if (!isWithinMapBounds(point)) {
+        return null;
+    }
+
+    const water = findContaining(point, index.water);
+    if (!water || isPointInAreas(point, index.land)) {
+        return null;
+    }
+
+    const threshold = getSeaClearanceThreshold(cellSize);
+    const k = (water.k ?? WaterK.Default)
+        * getClearanceFactor(getDistanceToLand(point, index, threshold), threshold);
+
+    return k === IMPASSABLE ? null : k;
+}
+
+export function isNavigable(point: Position, index: RoutingIndex): boolean {
+    return isWithinMapBounds(point)
+        && isPointInAreas(point, index.water)
+        && !isPointInAreas(point, index.land);
+}
+
+export function isOpenSea(point: Position, index: RoutingIndex): boolean {
+    return isNavigable(point, index) && getDistanceToLand(point, index) >= SEA_CLEARANCE;
+}
+
+export function keepsSeaClearance(from: Position, to: Position, index: RoutingIndex): boolean {
+    const atEnds = Math.min(getDistanceToLand(from, index), getDistanceToLand(to, index));
+
+    return getSegmentDistanceToLand(from, to, index) >= atEnds;
+}
+
+export function isSeaEndpoint(point: Position, index: RoutingIndex): boolean {
+    return isPort(point, index.ports) || isNavigable(point, index);
+}
+
+const PORT_MATCH_DISTANCE = 1e-6;
+
+function isPort(point: Position, ports: Position[]): boolean {
+    return isNearAnyPoint(point, ports, PORT_MATCH_DISTANCE);
+}
+
+function getWaterK(feature: Feature<Polygon | MultiPolygon>): number {
+    return feature.properties?.id === SMOKING_SEA_ID ? WaterK.SmokingSea : WaterK.Default;
+}
+
+function getClearanceFactor(distanceToLand: number, threshold: number): number {
+    return distanceToLand >= threshold ? 1 : COASTAL_K_FACTOR * (distanceToLand / threshold) ** COASTAL_K_FALLOFF;
+}
+
+function indexCoastline(land: IndexedLandmass[]): Coastline {
+    const buckets: Coastline = new Map();
+
+    for (const area of land) {
+        for (const rings of getPolygonRings(area.geometry)) {
+            for (const ring of rings) {
+                for (let i = 0; i < ring.length - 1; i++) {
+                    const segment = { from: ring[i], to: ring[i + 1] };
+                    forEachBucketInBBox(getRingBBox([segment.from, segment.to]), key => {
+                        const bucket = buckets.get(key);
+                        if (bucket) {
+                            bucket.push(segment);
+                        } else {
+                            buckets.set(key, [segment]);
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+    return buckets;
+}
+
+export function getDistanceToLand(point: Position, index: RoutingIndex, cap = SEA_CLEARANCE): number {
+    let nearest = cap;
+
+    forEachCoastSegmentNear([point[0], point[1], point[0], point[1]], index.coastline, cap, ({ from, to }) => {
+        nearest = Math.min(nearest, pointToSegmentDistance(point, from, to));
+    });
+
+    return nearest;
+}
+
+export function getSegmentDistanceToLand(
+    from: Position,
+    to: Position,
+    index: RoutingIndex,
+    cap = SEA_CLEARANCE,
+): number {
+    let nearest = cap;
+
+    forEachCoastSegmentNear(getRingBBox([from, to]), index.coastline, cap, coast => {
+        nearest = Math.min(nearest, segmentToSegmentDistance(from, to, coast.from, coast.to));
+    });
+
+    return nearest;
+}
+
+function forEachCoastSegmentNear(
+    bbox: BBox,
+    coastline: Coastline,
+    margin: number,
+    visit: (segment: CoastSegment) => void,
+): void {
+    forEachBucketInBBox(expandBBox(bbox, margin), key => {
+        for (const segment of coastline.get(key) ?? []) {
+            visit(segment);
+        }
+    });
+}
+
+export function rasterizeSeaGrid(grid: Grid, index: RoutingIndex): { k: Float64Array; costK: Float64Array } {
+    const costK = new Float64Array(grid.cols * grid.rows);
+    const rowMask = new Uint8Array(grid.cols);
+    const extent = getGridBBox(grid);
+
+    fillAreas(grid, rowMask, index.water, extent, (flatIndex, value) => { costK[flatIndex] = value; });
+    fillAreas(grid, rowMask, index.land, extent, flatIndex => { costK[flatIndex] = IMPASSABLE; });
+    blockOutsideMap(costK, grid);
+
+    const k = costK.slice();
+    applyCoastalClearance(k, costK, grid, index, extent);
+
+    return { k, costK };
+}
+
+function applyCoastalClearance(
+    k: Float64Array,
+    costK: Float64Array,
+    grid: Grid,
+    index: RoutingIndex,
+    extent: BBox,
+): void {
+    const threshold = getSeaClearanceThreshold(grid.cellSize);
+
+    for (const area of index.land) {
+        if (!bboxesOverlap(expandBBox(area.bbox, threshold), extent)) {
+            continue;
+        }
+
+        for (const rings of getPolygonRings(area.geometry)) {
+            for (const ring of rings) {
+                for (let i = 0; i < ring.length - 1; i++) {
+                    forEachCellNearSegment(grid, ring[i], ring[i + 1], threshold,
+                        (flatIndex, center, distance) => {
+                            k[flatIndex] = Math.min(
+                                k[flatIndex],
+                                costK[flatIndex] * getClearanceFactor(distance, threshold),
+                            );
+                        });
+                }
+            }
+        }
+    }
 }
 
 export function rasterizeGrid(grid: Grid, index: RoutingIndex): Float64Array {
@@ -235,7 +419,7 @@ function forEachCellNearSegment(
     start: Position,
     end: Position,
     threshold: number,
-    visit: (flatIndex: number, center: Position) => void,
+    visit: (flatIndex: number, center: Position, distance: number) => void,
 ): void {
     const minCol = Math.max(0, getColAtLng(grid, Math.min(start[0], end[0]) - threshold));
     const maxCol = Math.min(grid.cols - 1, getColAtLng(grid, Math.max(start[0], end[0]) + threshold));
@@ -245,8 +429,9 @@ function forEachCellNearSegment(
     for (let row = minRow; row <= maxRow; row++) {
         for (let col = minCol; col <= maxCol; col++) {
             const center = getCellCenter(grid, col, row);
-            if (pointToSegmentDistance(center, start, end) <= threshold) {
-                visit(toFlatIndex(grid, col, row), center);
+            const distance = pointToSegmentDistance(center, start, end);
+            if (distance <= threshold) {
+                visit(toFlatIndex(grid, col, row), center, distance);
             }
         }
     }
@@ -474,14 +659,14 @@ function joinNestedPolygons(polygons: LandPolygon[], roots: Int32Array): void {
 }
 
 function forEachBucketNearSegment(from: Position, to: Position, visit: (key: number) => void): void {
-    const toBucket = (value: number) => Math.floor(value / LANDMASS_BUCKET_SIZE);
-    const minCol = toBucket(Math.min(from[0], to[0]) - LANDMASS_JOIN_DISTANCE);
-    const maxCol = toBucket(Math.max(from[0], to[0]) + LANDMASS_JOIN_DISTANCE);
-    const minRow = toBucket(Math.min(from[1], to[1]) - LANDMASS_JOIN_DISTANCE);
-    const maxRow = toBucket(Math.max(from[1], to[1]) + LANDMASS_JOIN_DISTANCE);
+    forEachBucketInBBox(expandBBox(getRingBBox([from, to]), LANDMASS_JOIN_DISTANCE), visit);
+}
 
-    for (let col = minCol; col <= maxCol; col++) {
-        for (let row = minRow; row <= maxRow; row++) {
+function forEachBucketInBBox([minLng, minLat, maxLng, maxLat]: BBox, visit: (key: number) => void): void {
+    const toBucket = (value: number) => Math.floor(value / LANDMASS_BUCKET_SIZE);
+
+    for (let col = toBucket(minLng); col <= toBucket(maxLng); col++) {
+        for (let row = toBucket(minLat); row <= toBucket(maxLat); row++) {
             visit(col * LANDMASS_BUCKET_ROW_STRIDE + row);
         }
     }
