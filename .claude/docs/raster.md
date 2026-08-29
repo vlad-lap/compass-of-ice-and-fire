@@ -143,8 +143,11 @@ for movement and attaches a bounding box to each:
   `indexBarrier`).
 - `water` — `seas`, `bays` and `straits` in one layer, `k = 1` except the Smoking Sea. Used **only** by
   the sea model; ground passability never consults it, for the reason given above.
-- `ports` — the coordinates of every location with `isPort`, 74 of them. The planner is handed two
-  positions and nothing else, so this list is how it recognises that a point on land is a harbour.
+- `ports` — every location with `isPort`, 74 of them, each with its `id`, its `type` and the landmass
+  it stands on. The planner is handed two positions and nothing else, so this list is how it recognises
+  that a point on land is a harbour; the type ranks ports against each other (rule 5) and the landmass
+  is how a combined route finds the ports it may board at. All 74 stand on land, and 49 are cities,
+  9 settlements, 11 castles and 5 ruins.
 - `coastline` — every land ring edge, hashed into buckets (see `indexCoastline`).
 
 There is deliberately no sea layer in the *ground* passability model; see above.
@@ -280,6 +283,12 @@ requirement and not the implementation's own working threshold.
 
 Requirement 1: a sea route may begin and end only in water or at a port. A port qualifies although it
 stands on land — all 74 do.
+
+### `findPort(point, ports): IndexedPort | undefined`
+
+The port at a point, within `PORT_MATCH_DISTANCE`. An equality test with room for float noise, not a
+radius: an endpoint arrives either as a location's own coordinates or as a coordinate pair from the
+URL, so a point is a port only if it *is* one.
 
 ### `getLandmass(point, land): number | null`
 

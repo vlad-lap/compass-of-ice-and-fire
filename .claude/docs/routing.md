@@ -3,10 +3,11 @@
 The planner. Everything that decides *which* route to build and what it costs, on top of two
 primitives: search over a rasterised grid, and shortest paths over the road graph.
 
-Two planners live here, sharing those primitives and all of the post-processing: `planGroundRoute` for
-a traveller on foot or horseback, and `planSeaRoute` for a ship. They answer independently — a pair of
-ports across a sea has a ship route and no ground route, a pair of inland towns the reverse — and the
-`RoutePlan` carries whichever exist.
+Three planners live here, sharing those primitives and all of the post-processing: `planGroundRoute`
+for a traveller on foot or horseback, `planSeaRoute` for a ship, and `planCombinedRoutes` for a
+traveller who walks to a port, sails, and walks on. They answer independently — a pair of ports across
+a sea has a ship route and no ground route, a pair of inland towns the reverse, and an island reached
+only by taking passage has just the combined one — and the `RoutePlan` carries whichever exist.
 
 The rule numbers used throughout ("rule 1", "rule 3") are the specification's; each is stated where it
 first matters, so this document stands on its own.
@@ -21,6 +22,15 @@ Every road-assisted route has one of two shapes:
 same road component:   [grid A..C] [road C..D] [grid D..B]    rules 1, 2, 4
 two road components:   [road A..C] [grid C..D] [road D..B]    rule 3
 ```
+
+A combined route has a third shape, of ground routes either side of one sea leg:
+
+```
+combined:              [A..PA] [sea PA..PB] [PB..B]
+```
+
+where `PA` and `PB` are ports, and each of the two ground stretches is a route in its own right - so it
+carries the road and grid legs of whatever shape it took.
 
 There is no separate branch for rule 1 or rule 2. A grid leg is simply absent when that endpoint is
 already on the network, which collapses the first shape into a pure road route (rule 1) or a road plus
@@ -38,15 +48,25 @@ The fourth possibility — no road involved at all — is the plain grid route.
 | `SpeedKmH` | `foot 4`, `horse 8`, `ship 10`, `dragon 100` | Foot and horse share one route, one path and one cost; only the divisor differs. The ship has a route of its own. The dragon flies the straight line. |
 | `ON_NETWORK_EPS` | `0.2` (≈17 km) | A location this close to a network node counts as *on* the road. The threshold has to separate Riverrun (8 km off its nearest node, and the spec requires it to count as on the road) from Pennytree (27 km), Stone Hedge (36 km) and Volon Therys (65 km), which must not. Any value in (0.097, 0.319) works; 0.2 is the middle of that gap. |
 | `ROAD_TIME_TOLERANCE` | `3` | Ceiling on how much longer a fully-road route may take than open ground. A constant is unavoidable here: the spec **requires** using the road at ×2.12 (`Qohor → Old Ghis`, 1919 h against 905 h straight), so "minimise time" is not the rule; and `Saath → Morosh` reaches ×15.9 without a guard, riding 3585 km of road around Sarnor to save 66 km of open ground. Any value in 2.2…15 separates those two, and there is no structural discriminator — the ratio of road cost to open-ground saving does not separate them either (3.5 against 54). |
-| `CANDIDATE_COUNT` | `20` | Nearest network nodes considered per endpoint. |
+| `CANDIDATE_COUNT` | `20` | Road nodes kept per endpoint: the cheapest to walk to, after thinning. Also the number of nearest nodes used to seed the grid that prices them, and the count `planCrossGroupRoute` asks for by distance. |
 | `CANDIDATE_SPACING` | `0.2` (≈17 km) | Minimum spacing between kept candidates. The road network is still a chain of raw geometry vertices, so the 20 nearest nodes to a point are typically 20 consecutive vertices of one road a few km apart: near-identical routes, each demanding its own grid leg, and bounds too close together to prune one another. Below this spacing it makes no difference which vertex the route leaves the road at. |
 | `MARGIN_RETRY_STEPS` | 3 steps | The escalation ladder; see `findGroundPathWithRetry`. |
 | `SIMPLIFY_EPSILON_FACTOR` | `0.5` | Douglas–Peucker tolerance, in cells. Ground routes only; a sea route is never simplified, see `planSeaRoute`. |
 | `SEA_CELL_SIZE` | `0.1` (≈8.5 km) | Cell size of the one grid every sea route is searched on. Fixed rather than derived from the endpoints; see `getSeaRaster`. |
+| `SEA_ESTIMATE_CELL_SIZE` | `0.3` (≈25.6 km) | Cell size of the second sea grid, used only to rank candidate port pairs. Nine times fewer cells than the real one; see `estimateSeaCost`. |
+| `PORT_APPROACH_BAND` | `1.5` | How much longer the walk to a better-typed port may be and still be taken: ports within ×1.5 of the nearest one's walk are compared by type first. The knob rule 5 turns on. |
+| `PORT_PRIORITY_TIME_CAP` | `2` | The backstop on that preference: if honouring the type more than doubles the journey, the fastest port wins after all. |
+| `PORT_TYPE_PRIORITY` | `city, settlement, castle, ruin` | Rule 5's ranking. Anything else - and an open-coast landing, which has no type - ranks last. |
+| `PORT_VERIFY_COUNT` | `3` | Pairs whose ground legs are re-planned for real before the winner is chosen. The lever on what a combined route costs: each one is up to two full ground routes. |
+| `LANDING_CANDIDATE_COUNT` | `6` | Landing points considered on a portless coast. Ports are never cut down like this - a coastline can offer any number of landing points, and they are interchangeable. |
+| `PORT_PRICING_CELL_BUDGET` | `40 000` | Cell budget of the grid that prices the walk to each candidate. Coarser than a real route's, because it only has to rank ports. |
+| `LANDING_SPACING` | `0.5` (≈43 km) | Minimum spacing between landing points on a portless coast. |
+| `LANDING_INSET` | `MIN_CELL_SIZE` (≈1.7 km) | How far inland a landing point sits from the coastline it was taken from. |
 | `STUB_SAMPLE_FACTOR` | `0.25` | Sample spacing, in cells, when checking that the line from a port to the water crosses no second landmass. Finer than the other samplers because it is run once per candidate cell, not per segment of a route. |
 | `VISIBILITY_SAMPLE_FACTOR` | `0.5` | Sample spacing, in cells, when testing whether a taut segment is passable. |
 | `MAX_PULL_DISTANCE_CELLS` | `10` | Cap on how far one taut segment may reach, so smoothing removes local zigzag instead of collapsing the route into a couple of continent-spanning chords. |
 | `COST_SAMPLE_FACTOR` | `0.5` | Sample spacing, in cells, when pricing the drawn line. |
+| `LAND_CHECK_SPACING` | `MIN_CELL_SIZE` (≈1.7 km) | Sample spacing when checking that a leg from a coarse grid stays on land. Fixed rather than scaled to the grid, because the whole point is to see what a coarse grid cannot. |
 | `JOINT_EPSILON` | `1e-9` | Tolerance for "these two points are the same", used to drop duplicates at leg joints. |
 | `NO_PARENT` | `-1` | Fill value for the `cameFrom` arrays. |
 
@@ -61,18 +81,25 @@ takes this path, because building the index per request would pay ~40 ms every t
 
 ### `planRoutesWithIndex(from, to, index, roadNetwork = null): RoutePlan`
 
-What the worker calls. Plans the ground route and the sea route, and derives everything from them:
+What the worker calls. Plans the ground route, the sea route and the combined routes, and derives
+everything from them:
 
-- `foot` and `horse` — the same path and cost at two speeds, or `null` when there is no ground route,
+- `foot` and `horse` — the ground route, the same path and cost at two speeds, or `null`,
+- `footShip` and `horseShip` — the combined route for each traveller, or `null`,
 - `ship` — the sea route, or `null`,
-- `dragon` — always present, always the straight line,
-- `legs` — the **ground** route's legs, or `[]`.
+- `dragon` — always present, always the straight line.
 
-`legs` describes the ground route alone, and deliberately: its contract is that concatenating the legs
-reproduces `foot.path` exactly (`checkLegPartition`), and a sea route is a different line over
-different terrain. A sea route is one leg of kind `sea` from end to end, so there is nothing a
-breakdown would add. `RouteLegKind` still carries `'sea'` because the internal `PlannedRoute` uses it —
-that is how `anchorRoute` knows what coefficient to charge the port stubs at.
+**Every route carries its own legs**, rather than the plan carrying one list. With up to five routes
+between the same two points, a single `legs` could only ever describe one of them; and a combined route
+is the first whose breakdown a reader actually needs, since its parts are travelled at different
+speeds. The partition contract is unchanged and now holds per route: concatenating a route's leg paths
+reproduces its own path exactly, and the legs' distances and times sum to the route's
+(`checkLegPartition`).
+
+Two combined routes rather than one, because the choice of port depends on the traveller: a rider can
+afford a longer walk to a better placed port, so `footShip` and `horseShip` may board at different
+ports. `King's Landing → The Eyrie` does exactly that - on foot it sails from King's Landing itself, on
+horseback it is worth riding to Maidenpool first.
 
 Passing `roadNetwork = null` plans a pure grid route; the harness uses that to measure what the road
 is being compared against. It does not affect the sea route, which has no network.
@@ -87,7 +114,7 @@ exists.
 
 ## Choosing the route
 
-### `planPlannedRoute(from, to, index, roadNetwork): PlannedRoute | null`
+### `planGroundRoute(from, to, index, roadNetwork): PlannedRoute | null`
 
 The decision procedure, in order:
 
@@ -204,6 +231,196 @@ a 28 km straight line: a ship crossing a peninsula because the nearest cell cent
 the far side of it. Without this test the ring search returns the nearest passable cell in any
 direction, and the harness's water check exempts the stub, so nothing else would notice.
 
+## Combined routes
+
+### `planCombinedRoutes(from, to, index, roadNetwork, groundRoute): CombinedRoutes`
+
+Both combined routes at once, because everything except the final choice is shared between them:
+
+1. **Both ends in water is the `planSeaRoute` case**, and the only one excluded here. An endpoint on
+   land boards at a port; an endpoint already in water boards nowhere, because it is aboard already.
+2. **`findEmbarkationPoints` per side** — the ports of that landmass, landing points on a portless
+   coast, or the endpoint itself when it floats. Just the points: nothing is searched yet.
+3. **`getBestCombinedBound` per traveller** — the cheapest combined route the map could possibly
+   offer, in straight lines. If even that cannot beat the ground route, this traveller gets no combined
+   route and nothing further is computed.
+4. **`priceEmbarkations` per side** — one Dijkstra each, pricing every candidate.
+5. **`pickCombinedRoute` per traveller** — the same candidates, judged at foot speed and at horse
+   speed. The sea estimates, the sea routes and the ground routes are memoised across both passes, so
+   the second traveller costs almost nothing.
+
+### `getBestCombinedBound(from, to, departures, arrivals, speedKmh): number`
+
+The best a combined route could conceivably be: over every pair of candidate points, the two walks and
+the crossing measured as straight lines at their own speeds. Arithmetic only - no raster, no search -
+so it costs nothing next to what it saves.
+
+It exists to answer "is there any point in looking". Two inland towns on the same landmass always have
+*a* combined route, and it is usually absurd: `Selhorys → Volon Therys` are 148 h apart along the
+Rhoyne, and the route by sea sailed to Myr and back for 670 h. Computing that cost 1.7 s of the 1.8 s
+that request took. Since the bound can only understate a real route, dropping a traveller whose bound
+already loses to the ground route drops nothing that could have won.
+
+Five of the harness's 27 cases are decided here, `Selhorys → Volon Therys` among them at 186 ms instead
+of 1 743 ms; the worst request on the map fell from 1.8 s to 1.1 s. Note the asymmetry between
+travellers: a rider's walk halves while the crossing does not, so the bound favours the sea less for a
+horse than for a walker, and the two are tested separately.
+
+Nothing here suppresses a combined route that is merely *slower* - only one that provably cannot win.
+`King's Landing → Lannisport` keeps its 319.9 h against 317.8 h on the road, because at that margin it
+is a real alternative and not a detour.
+
+### `findEmbarkationPoints(endpoint, landmass, other, index): EmbarkationPoint[]`
+
+Where a route may board or land on one side: **every** port of that landmass, or - when it has none -
+landing points on its coast (rule 6). Cut down by nothing.
+
+Every port, because a cheap pre-cut got it wrong. Candidates used to be the nearest three by a
+straight-line bound on the journey, and on `King's Landing → The Eyrie` that ranked Gulltown fifth and
+dropped it - though it is both nearer by sea (103 h against 125 h) and, over the Vale's mountains, less
+than half the walk (122 h by road against 241 h). The route sailed to Wickenden and took 367 h where
+225 h was available. A straight line cannot see mountains, and the pricing Dijkstra that follows can;
+so nothing is cut before it has run.
+
+The cost of dropping the cut is bounded: pricing is one search per side whatever the number of ports,
+and the pair loop is ordered so that the extra pairs are pruned rather than searched. Westeros has 18
+ports and Essos 18, the most of any landmass here.
+
+On this map 31 of the 47 landmasses that hold locations have a port; the other 16 hold 21 locations
+between them, Valyria and the Quiet Isle among them.
+
+### `takeNearestLandings(landings, endpoint, other)`
+
+The same cut, kept for landing points only. A coastline yields as many of them as its length allows,
+they carry no type to prefer, and one stretch of empty coast is much like the next - so the nearest few
+by a straight-line journey bound are enough. The bound uses horse speed for the walk, so that a rider's
+reach is not judged by a walker's.
+
+### `priceEmbarkations(endpoint, candidates, index): Embarkation[]`
+
+The cost of walking to each candidate, then `markPreferredEmbarkations` over the result. Candidates that
+*are* the endpoint cost nothing and skip the search entirely - which is the whole of the pricing when
+the endpoint is at sea, and is also why a port one happens to stand on needs no grid. The rest come
+from **one** Dijkstra over one grid (`computeGridCosts` with the
+candidates as targets, so it stops as soon as the last of them is settled). This is the same trick
+`findCostedCandidates` plays for road nodes, and for the same reason: a full `planGroundRoute` per
+candidate is 50-400 ms, and there are up to four of them per side.
+
+Two consequences worth knowing:
+
+- **These costs ignore roads**, since the grid raster has none. They rank ports against each other well
+  enough to shortlist, but a port reached by road is undersold - which is why `pickVerifiedVariant`
+  re-plans the shortlist properly before choosing, and why the times the route reports come from those
+  real plans and not from here.
+- **The cheaper grid can put a point in an impassable cell.** `placePoint` judges the point while the
+  raster judges cell centers, so on a small island the endpoint's own cell may be water - and
+  `computeGridCosts` then returns nothing but `Infinity`, which read as "no port is reachable" and cost
+  the Quiet Isle its combined route. `placePassablePoint` snaps to the nearest passable cell instead.
+
+### `markPreferredEmbarkations(candidates): Embarkation[]`
+
+Rule 5, and the one place where a route is not simply the fastest. Among candidates whose walk is
+within `PORT_APPROACH_BAND` of the nearest, only those of the best type stay eligible; candidates
+outside the band are untouched and keep competing on time.
+
+Why a band on the walk rather than a weight on the journey, measured on the two cases that set the
+rule - both to Braavos, on foot:
+
+| from | port | type | walk | sail | total |
+|------|------|------|------|------|-------|
+| Ramsgate | Widow's Watch | castle | 77 h | 82 h | 159 h |
+| Ramsgate | White Harbor | city | 106 h | 149 h | 255 h |
+| Castle Black | Eastwatch-by-the-Sea | castle | 51 h | 209 h | 259 h |
+| Castle Black | White Harbor | city | 392 h | 149 h | 542 h |
+
+The wanted answers are White Harbor from Ramsgate - the two are as good as equidistant and a city is
+where one takes ship - and Eastwatch from Castle Black, which is simply next door. Three rules were
+weighed:
+
+- **Strictly by type.** Westeros has city ports, so castles would never be considered, and Castle Black
+  would ride 392 h to White Harbor. Rejected outright.
+- **A multiplier on the journey.** A castle route × 1.6-2.1 satisfies both rows above, but the penalty
+  grows with the voyage: on Castle Black → Asshai it charges a castle ~1600 h and sends the route to
+  White Harbor, 1569 km away, to save nothing.
+- **A band on the walk** (this one). Ramsgate: the band is 77-115 h, White Harbor is in it at 106, so
+  the castle is dropped. Castle Black: the band is 51-76 h, White Harbor is nowhere near it, so
+  Eastwatch stands. Neither answer moves when the voyage gets longer, because the voyage is not in the
+  comparison.
+
+The price of the rule is visible and was accepted: Ramsgate → Braavos becomes 255 h instead of 159 h.
+`PORT_PRIORITY_TIME_CAP` is what stops that from becoming absurd - a preferred port more than twice as
+slow as the fastest is dropped.
+
+### `pickCombinedRoute(from, to, departures, arrivals, context, speedKmh): RouteResult | null`
+
+Every pair of candidates, ordered by a lower bound and estimated until the bound overtakes the best
+eligible answer so far:
+
+- **bound** = the two walks (exactly, from the pricing pass) plus the crossing as a straight line. The
+  walks being exact is what makes it tight enough to prune with; an all-straight-line bound left 5-8
+  sea searches per request where this leaves 3-20 far cheaper ones.
+- **estimate** = the two walks plus `estimateSeaCost`.
+- **the break** is on the best *eligible* estimate, not the best of all: stopping at the fastest ends
+  the search before a preferred-but-slower port is ever reached, which is exactly how Ramsgate kept
+  choosing Widow's Watch.
+
+The result is a ranking, not an answer, because the walks in it ignore roads. `pickVerifiedVariant`
+settles the order.
+
+### `pickVerifiedVariant(from, to, ranked, context, speedKmh): RouteResult | null`
+
+Re-plans the ground legs of the best few pairs **for real** - roads and all - and chooses on those
+times, then builds the winner.
+
+The estimate has a systematic bias and it is one-sided: `priceEmbarkations` prices walks on a grid with
+no roads, so a port reached by road is undersold, and by as much as the road tolerance allows. On
+`Selhorys → Volon Therys` the unverified choice was 15 % slower than the one the real times pick; on
+`King's Landing → Pyke` it sailed 5 741 km where 1 942 km would do.
+
+What is *not* re-planned is the crossing: it stays the coarse estimate until the winner is built. A
+real crossing costs 250 ms against 20 ms, and the sea estimate has no comparable bias - it is the same
+grid and the same cost model for every pair.
+
+How many pairs are worth verifying: at most `PORT_VERIFY_COUNT`, and none whose estimate is already
+more than `PORT_PRIORITY_TIME_CAP` times the best. The budget has to be the *cap* rather than a
+tolerance of its own - a preferred port is allowed to be up to twice as slow, so a tighter budget
+filters it out before it can be considered, which is how a 1.5 budget sent Ramsgate back to Widow's
+Watch. Verifying two pairs instead of three gives the same answer on all 27 harness cases; three is
+kept as margin for the pairs the harness does not cover.
+
+### `estimateSeaCost(from, to, index): number | null`
+
+The crossing, on the coarse sea grid and over `costK` rather than `k`.
+
+Both departures matter. **Coarse**, because ranking does not need the drawn line: at
+`SEA_ESTIMATE_CELL_SIZE` the grid has a ninth of the cells and a search costs some 20 ms against 250.
+**Over `costK`**, because `k` prices the coastal band at ~10⁴ and every port approach crosses it, so a
+cost read off `k` would rank ports by how far their harbour lies from open water and not by the
+distance between them. `costK` also makes the estimate a true lower bound on the real crossing - the
+real one obeys the clearance rule and is therefore longer - which is what the bound above needs.
+
+### `buildCombinedRoute(from, to, departure, arrival, context, speedKmh): RouteResult | null`
+
+Assembles the winner: a real `planGroundRoute` to the port, the real `buildSeaRoute` across, a real
+`planGroundRoute` on, then `combineRoutes` and `anchorRoute`.
+
+The joints look after themselves. Each part is already anchored to the ports, so the seams are
+zero-length, and `anchorRoute` drops the duplicated points and charges what is left. A part is `null`
+when the endpoint **is** the port, which is why the checks distinguish "no route" from "no distance to
+cover".
+
+### `findLandingPoints(landmass, index): Position[]`
+
+Rule 6: a landmass with no port may be entered anywhere, so its coastline becomes the candidate list.
+Every edge of every outer ring contributes its midpoint, pushed `LANDING_INSET` inland along the
+ring's inward normal (`getRingOrientation` reads the direction off the signed area), thinned to
+`LANDING_SPACING`, and kept only if it still reads as that landmass.
+
+Inland rather than on the line, because a point exactly on a ring is on the boundary of the polygon
+that owns it and `pointInPolygon` will not say which side it is on. A cell inland is unambiguous, and
+the ship reaches it the way it reaches any port - by snapping to the water outside and drawing the
+entrance.
+
 ### `getRoadShare(route): number`
 
 Road legs' cost over total cost; `0` for a zero-cost route.
@@ -281,6 +498,42 @@ nothing.
 
 ### `findCostedCandidates(context, point): RoadCandidate[]`
 
+Runs `costCandidatesOnGrid` on the `MARGIN_RETRY_STEPS` ladder and returns the first set that is not
+empty. The 20 nearest nodes are used only to seed the grid's extent; which nodes come back is decided
+by cost, not by distance.
+
+The ladder is here for the same reason it is in `findGroundPathWithRetry`, and it was missing: a box
+drawn tightly around a point and its candidate nodes can leave the crossing they need outside it, and
+then the point sits in a different connected component from every candidate, all costs come back
+`Infinity`, and the planner concludes there is no road route at all. `King's Landing → Wickenden` was
+that: Wickenden's nearest road is 159 km away, on the far side of a barrier whose crossing lay outside
+the box, so every road variant vanished and the route went 264 h over open ground where a road-assisted
+one takes 247 h. On the widest step all six candidates are reachable.
+
+Costs from a wide, coarse step are cruder, and that is acceptable: they rank variants and bound the
+search, while the legs themselves are rebuilt by `buildGridRoute` on its own ladder.
+
+### `costCandidatesOnGrid(grid, index, roadNetwork, point, group): RoadCandidate[]`
+
+One Dijkstra from the endpoint, then **every node of the endpoint's road group that falls inside the
+grid**, priced by reading the cost at its cell, sorted by that cost, thinned by spacing, and cut to
+`CANDIDATE_COUNT`.
+
+Pricing all of them rather than a shortlist is the point. The shortlist used to be the 20 nearest nodes
+by straight line, and straight-line nearness is the wrong question when a barrier decides the answer:
+`King's Landing → Wickenden` found its 20 nearest all on one road 159-202 km south of Wickenden, on the
+far side of the Bay of Crabs, with no honest path across at any resolution. The node that route needs
+is on the kingsroad more than 400 km away, past the crossing at the ruby ford - never in the twenty.
+The result was a route that ignored the road entirely and walked 264 h cross-country where the road
+takes it up the kingsroad and cuts east.
+
+Reading the cost at a node's own cell rather than through `placePoint` is what makes this affordable:
+the Dijkstra is already computed, so each of ~3 600 nodes costs an array lookup rather than a
+`classifyCell` call. A node whose own cell is impassable simply reads `Infinity` and drops out.
+
+Every route the harness covers that changed with this got **faster** - `Maidenpool → Saltpans` by 13 h,
+`Eastwatch-by-the-Sea → Oldtown` by 11 h - and none got slower.
+
 Candidate nodes near `point`, each priced by the **real grid cost** of reaching it from `point` rather
 than by straight-line distance:
 
@@ -298,6 +551,9 @@ to hold every candidate of both ends is coarse enough to change reachability —
 sealed off reachable candidates, since the blocked river band scales with cell size.
 
 ### `thinCandidates(roadNetwork, candidates): RoadCandidate[]`
+
+Applied to a **cost-sorted** list in `findCostedCandidates`, so what survives each cluster is its
+cheapest node rather than merely its first.
 
 Keeps the first candidate of each cluster and drops any later one within `CANDIDATE_SPACING` of a kept
 one. Input order is nearest-first, so the kept representative is the nearest of its cluster.
@@ -341,7 +597,7 @@ A* over the 8-connected grid, on flat typed arrays.
 The path returned is the staircase of cell centers — `buildGridRoute` is what turns it into a drawn
 line.
 
-### `computeGridCosts(grid, k, start): Float64Array`
+### `computeGridCosts(grid, k, start, targets = []): Float64Array`
 
 The same edge model with no heuristic and no goal: Dijkstra from `start` to every reachable cell, so
 one run prices every candidate. Unreachable cells keep `Infinity`, which makes this a strictly stronger
@@ -349,6 +605,10 @@ test than comparing connected components — it distinguishes "reachable" from "
 expensive".
 
 Returns an all-`Infinity` array if the start cell itself is impassable.
+
+`targets` stops the search as soon as the last of them is settled — their costs are final by then, and
+the rest of the array is left unfinished. Callers that read only the targets (the port pricing) get the
+same answers for a fraction of the work; callers that pass nothing get the full table as before.
 
 ### `placePoint(point, grid, index, k): CellIndex | null`
 
@@ -378,7 +638,7 @@ nothing and behaves as before; `placeSeaPoint` uses it to require a navigable st
 
 ### `heuristic(point, goal)`
 
-Euclidean distance in coordinate units. Also used directly by `planPlannedRoute` as the straight-line
+Euclidean distance in coordinate units. Also used directly by `planGroundRoute` as the straight-line
 lower bound on any ground route.
 
 ### `buildPathResult(grid, cameFrom, endFlat, cost): PathResult`
@@ -427,8 +687,31 @@ and the next step is tried immediately.
 
 Measured: every real case in the harness resolves at step 1 or 2. Step 3 (40 km per cell for a
 continent-spanning pair) was reached by exactly one case — the false `Castle Black → Dragonstone` — and
-is now unreachable for endpoints on different landmasses. A known residual: on cells that coarse, the
-raster can still shortcut a **bay within one landmass**. Not measured, and no harness case reaches it.
+is now unreachable for endpoints on different landmasses.
+
+The step a path came from is reported as `isCoarse`, because a path from any step but the first has to
+be checked before it is believed - see `staysOnLand`.
+
+### `staysOnLand(path, index): boolean`
+
+Samples the drawn line every `LAND_CHECK_SPACING` (the finest cell the grid builder will make, ~1.7 km)
+and requires every sample to be on land and out of the lakes.
+
+This is the guard on the coarse steps of the ladder, and it exists because they lie. A grid path is a
+chain of cell centers, and every check along the way is spaced by the grid's own cell: at 15.5 km per
+cell, the line between two cells that are genuinely on land can cross 15 km of sea and nothing notices.
+`Oldtown → Sunspear` did exactly that once road candidates became reachable - a 2 158 km leg that no
+finer grid could find at all (its ends are in different components at 1.7 km and at 4 km), crossing
+water at 17 sampled points and hopping the Greenblood 14.8 km from the nearest bridge. Rejecting the
+leg puts the route back on the 739 h line it should have had.
+
+Only paths from a coarse step are checked (`isCoarse`). On the finest grid the smoothing passes already
+sample every half cell, which at that resolution is finer than this check; running it on every leg cost
+20 % of the harness's total time for nothing.
+
+What this does **not** do is make the search itself faithful at coarse resolution. It rejects a bad leg
+rather than finding a good one, so a pair that only the coarsest step can connect now has no ground
+route rather than a wrong one.
 
 ### `measurePathCost(path, grid, k): number`
 
@@ -572,11 +855,25 @@ leg as a whole crossed.
 Coordinate comparison within `JOINT_EPSILON`; polyline length in coordinate units; the same in
 kilometres.
 
-### `toRouteResult(route, speedKmh): RouteResult`
+### `toRouteResult(route, speedKmh, ports?): RouteResult`
 
-`distanceKm` from the drawn path's geometry, `timeHours` from the route's cost. Both describe the same
-line — that is the invariant `checkEffectiveSpeed` enforces, and the reason `distanceKm` is not simply
-derived from `cost`.
+Turns the internal `PlannedRoute` into what the plan carries: the path, the totals, the legs with a
+distance and a time each, and the ports a combined route used.
+
+`timeHours` is the **sum of the legs'** times rather than `cost × KM / speed`, because a combined route
+has no single speed: `getLegTimeHours` prices a `sea` leg at `SpeedKmH.ship` and every other leg at the
+traveller's own. For a route of one mode the two agree exactly, since the legs partition the cost.
+
+`distanceKm` stays geometric, measured on the drawn line — that is what `checkEffectiveSpeed` compares
+against the time, and the reason it is not derived from `cost`.
+
+### `getJointDistanceKm(previous, leg): number`
+
+The gap between the end of one leg and the start of the next, added to the **following** leg's
+distance. The legs partition the route's *points*, but the segment spanning a joint belongs to neither
+leg's path, so without this the legs' distances would fall short of the route's by the sum of those
+segments. Cost is already charged this way by `anchorRoute` — the joint goes to the leg it leads into —
+so distance now matches it.
 
 ---
 
@@ -624,5 +921,7 @@ All enforced by `scripts/routing/check-routing.mjs` against real geodata:
 | A port stub only bridges the gap to navigable water | `checkSeaStubs` |
 | A sea route starts and ends in water or at a port | `checkSeaEndpoints` |
 | `rasterizeSeaGrid` equals `classifySeaCell` per cell | `checkSeaRasterFaithfulness` |
+| A combined route boards and lands at a port of the landmass it leaves or reaches, and names none only where that landmass has none | `checkCombinedPorts` |
+| Each route's legs sum to its own distance and time | `checkLegPartition` |
 | The worker still answers `init` + `plan` | `checkWorkerProtocol` |
 | Route structure, distance, time and point count match the snapshot | `scripts/routing/baseline.json` |

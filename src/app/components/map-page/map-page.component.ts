@@ -685,7 +685,7 @@ export class MapPageComponent {
                 top: 150,
                 left: 20,
                 right: 20,
-                bottom: 280,
+                bottom: 350,
             },
             offset: [0, 0],
         });

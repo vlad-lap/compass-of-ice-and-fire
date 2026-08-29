@@ -1,7 +1,7 @@
 import { FeatureCollection, LineString, MultiLineString, MultiPolygon, Point, Polygon, Position } from 'geojson';
 import { FeatureData } from './location';
 
-export type TravelMode = 'foot' | 'horse' | 'ship' | 'dragon';
+export type TravelMode = 'foot' | 'horse' | 'footShip' | 'horseShip' | 'ship' | 'dragon';
 
 export type RoutePointValue = FeatureData | Position | string;
 
@@ -10,30 +10,46 @@ export interface RouteEndpoints {
     to?: RoutePointValue;
 }
 
+// Where a combined route boards and lands. `null` on a landmass that has no port at all, which the
+// ship may enter anywhere.
+export interface RoutePorts {
+    fromId: string | null;
+    toId: string | null;
+}
+
 export interface RouteResult {
     path: Position[];
     distanceKm: number;
     timeHours: number;
+    legs: RouteLeg[];
+    ports?: RoutePorts;
 }
 
 export type RouteLegKind = 'road' | 'grid' | 'sea';
 
 // The stretches a route is made of. Their paths partition `RouteResult.path` exactly: concatenating
-// them in order reproduces the drawn route, and every point belongs to one leg.
+// them in order reproduces the drawn route, and every point belongs to one leg. `distanceKm` and
+// `timeHours` are the leg's own share of the journey, so the ui can show a breakdown; they sum to the
+// route's totals.
 export interface RouteLeg {
     kind: RouteLegKind;
     path: Position[];
     cost: number;
+    distanceKm: number;
+    timeHours: number;
 }
 
-// `legs` breaks down the ground route only - the one `foot` and `horse` share. The sea route is a
-// separate line over separate terrain, and the dragon flies straight.
+// The routes on offer between two points, each complete in itself. `foot` and `horse` stay on land;
+// `footShip` and `horseShip` walk to a port, sail, and walk on - they are planned separately
+// because the faster traveller can afford a longer walk to a better placed port, so the two can board
+// at different ports. `ship` is water from end to end, and the dragon flies straight.
 export interface RoutePlan {
     foot: RouteResult | null;
     horse: RouteResult | null;
+    footShip: RouteResult | null;
+    horseShip: RouteResult | null;
     ship: RouteResult | null;
     dragon: RouteResult;
-    legs: RouteLeg[];
 }
 
 export type BarrierCrossingKind = 'bridge' | 'location' | 'gate';
@@ -113,6 +129,15 @@ export interface CoastSegment {
 // once per sample of a sea route - does not scan a continent's outline.
 export type Coastline = Map<number, CoastSegment[]>;
 
+// A port, with what the planner needs to choose between ports: the landmass it stands on, and the
+// type that ranks it against the others there.
+export interface IndexedPort {
+    id: string;
+    type: string;
+    point: Position;
+    landmass: number | null;
+}
+
 export interface RoutingIndex {
     land: IndexedLandmass[];
     coastline: Coastline;
@@ -122,7 +147,7 @@ export interface RoutingIndex {
     forests: IndexedArea[];
     lakes: IndexedArea[];
     water: IndexedArea[];
-    ports: Position[];
+    ports: IndexedPort[];
     barriers: IndexedBarrier[];
 }
 

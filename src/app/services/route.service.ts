@@ -1,4 +1,4 @@
-import { computed, effect, Injectable, OnDestroy, signal } from '@angular/core';
+import { computed, effect, Injectable, OnDestroy, signal, untracked } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { Feature, FeatureCollection, MultiPolygon, Polygon, Position } from 'geojson';
 import {
@@ -49,6 +49,17 @@ function buildRoutingGeodata(
         barrierCrossings,
     } as RoutingGeodata;
 }
+
+// Which route to show when the one on screen does not exist for the new pair of points: the first that
+// does, staying as close to what the user had as the plan allows.
+const MODE_FALLBACK_ORDER: TravelMode[] = [
+    'foot',
+    'horse',
+    'ship',
+    'footShip',
+    'horseShip',
+    'dragon',
+];
 
 @Injectable({
     providedIn: 'root',
@@ -116,8 +127,10 @@ export class RouteService implements OnDestroy {
 
         effect(() => {
             const plan = this.plan();
-            if (plan && !plan.foot && !plan.horse) {
-                this.selectedMode.set(plan.ship ? 'ship' : 'dragon');
+            const mode = untracked(this.selectedMode);
+
+            if (plan && !plan[mode]) {
+                this.selectedMode.set(MODE_FALLBACK_ORDER.find(candidate => plan[candidate]) ?? 'dragon');
             }
         });
 

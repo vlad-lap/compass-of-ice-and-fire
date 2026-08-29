@@ -6,6 +6,7 @@ import {
     Coastline,
     CoastSegment,
     Grid,
+    IndexedPort,
     IndexedArea,
     IndexedBarrier,
     IndexedLandmass,
@@ -87,7 +88,12 @@ export function buildRoutingIndex(geodata: RoutingGeodata): RoutingIndex {
         ].map(feature => indexArea(feature, getWaterK(feature))),
         ports: geodata.locations.features
             .filter(feature => feature.properties?.isPort)
-            .map(feature => feature.geometry.coordinates),
+            .map(feature => ({
+                id: feature.properties?.id,
+                type: feature.properties?.type,
+                point: feature.geometry.coordinates,
+                landmass: getLandmass(feature.geometry.coordinates, land),
+            })),
         barriers: [
             ...geodata.rivers.features
                 .filter(feature => BLOCKING_RIVER_SIZES.includes(feature.properties?.size)),
@@ -169,13 +175,13 @@ export function keepsSeaClearance(from: Position, to: Position, index: RoutingIn
 }
 
 export function isSeaEndpoint(point: Position, index: RoutingIndex): boolean {
-    return isPort(point, index.ports) || isNavigable(point, index);
+    return findPort(point, index.ports) !== undefined || isNavigable(point, index);
 }
 
 const PORT_MATCH_DISTANCE = 1e-6;
 
-function isPort(point: Position, ports: Position[]): boolean {
-    return isNearAnyPoint(point, ports, PORT_MATCH_DISTANCE);
+export function findPort(point: Position, ports: IndexedPort[]): IndexedPort | undefined {
+    return ports.find(port => Math.hypot(point[0] - port.point[0], point[1] - port.point[1]) <= PORT_MATCH_DISTANCE);
 }
 
 function getWaterK(feature: Feature<Polygon | MultiPolygon>): number {

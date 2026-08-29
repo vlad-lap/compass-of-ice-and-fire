@@ -73,7 +73,7 @@ export class MapService {
         this.routeCardOpened.set(true);
         this.openCard(
             RouteCardComponent,
-            { height: 225 },
+            { height: 300 },
             () => {
                 this.routeService.routeEnabled.set(false);
                 this.routeCardOpened.set(false);

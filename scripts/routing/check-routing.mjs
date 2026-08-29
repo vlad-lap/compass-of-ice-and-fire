@@ -53,6 +53,12 @@ const CASES = [
     { from: 'King\'s Landing', to: 'Pyke', note: 'an island a short hop off the shore, still unreachable' },
 ];
 
+// A patch of open water in the Narrow Sea, so that a case can begin where a ship already is. It is not
+// a location and must not be treated as one - `casePoints` below carries it, `locations` does not, or
+// every check that asks whether a location is passable would report the sea as broken.
+const OPEN_WATER = 'Open water in the Narrow Sea';
+const OPEN_WATER_POINT = [26, 8];
+
 // Sea cases are kept apart from the ground ones so that the raster-faithfulness sweep, which costs a
 // second per case, keeps its original scope. Every case in both lists is planned in full, so the sea
 // invariants see the ground cases too - King's Landing -> Pentos is a sea route as much as it is a
@@ -65,6 +71,16 @@ const SEA_CASES = [
     { from: 'Eastwatch-by-the-Sea', to: 'Oldtown', note: 'sea: around all of Westeros' },
     { from: 'Braavos', to: 'Pentos', note: 'sea: two ports a short hop apart' },
     { from: 'Winterfell', to: 'Oldtown', note: 'sea: Winterfell is no port, so there is no sea route' },
+];
+
+// Combined cases exist for the port choice, which is the part of a combined route that is a judgement
+// rather than a search. The first two are the pair that fixed the rule: the same traveller, two ports
+// of different type, and the answer turning on how much longer the walk to the better one is.
+const COMBINED_CASES = [
+    { from: 'Ramsgate', to: 'Braavos', note: 'combined: castle and city both close, the city wins' },
+    { from: 'Castle Black', to: 'Braavos', note: 'combined: the castle is far closer, so it wins' },
+    { from: "King's Landing", to: 'Quiet Isle', note: 'combined: an island with no port, entered anywhere' },
+    { from: OPEN_WATER, to: 'Winterfell', note: 'combined: from a ship already at sea to an inland castle' },
 ];
 
 async function bundle(entry, name) {
@@ -216,7 +232,7 @@ function checkPathOnLand(routing, index, results) {
     const offenders = [];
 
     for (const result of results.filter(({ found }) => found)) {
-        for (const leg of result.plan.legs.filter(({ kind }) => kind === 'grid')) {
+        for (const leg of result.plan.foot.legs.filter(({ kind }) => kind === 'grid')) {
             const { hits: onWater, firstOffender } = samplePath(leg.path, LAND_SAMPLE_KM, point =>
                 !routing.isPointInAreas(point, index.land) || routing.isPointInAreas(point, index.lakes));
 
@@ -241,12 +257,12 @@ function checkPathOnLand(routing, index, results) {
 function checkPathOnWater(routing, index, results) {
     const offenders = [];
 
-    for (const result of results.filter(({ shipFound }) => shipFound)) {
-        const { hits, firstOffender } = samplePath(dropStubs(result.plan.ship.path), LAND_SAMPLE_KM, point =>
+    for (const { name, path } of results.flatMap(getSeaSpans)) {
+        const { hits, firstOffender } = samplePath(dropStubs(path), LAND_SAMPLE_KM, point =>
             !routing.isPointInAreas(point, index.water) || routing.isPointInAreas(point, index.land));
 
         if (hits) {
-            offenders.push(`${result.name}: ${hits} sampled points off navigable water, `
+            offenders.push(`${name}: ${hits} sampled points off navigable water, `
                 + `e.g. ${firstOffender.map(v => v.toFixed(3))}`);
         }
     }
@@ -264,15 +280,13 @@ function checkSeaStubs(routing, results) {
     const offenders = [];
     let longest = 0;
 
-    for (const result of results.filter(({ shipFound }) => shipFound)) {
-        const path = result.plan.ship.path;
-        for (const [name, stub] of [[result.name.split(' -> ')[0], path.slice(0, 2)],
-            [result.name.split(' -> ')[1], path.slice(-2)]]) {
+    for (const { name, path } of results.flatMap(getSeaSpans)) {
+        for (const stub of [path.slice(0, 2), path.slice(-2)]) {
             const km = distanceKm(stub[0], stub[1]);
             longest = Math.max(longest, km);
             if (km > limitKm) {
-                offenders.push(`${result.name}: the stub at ${name} is ${km.toFixed(1)} km, `
-                    + `over the ${limitKm.toFixed(1)} km a port entrance may cover`);
+                offenders.push(`${name}: a port entrance is ${km.toFixed(1)} km, `
+                    + `over the ${limitKm.toFixed(1)} km one may cover`);
             }
         }
     }
@@ -282,6 +296,24 @@ function checkSeaStubs(routing, results) {
 
 function dropStubs(path) {
     return path.length > 3 ? path.slice(1, -1) : path;
+}
+
+// Every stretch of water a plan sails, wherever it comes from: the ship route is one sea leg, and a
+// combined route carries one in the middle. Both ends of the span have to be the ports, because that
+// is where the entrances these checks exempt are drawn - and one of them may be missing from the leg's
+// own path. anchorRoute appends points in order and drops a duplicate of the one before, so when a walk
+// precedes the sea leg the port is left in the walk and dropped here; the port at the far end stays,
+// and it is the following walk that loses it.
+function getSeaSpans(result) {
+    return Object.entries(result.plan)
+        .filter(([, route]) => route?.legs?.length)
+        .flatMap(([mode, route]) => route.legs
+            .map((leg, at) => ({ leg, before: route.legs[at - 1] }))
+            .filter(({ leg }) => leg.kind === 'sea')
+            .map(({ leg, before }) => ({
+                name: `${result.name} (${mode})`,
+                path: before?.path.length ? [before.path[before.path.length - 1], ...leg.path] : leg.path,
+            })));
 }
 
 // Rules 9 and 10 as one statement: a ship is as far from land as the water it is crossing allows,
@@ -320,8 +352,8 @@ function checkSeaClearance(routing, index, results) {
     let worst = null;
     let longestApproachKm = 0;
 
-    for (const result of results.filter(({ shipFound }) => shipFound)) {
-        const vertices = dropStubs(result.plan.ship.path);
+    for (const { name, path } of results.flatMap(getSeaSpans)) {
+        const vertices = dropStubs(path);
         const clearances = vertices.map(point => clearanceKm(routing, index, point));
         const open = clearances.map(clearance => clearance >= routing.SEA_CLEARANCE_KM);
         const first = open.indexOf(true);
@@ -334,7 +366,7 @@ function checkSeaClearance(routing, index, results) {
             const km = getPathLengthKm(approach);
             longestApproachKm = Math.max(longestApproachKm, km);
             if (km > MAX_APPROACH_KM) {
-                offenders.push(`${result.name}: ${km.toFixed(0)} km inshore before reaching open water, `
+                offenders.push(`${name}: ${km.toFixed(0)} km inshore before reaching open water, `
                     + `over the ${MAX_APPROACH_KM} km an approach may cover`);
             }
         }
@@ -346,10 +378,10 @@ function checkSeaClearance(routing, index, results) {
 
             const best = bestClearanceAcrossKm(routing, index, vertices, at);
             if (!worst || clearance - best < worst.clearance - worst.best) {
-                worst = { name: result.name, point: vertices[at], clearance, best };
+                worst = { name, point: vertices[at], clearance, best };
             }
             if (clearance < best - allowanceKm) {
-                offenders.push(`${result.name}: ${clearance.toFixed(1)} km off land at `
+                offenders.push(`${name}: ${clearance.toFixed(1)} km off land at `
                     + `${vertices[at].map(v => v.toFixed(3))}, where ${best.toFixed(1)} km was available`);
             }
         }
@@ -373,8 +405,8 @@ function checkSeaSag(routing, index, results) {
     const offenders = [];
     let worst = 0;
 
-    for (const result of results.filter(({ shipFound }) => shipFound)) {
-        const vertices = dropStubs(result.plan.ship.path);
+    for (const { name, path } of results.flatMap(getSeaSpans)) {
+        const vertices = dropStubs(path);
 
         for (let i = 0; i < vertices.length - 1; i++) {
             const owed = Math.min(
@@ -396,7 +428,7 @@ function checkSeaSag(routing, index, results) {
             const sag = owed - along;
             worst = Math.max(worst, sag);
             if (sag > maxSagKm) {
-                offenders.push(`${result.name}: the line from ${vertices[i].map(v => v.toFixed(3))} `
+                offenders.push(`${name}: the line from ${vertices[i].map(v => v.toFixed(3))} `
                     + `comes ${along.toFixed(1)} km from land, ${sag.toFixed(1)} km inside the `
                     + `${owed.toFixed(1)} km its ends were owed`);
             }
@@ -444,6 +476,42 @@ function bestClearanceAcrossKm(routing, index, vertices, at) {
     }
 
     return best;
+}
+
+// Rules 3 and 6: a combined route boards and lands at a port of the landmass it is leaving or reaching,
+// and may name no port only where that landmass has none - in which case it enters wherever it likes.
+function checkCombinedPorts(routing, index, locations, results) {
+    const offenders = [];
+    const portsById = new Map(index.ports.map(port => [port.id, port]));
+
+    for (const result of results) {
+        for (const mode of ['footShip', 'horseShip']) {
+            const route = result.plan[mode];
+            if (!route) {
+                continue;
+            }
+
+            const ends = [
+                { id: route.ports.fromId, point: locations.get(result.name.split(' -> ')[0]) },
+                { id: route.ports.toId, point: locations.get(result.name.split(' -> ')[1]) },
+            ];
+
+            for (const { id, point } of ends) {
+                const landmass = routing.getLandmass(point, index.land);
+                const onLandmass = index.ports.filter(port => port.landmass === landmass);
+
+                if (id === null && onLandmass.length) {
+                    offenders.push(`${result.name} (${mode}): enters open coast although the landmass `
+                        + `has ${onLandmass.length} ports`);
+                } else if (id !== null && portsById.get(id)?.landmass !== landmass) {
+                    offenders.push(`${result.name} (${mode}): uses ${id}, which is not a port of the `
+                        + 'landmass it has to leave or reach');
+                }
+            }
+        }
+    }
+
+    return offenders;
 }
 
 // Rule 1: a sea route may only start and end in water or at a port. Nothing else about the plan can
@@ -507,7 +575,7 @@ function checkDetourGuard(routing, index, locations, results) {
         }
 
         const total = result.legCosts.reduce((sum, cost) => sum + cost, 0);
-        const roadCost = result.plan.legs
+        const roadCost = result.plan.foot.legs
             .filter(leg => leg.kind === 'road')
             .reduce((sum, leg) => sum + leg.cost, 0);
         const allowed = getRoadTimeTolerance(total === 0 ? 0 : roadCost / total);
@@ -544,22 +612,34 @@ function checkLegPartition(results) {
     const offenders = [];
 
     for (const result of results) {
-        if (!result.found) {
-            continue;
-        }
+        for (const [mode, route] of Object.entries(result.plan)) {
+            if (!route || !route.legs?.length) {
+                continue;
+            }
 
-        const joined = result.plan.legs.flatMap(leg => leg.path);
-        const path = result.plan.foot.path;
+            const joined = route.legs.flatMap(leg => leg.path);
+            const path = route.path;
 
-        if (joined.length !== path.length) {
-            offenders.push(`${result.name}: legs hold ${joined.length} points, the path has ${path.length}`);
-            continue;
-        }
+            if (joined.length !== path.length) {
+                offenders.push(`${result.name} (${mode}): legs hold ${joined.length} points, `
+                    + `the path has ${path.length}`);
+                continue;
+            }
 
-        const mismatch = path.findIndex((position, index) =>
-            position[0] !== joined[index][0] || position[1] !== joined[index][1]);
-        if (mismatch !== -1) {
-            offenders.push(`${result.name}: point ${mismatch} differs, path ${path[mismatch]} vs legs ${joined[mismatch]}`);
+            const mismatch = path.findIndex((position, index) =>
+                position[0] !== joined[index][0] || position[1] !== joined[index][1]);
+            if (mismatch !== -1) {
+                offenders.push(`${result.name} (${mode}): point ${mismatch} differs, `
+                    + `path ${path[mismatch]} vs legs ${joined[mismatch]}`);
+            }
+
+            const legTime = route.legs.reduce((sum, leg) => sum + leg.timeHours, 0);
+            const legDistance = route.legs.reduce((sum, leg) => sum + leg.distanceKm, 0);
+            if (Math.abs(legTime - route.timeHours) > 1e-6 || Math.abs(legDistance - route.distanceKm) > 1e-6) {
+                offenders.push(`${result.name} (${mode}): legs sum to ${legDistance.toFixed(1)} km / `
+                    + `${legTime.toFixed(1)} h, the route reports ${route.distanceKm.toFixed(1)} km / `
+                    + `${route.timeHours.toFixed(1)} h`);
+            }
         }
     }
 
@@ -706,11 +786,14 @@ async function checkWorkerProtocol(geodata, roadNetwork, from, to) {
     if (response.requestId !== 2) {
         return { ok: false, reason: `requestId ${response.requestId} instead of 2` };
     }
-    if (!response.plan?.foot || !response.plan.legs?.length) {
+    if (!response.plan?.foot || !response.plan.foot.legs?.length) {
         return { ok: false, reason: 'response has no foot/legs' };
     }
 
-    return { ok: true, reason: `init + plan, legs in response: ${response.plan.legs.length}, requestId passed through` };
+    return {
+        ok: true,
+        reason: `init + plan, legs in response: ${response.plan.foot.legs.length}, requestId passed through`,
+    };
 }
 
 function loadGeodata() {
@@ -761,8 +844,8 @@ function runCase(routing, index, roadNetwork, locations, testCase) {
         name: `${testCase.from} -> ${testCase.to}`,
         note: testCase.note,
         ms,
-        structure: plan.legs.map(leg => leg.kind),
-        legCosts: plan.legs.map(leg => Number(leg.cost.toFixed(4))),
+        structure: (plan.foot?.legs ?? []).map(leg => leg.kind),
+        legCosts: (plan.foot?.legs ?? []).map(leg => Number(leg.cost.toFixed(4))),
         found: plan.foot !== null,
         distanceKm: plan.foot ? Number(plan.foot.distanceKm.toFixed(1)) : null,
         timeHours: plan.foot ? Number(plan.foot.timeHours.toFixed(1)) : null,
@@ -771,6 +854,13 @@ function runCase(routing, index, roadNetwork, locations, testCase) {
         shipDistanceKm: plan.ship ? Number(plan.ship.distanceKm.toFixed(1)) : null,
         shipTimeHours: plan.ship ? Number(plan.ship.timeHours.toFixed(1)) : null,
         shipPathPoints: plan.ship ? plan.ship.path.length : 0,
+        footShipFound: plan.footShip !== null,
+        footShipStructure: (plan.footShip?.legs ?? []).map(leg => leg.kind),
+        footShipPorts: plan.footShip ? `${plan.footShip.ports.fromId ?? 'coast'} -> ${plan.footShip.ports.toId ?? 'coast'}` : null,
+        footShipDistanceKm: plan.footShip ? Number(plan.footShip.distanceKm.toFixed(1)) : null,
+        footShipTimeHours: plan.footShip ? Number(plan.footShip.timeHours.toFixed(1)) : null,
+        horseShipPorts: plan.horseShip ? `${plan.horseShip.ports.fromId ?? 'coast'} -> ${plan.horseShip.ports.toId ?? 'coast'}` : null,
+        horseShipTimeHours: plan.horseShip ? Number(plan.horseShip.timeHours.toFixed(1)) : null,
         dragonKm: Number(plan.dragon.distanceKm.toFixed(1)),
         plan,
     };
@@ -778,11 +868,11 @@ function runCase(routing, index, roadNetwork, locations, testCase) {
 
 // The requirements stated in .claude/routing.md. Any of them that only holds after a later phase is
 // marked with `phase` and counts as known debt until then, rather than as a failure.
-function buildRequirements(locations) {
+function buildRequirements(casePoints) {
     const near = (result, name, thresholdKm) =>
         minDistanceToPathKm(result.plan.foot.path, locations.get(name)) <= thresholdKm;
     const roadLegEndsNear = (result, name, thresholdKm) => {
-        const roadLegs = result.plan.legs.filter(leg => leg.kind === 'road');
+        const roadLegs = result.plan.foot.legs.filter(leg => leg.kind === 'road');
         return roadLegs.some(leg => distanceKm(leg.path[leg.path.length - 1], locations.get(name)) <= thresholdKm
             || distanceKm(leg.path[0], locations.get(name)) <= thresholdKm);
     };
@@ -889,6 +979,38 @@ function buildRequirements(locations) {
             check: result => result.shipFound && result.shipDistanceKm > 3 * result.dragonKm,
         },
         {
+            case: 'Ramsgate -> Braavos',
+            label: 'rule 5: a city port wins when the walk to it is within the band of the nearest',
+            groundRouteOptional: true,
+            check: result => result.footShipPorts === 'city-white-harbor -> city-braavos',
+        },
+        {
+            case: 'Castle Black -> Braavos',
+            label: 'rule 5: the nearest port wins outright when nothing better is near, castle or not',
+            groundRouteOptional: true,
+            check: result => result.footShipPorts === 'castle-eastwatch-by-the-sea -> city-braavos',
+        },
+        {
+            case: "King's Landing -> Quiet Isle",
+            label: 'rule 6: an island with no port is entered anywhere on its coast',
+            groundRouteOptional: true,
+            check: result => result.footShipFound && result.footShipPorts.endsWith('-> coast'),
+        },
+        {
+            case: 'Castle Black -> Dragonstone',
+            label: 'rule 1: no ground route to the island, but a combined one',
+            groundRouteOptional: true,
+            check: result => !result.found && result.footShipFound,
+        },
+        {
+            case: `${OPEN_WATER} -> Winterfell`,
+            label: 'a point in water reaches an inland castle: it boards nothing, it is already aboard',
+            groundRouteOptional: true,
+            check: result => !result.found && !result.shipFound && result.footShipFound
+                && result.footShipPorts === 'coast -> city-white-harbor'
+                && result.footShipStructure[0] === 'sea',
+        },
+        {
             case: 'Meereen -> Volantis',
             label: 'the Smoking Sea is navigable but slow, so the route round it beats sailing through',
             groundRouteOptional: true,
@@ -915,6 +1037,8 @@ function compareToBaseline(results) {
         for (const field of [
             'structure', 'found', 'distanceKm', 'timeHours', 'pathPoints',
             'shipFound', 'shipDistanceKm', 'shipTimeHours', 'shipPathPoints',
+            'footShipFound', 'footShipStructure', 'footShipPorts', 'footShipDistanceKm', 'footShipTimeHours',
+            'horseShipPorts', 'horseShipTimeHours',
         ]) {
             const a = JSON.stringify(before[field]);
             const b = JSON.stringify(result[field]);
@@ -932,9 +1056,13 @@ function writeBaseline(results) {
     for (const result of results) {
         const { name, note, structure, found, distanceKm, timeHours, pathPoints } = result;
         const { shipFound, shipDistanceKm, shipTimeHours, shipPathPoints, dragonKm } = result;
+        const { footShipFound, footShipStructure, footShipPorts, footShipDistanceKm, footShipTimeHours } = result;
+        const { horseShipPorts, horseShipTimeHours } = result;
         cases[name] = {
             note, structure, found, distanceKm, timeHours, pathPoints,
-            shipFound, shipDistanceKm, shipTimeHours, shipPathPoints, dragonKm,
+            shipFound, shipDistanceKm, shipTimeHours, shipPathPoints,
+            footShipFound, footShipStructure, footShipPorts, footShipDistanceKm, footShipTimeHours,
+            horseShipPorts, horseShipTimeHours, dragonKm,
         };
     }
     writeFileSync(BASELINE, `${JSON.stringify({ cases }, null, 4)}\n`);
@@ -950,6 +1078,8 @@ const locations = new Map(
         .map(feature => [feature.properties.name, feature.geometry.coordinates]),
 );
 
+const casePoints = new Map([...locations, [OPEN_WATER, OPEN_WATER_POINT]]);
+
 const routingIndex = routing.buildRoutingIndex(geodata);
 
 // The sea raster covers the whole map at a fixed resolution and is built once per index, exactly as
@@ -959,17 +1089,17 @@ const seaRaster = routing.getSeaRaster(routingIndex);
 console.log(`${getConsolePrefix('routing', 'sea raster')} ${Math.round(performance.now() - seaRasterAt)} ms once, `
     + `${seaRaster.grid.cols}x${seaRaster.grid.rows} cells of ${(seaRaster.grid.cellSize * KM_PER_COORD_UNIT).toFixed(1)} km\n`);
 
-const results = [...CASES, ...SEA_CASES].map(testCase => {
-    const result = runCase(routing, routingIndex, roadNetwork, locations, testCase);
+const results = [...CASES, ...SEA_CASES, ...COMBINED_CASES].map(testCase => {
+    const result = runCase(routing, routingIndex, roadNetwork, casePoints, testCase);
     const summary = result.found
         ? `${String(result.distanceKm).padStart(7)}km ${String(result.timeHours).padStart(6)}h ${String(result.pathPoints).padStart(4)}pts`
         : '                 no route';
-    const ship = result.shipFound
-        ? `${String(result.shipDistanceKm).padStart(7)}km ${String(result.shipTimeHours).padStart(6)}h`
-        : '         no sea route';
+    const viaSea = result.footShipFound
+        ? `${String(result.footShipDistanceKm).padStart(7)}km ${String(result.footShipTimeHours).padStart(6)}h  ${result.footShipPorts}`
+        : '     no route via sea';
     console.log(
         `${getConsolePrefix('routing', result.name.padEnd(30))} ${String(result.ms).padStart(6)}ms ${summary} ` +
-        `|${ship}  [${result.structure.join('+') || '-'}]  ${result.note}`,
+        `|${viaSea}`,
     );
     return result;
 });
@@ -981,7 +1111,7 @@ const byName = new Map(results.map(result => [result.name, result]));
 let failed = 0;
 let deferred = 0;
 
-for (const requirement of buildRequirements(locations)) {
+for (const requirement of buildRequirements(casePoints)) {
     const result = byName.get(requirement.case);
     const ok = result && (requirement.groundRouteOptional || result.found) ? requirement.check(result) : false;
     if (ok) {
@@ -995,7 +1125,7 @@ for (const requirement of buildRequirements(locations)) {
     }
 }
 
-const guardOffenders = checkDetourGuard(routing, routingIndex, locations, results);
+const guardOffenders = checkDetourGuard(routing, routingIndex, casePoints, results);
 if (guardOffenders.length) {
     failed++;
     console.log('  FAIL     road-assisted routes detouring beyond what their road share earns:');
@@ -1099,7 +1229,16 @@ if (stubs.offenders.length) {
     console.log(`  OK       every port stub only bridges the gap to navigable water, longest ${stubs.longest.toFixed(1)} km`);
 }
 
-const badEndpoints = checkSeaEndpoints(routing, routingIndex, locations, results);
+const badPorts = checkCombinedPorts(routing, routingIndex, casePoints, results);
+if (badPorts.length) {
+    failed++;
+    console.log('  FAIL     combined routes boarding or landing where they may not:');
+    badPorts.forEach(offender => console.log(`             ${offender}`));
+} else {
+    console.log('  OK       every combined route boards and lands at a port of the right landmass');
+}
+
+const badEndpoints = checkSeaEndpoints(routing, routingIndex, casePoints, results);
 if (badEndpoints.length) {
     failed++;
     console.log('  FAIL     sea routes starting or ending away from water and from any port:');
@@ -1108,7 +1247,7 @@ if (badEndpoints.length) {
     console.log('  OK       every sea route starts and ends in water or at a port');
 }
 
-const raster = checkRasterFaithfulness(routing, routingIndex, locations);
+const raster = checkRasterFaithfulness(routing, routingIndex, casePoints);
 if (raster.mismatches.length) {
     failed++;
     console.log(`  FAIL     raster != classifyCell: ${raster.mismatches.length}+ mismatches out of ${raster.cells} cells`);
@@ -1117,7 +1256,7 @@ if (raster.mismatches.length) {
     console.log(`  OK       raster == classifyCell on all ${raster.cells} cells of real geodata`);
 }
 
-const seaRasterCheck = checkSeaRasterFaithfulness(routing, routingIndex, locations);
+const seaRasterCheck = checkSeaRasterFaithfulness(routing, routingIndex, casePoints);
 if (seaRasterCheck.mismatches.length) {
     failed++;
     console.log(`  FAIL     sea raster != classifySeaCell: ${seaRasterCheck.mismatches.length}+ mismatches `

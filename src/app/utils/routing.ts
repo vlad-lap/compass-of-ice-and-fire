@@ -2,10 +2,13 @@ import { Position } from 'geojson';
 import {
     CellIndex,
     Grid,
+    IndexedPort,
     PathResult,
     RoadNetwork,
     RouteLeg,
+    RouteLegKind,
     RoutePlan,
+    RoutePorts,
     RouteResult,
     RoutingGeodata,
     RoutingIndex,
@@ -14,6 +17,7 @@ import {
     BBOX_MARGIN_RATIO,
     DEFAULT_CELL_BUDGET,
     MIN_BBOX_MARGIN,
+    MIN_CELL_SIZE,
     getCellCenter,
     getCellIndexAt,
     NEIGHBOR_OFFSETS,
@@ -28,6 +32,7 @@ import {
     IMPASSABLE,
     TerrainK,
     isPointInAreas,
+    isNavigable,
     isSeaEndpoint,
     keepsSeaClearance,
     labelComponents,
@@ -154,7 +159,12 @@ export function findPath(
     return null;
 }
 
-export function computeGridCosts(grid: Grid, k: Float64Array, start: CellIndex): Float64Array {
+export function computeGridCosts(
+    grid: Grid,
+    k: Float64Array,
+    start: CellIndex,
+    targets: CellIndex[] = [],
+): Float64Array {
     const cells = grid.cols * grid.rows;
     const gScore = new Float64Array(cells).fill(Infinity);
     const visited = new Uint8Array(cells);
@@ -164,6 +174,7 @@ export function computeGridCosts(grid: Grid, k: Float64Array, start: CellIndex):
         return gScore;
     }
 
+    const pending = new Set(targets.map(target => toFlatIndex(grid, target.col, target.row)));
     gScore[startFlat] = 0;
     const open = new NumericMinHeap();
     open.push(0, startFlat);
@@ -174,6 +185,10 @@ export function computeGridCosts(grid: Grid, k: Float64Array, start: CellIndex):
             continue;
         }
         visited[currentFlat] = 1;
+
+        if (targets.length && pending.delete(currentFlat) && !pending.size) {
+            return gScore;
+        }
 
         const col = currentFlat % grid.cols;
         const row = Math.floor(currentFlat / grid.cols);
@@ -297,6 +312,7 @@ export function calculateDragonRoute(from: Position, to: Position): RouteResult 
         path: [from, to],
         distanceKm,
         timeHours: distanceKm / SpeedKmH.dragon,
+        legs: [],
     };
 }
 
@@ -319,17 +335,20 @@ export function planRoutesWithIndex(
 ): RoutePlan {
     const groundRoute = planGroundRoute(from, to, index, roadNetwork);
     const seaRoute = planSeaRoute(from, to, index);
+    const viaSea = planCombinedRoutes(from, to, index, roadNetwork, groundRoute);
 
     return {
         foot: groundRoute ? toRouteResult(groundRoute, SpeedKmH.foot) : null,
         horse: groundRoute ? toRouteResult(groundRoute, SpeedKmH.horse) : null,
+        footShip: viaSea.foot,
+        horseShip: viaSea.horse,
         ship: seaRoute ? toRouteResult(seaRoute, SpeedKmH.ship) : null,
         dragon: calculateDragonRoute(from, to),
-        legs: groundRoute ? groundRoute.legs : [],
     };
 }
 
 export const SEA_CELL_SIZE = 0.1;
+export const SEA_ESTIMATE_CELL_SIZE = 0.3;
 
 export interface SeaRaster {
     grid: Grid;
@@ -338,10 +357,15 @@ export interface SeaRaster {
     labels: Int32Array;
 }
 
-const seaRasters = new WeakMap<RoutingIndex, SeaRaster>();
+const seaRasters = new WeakMap<RoutingIndex, Map<number, SeaRaster>>();
 
-export function getSeaRaster(index: RoutingIndex): SeaRaster {
-    const cached = seaRasters.get(index);
+export function getSeaRaster(index: RoutingIndex, cellSize = SEA_CELL_SIZE): SeaRaster {
+    if (!seaRasters.has(index)) {
+        seaRasters.set(index, new Map());
+    }
+
+    const byCellSize = seaRasters.get(index);
+    const cached = byCellSize.get(cellSize);
     if (cached) {
         return cached;
     }
@@ -349,23 +373,37 @@ export function getSeaRaster(index: RoutingIndex): SeaRaster {
     const grid: Grid = {
         minLng: MapBounds.West,
         minLat: MapBounds.South,
-        cellSize: SEA_CELL_SIZE,
-        cols: Math.ceil((MapBounds.East - MapBounds.West) / SEA_CELL_SIZE),
-        rows: Math.ceil((MapBounds.North - MapBounds.South) / SEA_CELL_SIZE),
+        cellSize,
+        cols: Math.ceil((MapBounds.East - MapBounds.West) / cellSize),
+        rows: Math.ceil((MapBounds.North - MapBounds.South) / cellSize),
     };
     const { k, costK } = rasterizeSeaGrid(grid, index);
     const raster: SeaRaster = { grid, k, costK, labels: labelComponents(grid, k) };
 
-    seaRasters.set(index, raster);
+    byCellSize.set(cellSize, raster);
 
     return raster;
 }
 
-function planSeaRoute(from: Position, to: Position, index: RoutingIndex): PlannedRoute | null {
-    if (!isSeaEndpoint(from, index) || !isSeaEndpoint(to, index)) {
+function estimateSeaCost(from: Position, to: Position, index: RoutingIndex): number | null {
+    const { grid, costK, labels } = getSeaRaster(index, SEA_ESTIMATE_CELL_SIZE);
+    const placedFrom = placeSeaPoint(from, grid, costK, index);
+    const placedTo = placeSeaPoint(to, grid, costK, index);
+    if (!placedFrom || !placedTo) {
+        return null;
+    }
+    if (getCellLabel(grid, labels, placedFrom) !== getCellLabel(grid, labels, placedTo)) {
         return null;
     }
 
+    return findPath(grid, costK, placedFrom, placedTo)?.cost ?? null;
+}
+
+function planSeaRoute(from: Position, to: Position, index: RoutingIndex): PlannedRoute | null {
+    return isSeaEndpoint(from, index) && isSeaEndpoint(to, index) ? buildSeaRoute(from, to, index) : null;
+}
+
+function buildSeaRoute(from: Position, to: Position, index: RoutingIndex): PlannedRoute | null {
     const { grid, k, costK, labels } = getSeaRaster(index);
     const placedFrom = placeSeaPoint(from, grid, k, index);
     const placedTo = placeSeaPoint(to, grid, k, index);
@@ -453,10 +491,464 @@ function createPlanContext(index: RoutingIndex, roadNetwork: RoadNetwork): PlanC
     };
 }
 
+interface PlannedLeg {
+    kind: RouteLegKind;
+    path: Position[];
+    cost: number;
+}
+
 interface PlannedRoute {
     path: Position[];
     cost: number;
-    legs: RouteLeg[];
+    legs: PlannedLeg[];
+}
+
+
+export const PORT_APPROACH_BAND = 1.5;
+export const PORT_PRIORITY_TIME_CAP = 2;
+
+const PORT_TYPE_PRIORITY = ['city', 'settlement', 'castle', 'ruin'];
+const LANDING_CANDIDATE_COUNT = 6;
+const PORT_VERIFY_COUNT = 3;
+const PORT_PRICING_CELL_BUDGET = 40_000;
+const LANDING_SPACING = 0.5;
+const LANDING_INSET = MIN_CELL_SIZE;
+
+interface EmbarkationPoint {
+    port: IndexedPort | null;
+    point: Position;
+}
+
+interface Embarkation extends EmbarkationPoint {
+    cost: number;
+    eligible: boolean;
+}
+
+interface CombinedRoutes {
+    foot: RouteResult | null;
+    horse: RouteResult | null;
+}
+
+function planCombinedRoutes(
+    from: Position,
+    to: Position,
+    index: RoutingIndex,
+    roadNetwork: RoadNetwork | null,
+    groundRoute: PlannedRoute | null,
+): CombinedRoutes {
+    if (isNavigable(from, index) && isNavigable(to, index)) {
+        return { foot: null, horse: null };
+    }
+
+    const departurePoints = findEmbarkationPoints(from, to, index);
+    const arrivalPoints = findEmbarkationPoints(to, from, index);
+    const isWorthSailing = (speedKmh: number) => !groundRoute
+        || getBestCombinedBound(from, to, departurePoints, arrivalPoints, speedKmh)
+            < getCostTimeHours(groundRoute.cost, speedKmh);
+
+    if (!departurePoints.length || !arrivalPoints.length
+        || (!isWorthSailing(SpeedKmH.foot) && !isWorthSailing(SpeedKmH.horse))) {
+        return { foot: null, horse: null };
+    }
+
+    const departures = priceEmbarkations(from, departurePoints, index);
+    const arrivals = priceEmbarkations(to, arrivalPoints, index);
+    const context = {
+        index,
+        roadNetwork,
+        seaRoutes: new Map<string, PlannedRoute | null>(),
+        seaEstimates: new Map<string, number | null>(),
+        groundRoutes: new Map<string, PlannedRoute | null>(),
+    };
+
+    return {
+        foot: isWorthSailing(SpeedKmH.foot)
+            ? pickCombinedRoute(from, to, departures, arrivals, context, SpeedKmH.foot)
+            : null,
+        horse: isWorthSailing(SpeedKmH.horse)
+            ? pickCombinedRoute(from, to, departures, arrivals, context, SpeedKmH.horse)
+            : null,
+    };
+}
+
+function getBestCombinedBound(
+    from: Position,
+    to: Position,
+    departures: EmbarkationPoint[],
+    arrivals: EmbarkationPoint[],
+    speedKmh: number,
+): number {
+    let best = Infinity;
+
+    for (const departure of departures) {
+        const toPort = getStraightTimeHours(from, departure.point, speedKmh);
+        for (const arrival of arrivals) {
+            if (isSamePosition(departure.point, arrival.point)) {
+                continue;
+            }
+            best = Math.min(best, toPort
+                + getStraightTimeHours(departure.point, arrival.point, SpeedKmH.ship)
+                + getStraightTimeHours(arrival.point, to, speedKmh));
+        }
+    }
+
+    return best;
+}
+
+interface CombinedContext {
+    index: RoutingIndex;
+    roadNetwork: RoadNetwork | null;
+    seaRoutes: Map<string, PlannedRoute | null>;
+    seaEstimates: Map<string, number | null>;
+    groundRoutes: Map<string, PlannedRoute | null>;
+}
+
+function pickCombinedRoute(
+    from: Position,
+    to: Position,
+    departures: Embarkation[],
+    arrivals: Embarkation[],
+    context: CombinedContext,
+    speedKmh: number,
+): RouteResult | null {
+    const variants: { departure: Embarkation; arrival: Embarkation; bound: number }[] = [];
+
+    for (const departure of departures) {
+        for (const arrival of arrivals) {
+            if (isSamePosition(departure.point, arrival.point)) {
+                continue;
+            }
+            variants.push({
+                departure,
+                arrival,
+                bound: getCostTimeHours(departure.cost, speedKmh)
+                    + getStraightTimeHours(departure.point, arrival.point, SpeedKmH.ship)
+                    + getCostTimeHours(arrival.cost, speedKmh),
+            });
+        }
+    }
+    variants.sort((a, b) => a.bound - b.bound);
+
+    const ranked: { variant: (typeof variants)[number]; estimate: number }[] = [];
+    let best = Infinity;
+    let bestEligible = Infinity;
+
+    for (const variant of variants) {
+        if (variant.bound >= bestEligible) {
+            break;
+        }
+
+        const sea = getCachedSeaEstimate(variant.departure.point, variant.arrival.point, context);
+        if (sea === null) {
+            continue;
+        }
+
+        const estimate = getCostTimeHours(variant.departure.cost, speedKmh)
+            + getCostTimeHours(sea, SpeedKmH.ship)
+            + getCostTimeHours(variant.arrival.cost, speedKmh);
+
+        ranked.push({ variant, estimate });
+        best = Math.min(best, estimate);
+        if (variant.departure.eligible && variant.arrival.eligible) {
+            bestEligible = Math.min(bestEligible, estimate);
+        }
+    }
+
+    return pickVerifiedVariant(from, to, ranked, context, speedKmh);
+}
+
+interface VerifiedVariant {
+    departure: Embarkation;
+    arrival: Embarkation;
+    time: number;
+}
+
+function pickVerifiedVariant(
+    from: Position,
+    to: Position,
+    ranked: { variant: { departure: Embarkation; arrival: Embarkation }; estimate: number }[],
+    context: CombinedContext,
+    speedKmh: number,
+): RouteResult | null {
+    const byEstimate = ranked.sort((a, b) => a.estimate - b.estimate);
+    const worthVerifying = byEstimate[0] ? byEstimate[0].estimate * PORT_PRIORITY_TIME_CAP : 0;
+    const verified = byEstimate
+        .slice(0, PORT_VERIFY_COUNT)
+        .filter(({ estimate }) => estimate <= worthVerifying)
+        .map(({ variant }) => verifyVariant(from, to, variant, context, speedKmh))
+        .filter((variant): variant is VerifiedVariant => variant !== null);
+
+    const fastest = pickFastest(verified);
+    const preferred = pickFastest(verified.filter(({ departure, arrival }) => departure.eligible && arrival.eligible));
+    const chosen = preferred && fastest && preferred.time <= fastest.time * PORT_PRIORITY_TIME_CAP
+        ? preferred
+        : fastest;
+
+    return chosen ? buildCombinedRoute(from, to, chosen.departure, chosen.arrival, context, speedKmh) : null;
+}
+
+function verifyVariant(
+    from: Position,
+    to: Position,
+    variant: { departure: Embarkation; arrival: Embarkation },
+    context: CombinedContext,
+    speedKmh: number,
+): VerifiedVariant | null {
+    const approach = getCachedGroundRoute(from, variant.departure.point, context);
+    const exit = getCachedGroundRoute(variant.arrival.point, to, context);
+    const sea = getCachedSeaEstimate(variant.departure.point, variant.arrival.point, context);
+
+    if (sea === null
+        || (!approach && !isSamePosition(from, variant.departure.point))
+        || (!exit && !isSamePosition(variant.arrival.point, to))) {
+        return null;
+    }
+
+    return {
+        ...variant,
+        time: getCostTimeHours(approach?.cost ?? 0, speedKmh)
+            + getCostTimeHours(sea, SpeedKmH.ship)
+            + getCostTimeHours(exit?.cost ?? 0, speedKmh),
+    };
+}
+
+function pickFastest(variants: VerifiedVariant[]): VerifiedVariant | null {
+    return variants.reduce(
+        (winner, variant) => !winner || variant.time < winner.time ? variant : winner,
+        null as VerifiedVariant | null,
+    );
+}
+
+function buildCombinedRoute(
+    from: Position,
+    to: Position,
+    departure: Embarkation,
+    arrival: Embarkation,
+    context: CombinedContext,
+    speedKmh: number,
+): RouteResult | null {
+    const approach = getCachedGroundRoute(from, departure.point, context);
+    const exit = getCachedGroundRoute(arrival.point, to, context);
+    const sea = getCachedSeaRoute(departure.point, arrival.point, context);
+    if (approach === null && !isSamePosition(from, departure.point)) {
+        return null;
+    }
+    if (exit === null && !isSamePosition(arrival.point, to)) {
+        return null;
+    }
+    if (!sea) {
+        return null;
+    }
+
+    const route = anchorRoute(combineRoutes(approach, sea, exit), from, to);
+
+    return route
+        ? toRouteResult(route, speedKmh, {
+            fromId: departure.port?.id ?? null,
+            toId: arrival.port?.id ?? null,
+        })
+        : null;
+}
+
+function getCachedSeaRoute(from: Position, to: Position, context: CombinedContext): PlannedRoute | null {
+    return getCachedRoute(from, to, context.seaRoutes, () => buildSeaRoute(from, to, context.index));
+}
+
+function getCachedSeaEstimate(from: Position, to: Position, context: CombinedContext): number | null {
+    const key = `${from[0]},${from[1]}|${to[0]},${to[1]}`;
+    if (!context.seaEstimates.has(key)) {
+        context.seaEstimates.set(key, estimateSeaCost(from, to, context.index));
+    }
+
+    return context.seaEstimates.get(key);
+}
+
+function getCachedGroundRoute(from: Position, to: Position, context: CombinedContext): PlannedRoute | null {
+    return isSamePosition(from, to)
+        ? null
+        : getCachedRoute(from, to, context.groundRoutes,
+            () => planGroundRoute(from, to, context.index, context.roadNetwork));
+}
+
+function getCachedRoute(
+    from: Position,
+    to: Position,
+    cache: Map<string, PlannedRoute | null>,
+    build: () => PlannedRoute | null,
+): PlannedRoute | null {
+    const key = `${from[0]},${from[1]}|${to[0]},${to[1]}`;
+    if (!cache.has(key)) {
+        cache.set(key, build());
+    }
+
+    return cache.get(key);
+}
+
+function findEmbarkationPoints(
+    endpoint: Position,
+    other: Position,
+    index: RoutingIndex,
+): EmbarkationPoint[] {
+    if (isNavigable(endpoint, index)) {
+        return [{ port: null, point: endpoint }];
+    }
+
+    const landmass = getLandmass(endpoint, index.land);
+    if (landmass === null) {
+        return [];
+    }
+
+    const ports = index.ports.filter(port => port.landmass === landmass);
+
+    return ports.length
+        ? ports.map(port => ({ port, point: port.point }))
+        : takeNearestLandings(findLandingPoints(landmass, index), endpoint, other);
+}
+
+function priceEmbarkations(
+    endpoint: Position,
+    candidates: EmbarkationPoint[],
+    index: RoutingIndex,
+): Embarkation[] {
+    if (candidates.every(candidate => isSamePosition(endpoint, candidate.point))) {
+        return markPreferredEmbarkations(candidates.map(candidate => ({ ...candidate, cost: 0, eligible: true })));
+    }
+
+    const points = [endpoint, ...candidates.map(candidate => candidate.point)];
+    const lngs = points.map(([lng]) => lng);
+    const lats = points.map(([, lat]) => lat);
+    const grid = buildGrid(
+        [Math.min(...lngs), Math.min(...lats)],
+        [Math.max(...lngs), Math.max(...lats)],
+        PORT_PRICING_CELL_BUDGET,
+    );
+
+    const k = rasterizeGrid(grid, index);
+    const placedEndpoint = placePassablePoint(endpoint, grid, index, k);
+    if (!placedEndpoint) {
+        return [];
+    }
+
+    const placed = candidates.map(candidate => placePassablePoint(candidate.point, grid, index, k));
+    const costs = computeGridCosts(grid, k, placedEndpoint, placed.filter(cell => cell !== null));
+
+    const priced = candidates
+        .map((candidate, at) => {
+            if (isSamePosition(endpoint, candidate.point)) {
+                return { ...candidate, cost: 0, eligible: true };
+            }
+
+            const cell = placed[at];
+            const cost = cell ? costs[toFlatIndex(grid, cell.col, cell.row)] : Infinity;
+
+            return isFinite(cost) ? { ...candidate, cost, eligible: true } : null;
+        })
+        .filter((embarkation): embarkation is Embarkation => embarkation !== null);
+
+    return markPreferredEmbarkations(priced);
+}
+
+function takeNearestLandings(
+    landings: Position[],
+    endpoint: Position,
+    other: Position,
+): EmbarkationPoint[] {
+    return [...landings]
+        .sort((a, b) => getJourneyBound(endpoint, a, other) - getJourneyBound(endpoint, b, other))
+        .slice(0, LANDING_CANDIDATE_COUNT)
+        .map(point => ({ port: null, point }));
+}
+
+function getJourneyBound(endpoint: Position, candidate: Position, other: Position): number {
+    return getStraightTimeHours(endpoint, candidate, SpeedKmH.horse)
+        + getStraightTimeHours(candidate, other, SpeedKmH.ship);
+}
+
+function markPreferredEmbarkations(candidates: Embarkation[]): Embarkation[] {
+    if (!candidates.length) {
+        return candidates;
+    }
+
+    const nearest = Math.min(...candidates.map(candidate => candidate.cost));
+    const band = candidates.filter(candidate => candidate.cost <= nearest * PORT_APPROACH_BAND);
+    const bestRank = Math.min(...band.map(candidate => getPortRank(candidate.port)));
+
+    return candidates.map(candidate => ({
+        ...candidate,
+        eligible: candidate.cost > nearest * PORT_APPROACH_BAND || getPortRank(candidate.port) === bestRank,
+    }));
+}
+
+function getPortRank(port: IndexedPort | null): number {
+    const rank = port ? PORT_TYPE_PRIORITY.indexOf(port.type) : -1;
+
+    return rank === -1 ? PORT_TYPE_PRIORITY.length : rank;
+}
+
+function findLandingPoints(landmass: number, index: RoutingIndex): Position[] {
+    const points: Position[] = [];
+
+    for (const area of index.land.filter(candidate => candidate.landmass === landmass)) {
+        for (const [outerRing] of getAreaRings(area)) {
+            const inward = getRingOrientation(outerRing);
+
+            for (let i = 0; i < outerRing.length - 1; i++) {
+                const inset = getInsetPoint(outerRing[i], outerRing[i + 1], inward);
+                const isSpaced = points.every(kept => heuristic(kept, inset) > LANDING_SPACING);
+
+                if (isSpaced && getLandmass(inset, index.land) === landmass) {
+                    points.push(inset);
+                }
+            }
+        }
+    }
+
+    return points;
+}
+
+function getAreaRings(area: { geometry: { type: string; coordinates: unknown } }): Position[][][] {
+    return area.geometry.type === 'Polygon'
+        ? [area.geometry.coordinates as Position[][]]
+        : (area.geometry.coordinates as Position[][][]);
+}
+
+function getRingOrientation(ring: Position[]): number {
+    let area = 0;
+    for (let i = 0; i < ring.length - 1; i++) {
+        area += ring[i][0] * ring[i + 1][1] - ring[i + 1][0] * ring[i][1];
+    }
+
+    return area >= 0 ? 1 : -1;
+}
+
+function getInsetPoint(from: Position, to: Position, inward: number): Position {
+    const length = heuristic(from, to) || 1;
+    const normal = [-(to[1] - from[1]) / length, (to[0] - from[0]) / length];
+
+    return [
+        (from[0] + to[0]) / 2 + inward * normal[0] * LANDING_INSET,
+        (from[1] + to[1]) / 2 + inward * normal[1] * LANDING_INSET,
+    ];
+}
+
+function placePassablePoint(
+    point: Position,
+    grid: Grid,
+    index: RoutingIndex,
+    k: Float64Array,
+): CellIndex | null {
+    const cell = placePoint(point, grid, index, k);
+    if (!cell) {
+        return null;
+    }
+
+    return k[toFlatIndex(grid, cell.col, cell.row)] === IMPASSABLE
+        ? findNearestPassableCell(grid, k, cell)
+        : cell;
+}
+
+function getCostTimeHours(cost: number, speedKmh: number): number {
+    return (cost * KM_PER_COORD_UNIT) / speedKmh;
 }
 
 function planGroundRoute(
@@ -671,10 +1163,7 @@ function findCostedCandidates(context: PlanContext, point: Position): RoadCandid
         return [];
     }
 
-    const nearest = thinCandidates(
-        roadNetwork,
-        findNearestNodesInGroup(roadNetwork, anchor.group, point, CANDIDATE_COUNT),
-    );
+    const nearest = findNearestNodesInGroup(roadNetwork, anchor.group, point, CANDIDATE_COUNT);
     if (!nearest.length) {
         return [];
     }
@@ -682,11 +1171,30 @@ function findCostedCandidates(context: PlanContext, point: Position): RoadCandid
     const points = [point, ...nearest.map(candidate => roadNetwork.nodes[candidate.node])];
     const lngs = points.map(([lng]) => lng);
     const lats = points.map(([, lat]) => lat);
-    const grid = buildGrid(
+    const corners: [Position, Position] = [
         [Math.min(...lngs), Math.min(...lats)],
         [Math.max(...lngs), Math.max(...lats)],
-    );
+    ];
 
+    for (const { marginRatio, minMargin, cellBudget } of MARGIN_RETRY_STEPS) {
+        const grid = buildGrid(corners[0], corners[1], cellBudget, marginRatio, minMargin);
+        const costed = costCandidatesOnGrid(grid, index, roadNetwork, point, anchor.group);
+
+        if (costed.length) {
+            return costed;
+        }
+    }
+
+    return [];
+}
+
+function costCandidatesOnGrid(
+    grid: Grid,
+    index: RoutingIndex,
+    roadNetwork: RoadNetwork,
+    point: Position,
+    group: number,
+): RoadCandidate[] {
     const k = rasterizeGrid(grid, index);
     const placedPoint = placePoint(point, grid, index, k);
     if (!placedPoint) {
@@ -694,17 +1202,23 @@ function findCostedCandidates(context: PlanContext, point: Position): RoadCandid
     }
 
     const costs = computeGridCosts(grid, k, placedPoint);
+    const reachable: RoadCandidate[] = [];
 
-    return nearest
-        .map(candidate => {
-            const placed = placePoint(roadNetwork.nodes[candidate.node], grid, index, k);
-            if (!placed) {
-                return null;
-            }
-            const cost = costs[toFlatIndex(grid, placed.col, placed.row)];
-            return isFinite(cost) ? { node: candidate.node, distance: cost } : null;
-        })
-        .filter((candidate): candidate is RoadCandidate => candidate !== null);
+    roadNetwork.nodes.forEach((position, node) => {
+        if (roadNetwork.nodeGroups[node] !== group) {
+            return;
+        }
+
+        const cell = getCellIndexAt(grid, position);
+        const cost = cell ? costs[toFlatIndex(grid, cell.col, cell.row)] : Infinity;
+
+        if (isFinite(cost)) {
+            reachable.push({ node, distance: cost });
+        }
+    });
+
+    return thinCandidates(roadNetwork, reachable.sort((a, b) => a.distance - b.distance))
+        .slice(0, CANDIDATE_COUNT);
 }
 
 function thinCandidates(roadNetwork: RoadNetwork, candidates: RoadCandidate[]): RoadCandidate[] {
@@ -764,10 +1278,10 @@ function anchorRoute(route: PlannedRoute | null, from: Position, to: Position): 
         return null;
     }
 
-    const legs: RouteLeg[] = route.legs.map(leg => ({ ...leg, path: [] }));
+    const legs: PlannedLeg[] = route.legs.map(leg => ({ ...leg, path: [] }));
     const path: Position[] = [];
 
-    const append = (position: Position, leg: RouteLeg | undefined) => {
+    const append = (position: Position, leg: PlannedLeg | undefined) => {
         if (path.length > 0 && isSamePosition(path[path.length - 1], position)) {
             return;
         }
@@ -795,7 +1309,7 @@ function anchorRoute(route: PlannedRoute | null, from: Position, to: Position): 
     return { path, cost: legs.reduce((total, leg) => total + leg.cost, 0), legs };
 }
 
-function chargeLength(length: number, leg: RouteLeg): number {
+function chargeLength(length: number, leg: PlannedLeg): number {
     if (length <= 0) {
         return 0;
     }
@@ -838,7 +1352,7 @@ function roadSegmentRoute(roadPath: RoadNetworkPath): PlannedRoute {
 }
 
 function buildGridRoute(gridFrom: Position, gridTo: Position, index: RoutingIndex): PlannedRoute | null {
-    const { groundPath, grid, k } = findGroundPathWithRetry(gridFrom, gridTo, index);
+    const { groundPath, grid, k, isCoarse } = findGroundPathWithRetry(gridFrom, gridTo, index);
     if (!groundPath) {
         return null;
     }
@@ -849,6 +1363,10 @@ function buildGridRoute(gridFrom: Position, gridTo: Position, index: RoutingInde
         getGroundClearance(index, grid.cellSize),
     );
     const smoothedGridPath = pullTautPath(simplifiedPath, getGroundPassability(index, grid.cellSize));
+    if (isCoarse && !staysOnLand(smoothedGridPath, index)) {
+        return null;
+    }
+
     const cost = measurePathCost(smoothedGridPath, grid, k);
 
     return {
@@ -856,6 +1374,28 @@ function buildGridRoute(gridFrom: Position, gridTo: Position, index: RoutingInde
         cost,
         legs: [{ kind: 'grid', path: smoothedGridPath, cost }],
     };
+}
+
+const LAND_CHECK_SPACING = MIN_CELL_SIZE;
+
+function staysOnLand(path: Position[], index: RoutingIndex): boolean {
+    for (let i = 0; i < path.length - 1; i++) {
+        const steps = Math.ceil(heuristic(path[i], path[i + 1]) / LAND_CHECK_SPACING);
+
+        for (let step = 0; step <= steps; step++) {
+            const t = step / steps;
+            const point: Position = [
+                path[i][0] + (path[i + 1][0] - path[i][0]) * t,
+                path[i][1] + (path[i + 1][1] - path[i][1]) * t,
+            ];
+
+            if (!isPointInAreas(point, index.land) || isPointInAreas(point, index.lakes)) {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 const COST_SAMPLE_FACTOR = 0.5;
@@ -891,11 +1431,11 @@ function findGroundPathWithRetry(
     from: Position,
     to: Position,
     index: RoutingIndex,
-): { groundPath: PathResult | null; grid: Grid; k: Float64Array } {
+): { groundPath: PathResult | null; grid: Grid; k: Float64Array; isCoarse: boolean } {
     let grid: Grid;
     let k: Float64Array;
 
-    for (const { marginRatio, minMargin, cellBudget } of MARGIN_RETRY_STEPS) {
+    for (const [step, { marginRatio, minMargin, cellBudget }] of MARGIN_RETRY_STEPS.entries()) {
         grid = buildGrid(from, to, cellBudget, marginRatio, minMargin);
         k = rasterizeGrid(grid, index);
         const placedFrom = placePoint(from, grid, index, k);
@@ -912,23 +1452,45 @@ function findGroundPathWithRetry(
 
         const groundPath = findPath(grid, k, placedFrom, placedTo);
         if (groundPath) {
-            return { groundPath, grid, k };
+            return { groundPath, grid, k, isCoarse: step > 0 };
         }
     }
 
-    return { groundPath: null, grid, k };
+    return { groundPath: null, grid, k, isCoarse: false };
 }
 
 function getCellLabel(grid: Grid, labels: Int32Array, { col, row }: CellIndex): number {
     return labels[toFlatIndex(grid, col, row)];
 }
 
-function toRouteResult(route: PlannedRoute, speedKmh: number): RouteResult {
+function toRouteResult(route: PlannedRoute, speedKmh: number, ports?: RoutePorts): RouteResult {
+    const legs: RouteLeg[] = route.legs.map((leg, index) => ({
+        ...leg,
+        distanceKm: getPathDistanceKm(leg.path) + getJointDistanceKm(route.legs[index - 1], leg),
+        timeHours: getLegTimeHours(leg, speedKmh),
+    }));
+
     return {
         path: route.path,
         distanceKm: getPathDistanceKm(route.path),
-        timeHours: (route.cost * KM_PER_COORD_UNIT) / speedKmh,
+        timeHours: legs.reduce((total, leg) => total + leg.timeHours, 0),
+        legs,
+        ports,
     };
+}
+
+function getJointDistanceKm(previous: PlannedLeg | undefined, leg: PlannedLeg): number {
+    return previous?.path.length && leg.path.length
+        ? getPathDistanceKm([previous.path[previous.path.length - 1], leg.path[0]])
+        : 0;
+}
+
+function getLegTimeHours(leg: PlannedLeg, speedKmh: number): number {
+    return (leg.cost * KM_PER_COORD_UNIT) / (leg.kind === 'sea' ? SpeedKmH.ship : speedKmh);
+}
+
+function getStraightTimeHours(from: Position, to: Position, speedKmh: number): number {
+    return (heuristic(from, to) * KM_PER_COORD_UNIT) / speedKmh;
 }
 
 function getPathDistanceKm(path: Position[]): number {

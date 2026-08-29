@@ -15,10 +15,7 @@ export interface UiConfig<T> {
     details: T;
     km: T;
     route: T;
-    routeNotFound: T;
-    foot: T;
-    horse: T;
-    dragon: T;
+    selectB: T;
     placeFrom: T;
     placeTo: T;
     clearRoute: T;
