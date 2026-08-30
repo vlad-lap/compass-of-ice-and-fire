@@ -333,9 +333,14 @@ function getSeaSpans(result) {
 //
 // Leaving and entering a port is the one stretch the rule excuses, and no cross-section can excuse it:
 // a ship on its way out of a sound is inshore because it has not got out yet, not because it chose to
-// be. The approach is read off the route - everything before the first vertex in open water, and
-// everything after the last - and bounded in length, or "still on the way out" would excuse sailing
-// down an entire coast.
+// be. The approach is read off the route - everything before the ship is at sea, and everything after
+// it is no longer - and bounded in length, or "still on the way out" would excuse sailing down an
+// entire coast.
+//
+// "At sea" is the clearance the search aims for, not the rule itself. Those were nearly the same while
+// the rule was 10 km, and the difference matters as soon as it is lowered: leaving Braavos threads an
+// archipelago at 3-5 km, and one incidentally wide spot at 9 km would end the approach half way out,
+// leaving the rest of the lagoon to be judged as though the ship had chosen to be there.
 //
 // Judged at the vertices, which is where the route makes its decisions: a vertex is a cell center, and
 // its clearance is exactly what the search charged for. Between two vertices the drawn line cuts the
@@ -354,8 +359,9 @@ function checkSeaClearance(routing, index, results) {
 
     for (const { name, path } of results.flatMap(getSeaSpans)) {
         const vertices = dropStubs(path);
+        const atSeaKm = routing.getSeaClearanceThreshold(routing.SEA_CELL_SIZE) * KM_PER_COORD_UNIT;
         const clearances = vertices.map(point => clearanceKm(routing, index, point));
-        const open = clearances.map(clearance => clearance >= routing.SEA_CLEARANCE_KM);
+        const open = clearances.map(clearance => clearance >= atSeaKm);
         const first = open.indexOf(true);
         const last = open.lastIndexOf(true);
 
@@ -372,7 +378,7 @@ function checkSeaClearance(routing, index, results) {
         }
 
         for (const [at, clearance] of clearances.entries()) {
-            if (at <= first || at >= last || open[at]) {
+            if (at <= first || at >= last || clearance >= routing.SEA_CLEARANCE_KM) {
                 continue;
             }
 

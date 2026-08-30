@@ -25,7 +25,7 @@
                                     <mat-icon class="route-tab-icon" [svgIcon]="modeIcon.svgIcon" />
                                 }
                             }
-                            <coiaf-skeleton-loader [loading]="planLoading" [width]="50">
+                            <coiaf-skeleton-loader class="route-tab-title-loader" [loading]="planLoading" [width]="50">
                                 <span class="route-tab-title">{{ currentPlan?.[mode] | duration: '-' }}</span>
                             </coiaf-skeleton-loader>
                         </ng-template>
@@ -76,8 +76,9 @@
             </mat-tab-group>
         } @else {
             <div class="route-placeholder">
-                <mat-icon>add_location_alt</mat-icon>
-                <span>{{ ui.selectB }}</span>
+                @let routeEndpoints = endpoints();
+                <mat-icon [ngClass]="routeEndpoints?.from ? 'icon-b' : 'icon-a'">add_location_alt</mat-icon>
+                <span>{{ routeEndpoints?.from ? ui.selectB :  ui.selectA }}</span>
             </div>
         }
     </div>

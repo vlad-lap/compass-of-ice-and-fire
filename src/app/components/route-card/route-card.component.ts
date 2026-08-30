@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Store } from '@ngxs/store';
 import { CommonModule } from '@angular/common';
@@ -81,6 +81,8 @@ export class RouteCardComponent {
         () => this.modes().indexOf(this.routeService.selectedMode())
     );
 
+    protected readonly endpoints = this.routeService.endpoints;
+
     protected readonly modes = computed<TravelMode[]>(() => {
         if (this.loading()) {
             return ['foot', 'horse', 'dragon'];
@@ -116,7 +118,20 @@ export class RouteCardComponent {
     constructor(
         private store: Store,
         private routeService: RouteService,
-    ) {}
+    ) {
+        effect(() => {
+            if (this.loading()) {
+                return;
+            }
+
+            const modes = this.modes();
+            const selectedMode = this.routeService.selectedMode();
+
+            if (!modes.includes(selectedMode)) {
+                this.routeService.selectedMode.set(modes[0]);
+            }
+        });
+    }
 
     onTabChange(index: number): void {
         this.routeService.selectedMode.set(this.modes()[index]);

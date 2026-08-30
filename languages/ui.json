@@ -63,9 +63,13 @@
         "en": "Route",
         "ru": "Маршрут"
     },
+    "selectA": {
+        "en": "Hold to select a starting point",
+        "ru": "Удерживайте, чтобы выбрать начальную точку"
+    },
     "selectB": {
-        "en": "Select destination point",
-        "ru": "Выберите точку назначения"
+        "en": "Hold to select a destination point",
+        "ru": "Удерживайте, чтобы выбрать точку назначения"
     },
     "placeFrom": {
         "en": "From",

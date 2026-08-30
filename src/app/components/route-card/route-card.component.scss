@@ -15,22 +15,31 @@
     @include mixins.icon-size(14px);
 }
 
-.route-tab-title {
+.route-tab-title, .route-tab-title-loader {
     margin-left: 8px;
 }
 
 .route-placeholder {
     width: 100%;
-    margin-top: 80px;
+    height: 100%;
+    margin-top: 8px;
     display: flex;
-    gap: 8px;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
     color: map.get(theme.$primary-palette, 50);
     font-size: 12px;
 
     .mat-icon {
-        @include mixins.icon-size(36px);
+        @include mixins.icon-size(20px);
+
+        &.icon-a {
+            color: variables.$red;
+        }
+
+        &.icon-b {
+            color: variables.$green;
+        }
     }
 }
 

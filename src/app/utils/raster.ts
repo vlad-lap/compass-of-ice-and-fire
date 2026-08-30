@@ -40,7 +40,7 @@ export enum WaterK {
 
 const SMOKING_SEA_ID = 'sea-the-smoking-sea';
 
-export const SEA_CLEARANCE_KM = 10;
+export const SEA_CLEARANCE_KM = 5;
 export const SEA_CLEARANCE = SEA_CLEARANCE_KM / KM_PER_COORD_UNIT;
 export const SEA_MARGIN_FACTOR = Math.SQRT2 / 2;
 export const COASTAL_K_FACTOR = 1e-4;

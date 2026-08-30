@@ -88,7 +88,7 @@
 }
 
 .card-body {
-    max-width: 640px;
+    max-width: 100%;
     overflow: {
         x: hidden;
         y: auto;
@@ -101,4 +101,9 @@
         right: 12px;
     }
     margin-bottom: 12px;
+    flex-grow: 1;
+
+    @media (min-width: 960px) {
+        max-width: 640px;
+    }
 }

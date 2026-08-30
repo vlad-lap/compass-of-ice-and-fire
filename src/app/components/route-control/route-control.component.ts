@@ -99,10 +99,10 @@ export class RouteControlComponent implements OnInit {
         private routeService: RouteService,
     ) {
         effect(() => {
-            const loading = this.routeService.loading();
+            const routeEnabled = this.routeService.routeEnabled();
             const cardOpened = this.mapService.routeCardOpened();
 
-            if (loading && !cardOpened) {
+            if (routeEnabled && !cardOpened) {
                 this.mapService.openRouteCard();
             }
         });

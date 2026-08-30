@@ -2,7 +2,7 @@ export enum MapBounds {
     North = 48.7,
     South = -39.3,
     East = 127.4,
-    West = -7.1,
+    West = -20,
 }
 
 export const INITIAL_MAP_CENTER: [number, number] = [15, 10];
@@ -18,6 +18,8 @@ export enum ZoomLevel {
 export const ZOOM_DURATION = 300;
 export const ZOOM_STEP = 0.5;
 export const LONG_PRESS_DURATION_MS = 500;
+
+export const MARKER_ZOOM_DURATION = 500;
 
 export const KM_PER_COORD_UNIT = 85.371;
 export const SCALE_BAR_MAX_WIDTH_PX = 100;
@@ -74,7 +76,12 @@ export enum LocationRadius {
 
 export enum HitRadiusPx {
     Mouse = 2,
-    Touch = 15,
+    Touch = 16,
+}
+
+export enum MarkerHitRadiusPx {
+    Mouse = 22,
+    Touch = 44,
 }
 
 export const ROUTE_LAYER_IDS = [

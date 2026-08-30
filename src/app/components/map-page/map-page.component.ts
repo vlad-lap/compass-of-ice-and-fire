@@ -18,6 +18,7 @@ import {
 import {
     CircleLayerSpecification,
     LineLayerSpecification,
+    LngLat,
     LngLatBounds,
     LngLatLike,
     Map,
@@ -25,9 +26,18 @@ import {
     MapLayerMouseEvent,
     MapMouseEvent,
     MapTouchEvent,
+    Marker,
     SymbolLayerSpecification,
 } from 'maplibre-gl';
-import { Feature, FeatureCollection, MultiPolygon, Point, Polygon, Position } from 'geojson';
+import {
+    Feature,
+    FeatureCollection,
+    MultiPoint,
+    MultiPolygon,
+    Point,
+    Polygon,
+    Position,
+} from 'geojson';
 import {
     CLICKABLE_LAYER_IDS,
     GREEN,
@@ -35,6 +45,8 @@ import {
     INITIAL_MAP_CENTER,
     KM_PER_COORD_UNIT,
     LONG_PRESS_DURATION_MS,
+    MARKER_ZOOM_DURATION,
+    MarkerHitRadiusPx,
     RED,
     ROUTE_LAYER_IDS,
     SCALE_BAR_MAX_WIDTH_PX,
@@ -101,6 +113,7 @@ import {
 import {
     buildMaskPolygon,
     getGeometryPositions,
+    getMiddleMultiPoint,
     getRoundDistanceKm,
     HighlightableGeometry,
 } from '../../utils';
@@ -380,9 +393,11 @@ export class MapPageComponent {
 
     private readonly hasHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     private readonly hitRadius = this.hasHover ? HitRadiusPx.Mouse : HitRadiusPx.Touch;
+    private readonly markerHitRadius = this.hasHover ? MarkerHitRadiusPx.Mouse : MarkerHitRadiusPx.Touch;
 
     private longPressTimer: ReturnType<typeof setTimeout>;
     private longPressHandled = false;
+    private markerDragged = false;
 
     constructor(
         private store: Store,
@@ -509,17 +524,40 @@ export class MapPageComponent {
         this.saveCurrentPosition();
     }
 
+    onMarkerDragStart(): void {
+        this.markerDragged = true;
+        this.cursorStyle.set('grabbing');
+    }
+
+    onMarkerDragEnd(event: Marker, markerKey: string): void {
+        const feature = this.queryRenderedFeature(
+            event._flatPos,
+            ROUTE_LAYER_IDS,
+            this.markerHitRadius,
+        ) as Feature<Point | MultiPoint>;
+
+        if (feature) {
+            const lngLat = feature.geometry.type === 'MultiPoint'
+                ? getMiddleMultiPoint(feature.geometry)
+                : feature.geometry.coordinates
+            event.setLngLat(lngLat as LngLatLike);
+        }
+
+        this.setRouteEndpoint(event._flatPos, event.getLngLat(), markerKey as keyof RouteEndpoints);
+        this.markerDragged = false;
+        this.cursorStyle.set('default');
+    }
+
     onMapClick(event: MapMouseEvent): void {
-        if (this.longPressHandled) {
+        if (this.longPressHandled || this.markerDragged) {
             return;
         }
 
         if (this.routeEnabled()) {
-            this.setRouteEndpoint(event);
             return;
         }
 
-        const feature = this.queryRenderedFeature(event, CLICKABLE_LAYER_IDS);
+        const feature = this.queryRenderedFeature(event.point, CLICKABLE_LAYER_IDS);
 
         if (!feature?.properties?.name) {
             this.mapService.hideTooltip();
@@ -557,11 +595,15 @@ export class MapPageComponent {
         this.longPressTimer = setTimeout(() => {
             this.mapService.hideTooltip();
 
+            if (this.markerDragged) {
+                return;
+            }
+
             if (!this.routeService.routeEnabled()) {
                 this.routeService.routeEnabled.set(true);
             }
 
-            this.setRouteEndpoint(event);
+            this.setRouteEndpoint(event.point, event.lngLat);
             this.longPressHandled = true;
         }, LONG_PRESS_DURATION_MS);
     }
@@ -600,19 +642,36 @@ export class MapPageComponent {
         }
     }
 
-    private setRouteEndpoint(event: MapMouseEvent | MapTouchEvent): void {
-        const feature = this.queryRenderedFeature(event, ROUTE_LAYER_IDS);
+    private setRouteEndpoint(
+        point: { x: number; y: number },
+        lngLat: LngLat,
+        endpointKey?: keyof RouteEndpoints,
+    ): void {
+        const feature = this.queryRenderedFeature(point, ROUTE_LAYER_IDS);
 
         const routePoint = feature
             ? (feature.properties as RoutePointValue)
-            : [event.lngLat.lng, event.lngLat.lat];
+            : [lngLat.lng, lngLat.lat];
 
-        const newEndpoints = this.getUpdatedEndpoints(routePoint);
+        const newEndpoints = this.getUpdatedEndpoints(routePoint, endpointKey);
         this.routeService.endpoints.set(newEndpoints);
+
+        const map = this.map().mapInstance;
+        if (newEndpoints.from && !newEndpoints.to && map.getZoom() > ZoomLevel.High) {
+            map.easeTo({ zoom: ZoomLevel.High, duration: MARKER_ZOOM_DURATION });
+        }
     }
 
-    private getUpdatedEndpoints(point: RoutePointValue): RouteEndpoints {
+    private getUpdatedEndpoints(
+        point: RoutePointValue,
+        endpointKey?: keyof RouteEndpoints,
+    ): RouteEndpoints {
         const endpoints = this.routeService.endpoints();
+
+        if (endpointKey) {
+            return { ...endpoints, [endpointKey]: point };
+        }
+
         const positions = this.routeService.endpointPositions();
 
         return !!positions.from === !!positions.to
@@ -621,14 +680,17 @@ export class MapPageComponent {
     }
 
     private queryRenderedFeature(
-        { target, point: { x, y } }: MapMouseEvent | MapTouchEvent,
+        { x, y }: { x: number; y: number },
         layers: string[],
+        hitRadius?: number,
     ): Feature {
-        const zoom = target.getZoom();
-        const features = target.queryRenderedFeatures(
+        const map = this.map().mapInstance;
+        const zoom = map.getZoom();
+        const radius = hitRadius ?? this.hitRadius;
+        const features = map.queryRenderedFeatures(
             [
-                [x - this.hitRadius, y - this.hitRadius],
-                [x + this.hitRadius, y + this.hitRadius],
+                [x - radius, y - radius],
+                [x + radius, y + radius],
             ],
             { layers },
         );
@@ -640,7 +702,7 @@ export class MapPageComponent {
             ? {
                   type: 'Feature',
                   properties: feature.properties,
-                  geometry: feature.geometry,
+                  geometry: { ...feature.geometry },
               }
             : null;
     }
@@ -685,7 +747,7 @@ export class MapPageComponent {
                 top: 150,
                 left: 20,
                 right: 20,
-                bottom: 350,
+                bottom: 250,
             },
             offset: [0, 0],
         });

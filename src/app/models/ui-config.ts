@@ -15,6 +15,7 @@ export interface UiConfig<T> {
     details: T;
     km: T;
     route: T;
+    selectA: T;
     selectB: T;
     placeFrom: T;
     placeTo: T;
