@@ -1,6 +1,7 @@
 export interface FeatureData {
     id: string;
     name: string;
+    isPort?: boolean;
     name_ru?: string;
     searchKeys?: string[];
     category?: string;

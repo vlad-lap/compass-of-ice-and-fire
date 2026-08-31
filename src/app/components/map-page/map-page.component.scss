@@ -57,6 +57,10 @@
         display: none;
     }
 
+    .maplibregl-marker {
+        cursor: grab;
+    }
+
     .coiaf-map-popup {
         .maplibregl-popup-content {
             background-color: variables.$white;

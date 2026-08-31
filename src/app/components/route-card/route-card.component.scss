@@ -13,17 +13,34 @@
 
 .route-tab-icon {
     @include mixins.icon-size(14px);
-    margin-right: 4px;
+}
+
+.route-tab-title, .route-tab-title-loader {
+    margin-left: 8px;
 }
 
 .route-placeholder {
     width: 100%;
-    margin-top: 24px;
+    height: 100%;
+    margin-top: 8px;
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
     color: map.get(theme.$primary-palette, 50);
     font-size: 12px;
+
+    .mat-icon {
+        @include mixins.icon-size(20px);
+
+        &.icon-a {
+            color: variables.$red;
+        }
+
+        &.icon-b {
+            color: variables.$green;
+        }
+    }
 }
 
 .route-info {
@@ -50,4 +67,28 @@
 
 ::ng-deep .mdc-tab.mat-mdc-tab {
     padding: 0 12px;
+}
+
+.route-stretches {
+    list-style: none;
+    margin: 16px 0 0;
+    padding: 0;
+    color: variables.$grey;
+    font-size: 13px;
+
+    li {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 0;
+    }
+
+    .mat-icon {
+        @include mixins.icon-size(14px);
+        flex: none;
+    }
+
+    .route-stretch-distance {
+        flex: 1;
+    }
 }

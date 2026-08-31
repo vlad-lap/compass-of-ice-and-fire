@@ -1,0 +1,12 @@
+@use '../../../variables';
+@use '../../../mixins';
+
+.coiaf-autocomplete .mat-mdc-option {
+    flex-direction: row-reverse;
+
+    .mat-icon {
+        @include mixins.icon-size(16px);
+        color: variables.$grey;
+        margin-right: 0;
+    }
+}

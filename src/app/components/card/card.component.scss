@@ -1,4 +1,5 @@
 @use '../../../variables';
+@use '../../../mixins';
 
 .coiaf-card {
     display: flex;
@@ -54,6 +55,13 @@
 
     h3 {
         margin: 0;
+
+        .mat-icon {
+            @include mixins.icon-size(20px);
+            color: variables.$grey;
+            margin-left: 4px;
+            vertical-align: sub;
+        }
     }
 
     .card-subtitle {
@@ -80,7 +88,7 @@
 }
 
 .card-body {
-    max-width: 640px;
+    max-width: 100%;
     overflow: {
         x: hidden;
         y: auto;
@@ -93,4 +101,9 @@
         right: 12px;
     }
     margin-bottom: 12px;
+    flex-grow: 1;
+
+    @media (min-width: 960px) {
+        max-width: 640px;
+    }
 }

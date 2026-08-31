@@ -2,7 +2,13 @@
 
 <coiaf-card>
     <div coiafCardTitle>
-        <h3>{{ data | localize: 'name' }}</h3>
+        <h3>
+            <span>{{ data | localize: 'name' }}</span>
+
+            @if (data.isPort) {
+                <mat-icon>anchor</mat-icon>
+            }
+        </h3>
         @if (data.nameVariant) {
             <div class="card-subtitle">{{ data | localize: 'nameVariant' }}</div>
         }

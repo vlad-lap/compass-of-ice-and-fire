@@ -400,6 +400,12 @@
                 [lngLat]="marker.value"
                 [scale]="0.75"
                 [color]="markerColor[marker.key]"
+                [draggable]="true"
+                anchor="bottom"
+                [offset]="[0, 0]"
+                [style.cursor]="'pointer'"
+                (markerDragStart)="onMarkerDragStart()"
+                (markerDragEnd)="onMarkerDragEnd($event, marker.key)"
             />
         }
     }
