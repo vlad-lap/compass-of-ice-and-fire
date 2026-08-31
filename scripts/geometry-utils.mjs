@@ -146,3 +146,69 @@ export function getMiddleMultiPoint(geometry) {
     const middleIndex = Math.floor(geometry.coordinates.length / 2);
     return sortedByLng[middleIndex];
 }
+
+/**
+ * @param {import('geojson').Position} point
+ * @param {import('geojson').Position} a
+ * @param {import('geojson').Position} b
+ * @returns {import('geojson').Position}
+ */
+function getClosestPointOnSegment(point, a, b) {
+    const dx = b[0] - a[0];
+    const dy = b[1] - a[1];
+
+    if (dx === 0 && dy === 0) {
+        return a;
+    }
+
+    const t = Math.max(0, Math.min(1, ((point[0] - a[0]) * dx + (point[1] - a[1]) * dy) / (dx * dx + dy * dy)));
+    return [a[0] + t * dx, a[1] + t * dy];
+}
+
+/**
+ * @param {import('geojson').Position} point
+ * @param {import('geojson').Position[]} ring
+ * @returns {number}
+ */
+function getRingDistance(point, ring) {
+    let nearest = Infinity;
+    for (let i = 0; i < ring.length - 1; i++) {
+        const onRing = getClosestPointOnSegment(point, ring[i], ring[i + 1]);
+        const distance = Math.hypot(point[0] - onRing[0], point[1] - onRing[1]);
+        if (distance < nearest) {
+            nearest = distance;
+        }
+    }
+    return nearest;
+}
+
+/**
+ * @param {import('geojson').Position} point
+ * @param {import('geojson').Polygon | import('geojson').MultiPolygon} geometry
+ * @returns {number}
+ */
+function getPolygonDistance(point, geometry) {
+    switch (geometry.type) {
+        case 'Polygon':
+            return Math.min(...geometry.coordinates.map(ring => getRingDistance(point, ring)));
+        case 'MultiPolygon':
+            return Math.min(...geometry.coordinates.map(
+                rings => Math.min(...rings.map(ring => getRingDistance(point, ring))),
+            ));
+        default:
+            return Infinity;
+    }
+}
+
+/**
+ * Distance from a point to the nearest coastline vertex among the given landmass collections
+ * (continents, islands), in the same coordinate units as the input geometries.
+ * @param {import('geojson').Position} point
+ * @param {import('geojson').FeatureCollection[]} landmassCollections
+ * @returns {number}
+ */
+export function getDistanceToShore(point, landmassCollections) {
+    return Math.min(...landmassCollections.flatMap(
+        collection => collection.features.map(feature => getPolygonDistance(point, feature.geometry)),
+    ));
+}

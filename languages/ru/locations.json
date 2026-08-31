@@ -27,7 +27,7 @@
   "other-crossroads-inn": "Гостиница на перекрёстке",
   "city-saltpans": "Солеварни",
   "other-quiet-isle": "Тихий остров",
-  "castle-wickenden": "Викенден",
+  "settlement-wickenden": "Викенден",
   "city-maidenpool": "Девичий Пруд",
   "castle-rooks-rest": "Грачиный Приют",
   "castle-dyre-den": "Лютое Логово",
@@ -99,7 +99,7 @@
   "ruin-tarbeck-hall": "Тарбекхолл",
   "city-lannisport": "Ланниспорт",
   "castle-feastfires": "Пиршественные Огни",
-  "city-kayce": "Кайс",
+  "settlement-kayce": "Кайс",
   "settlement-oxcross": "Окскросс",
   "castle-sarsfield": "Сарсфилд",
   "castle-deep-den": "Глубокая Нора",
@@ -345,5 +345,6 @@
   "ruin-hornoth": "Хорнот",
   "ruin-kyth": "Киф",
   "ruin-si-qo": "Си-Цо",
-  "city-pearl-palace": "Жемчужный дворец"
+  "city-pearl-palace": "Жемчужный дворец",
+  "settlement-hull": "Халл"
 }

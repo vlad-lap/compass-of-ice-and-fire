@@ -1,23 +1,35 @@
-import { Feature, FeatureCollection, LineString, MultiPolygon, Polygon, Position } from 'geojson';
-import { BarrierCrossing, BarrierCrossingKind, Grid, RoadNetwork, RoutingGeodata } from '../models';
+import { Feature, FeatureCollection, LineString, MultiPolygon, Point, Polygon, Position } from 'geojson';
+import { BarrierCrossing, BarrierCrossingKind, Grid, RoadNetwork, RouteResult, RoutingGeodata } from '../models';
 import { KM_PER_COORD_UNIT, MapBounds } from '../components/map-page/constants';
 import { buildGrid, cellCount, getCellCenter, getCellIndexAt, toFlatIndex } from './grid';
 import {
     buildRoutingIndex,
     classifyCell,
+    classifySeaCell,
+    getDistanceToLand,
     getLandmass,
+    getSeaClearanceThreshold,
+    isOpenSea,
+    isSeaEndpoint,
+    keepsSeaClearance,
     labelComponents,
     MOUNTAIN_K_BY_HEIGHT,
     NO_COMPONENT,
     rasterizeGrid,
+    SEA_CLEARANCE,
     TerrainK,
+    WaterK,
 } from './raster';
 import {
     calculateDragonRoute,
     findPath,
+    SEA_CELL_SIZE,
     MARGIN_RETRY_STEPS,
     placePoint,
     planRoutes,
+    planRoutesWithIndex,
+    getGroundClearance,
+    getGroundPassability,
     pullTautPath,
     simplifyPath,
     SpeedKmH,
@@ -155,6 +167,10 @@ const geodata: RoutingGeodata = {
     swamps: collection([square([6, 0], 2)]),
     mountains: collection([square([0, 3], 2, { height: 2 }), square([3, 3], 2, { height: 3 })]),
     lakes: collection([square([6, 3], 2), square([0, 6], 2, { variant: 'dry' })]),
+    seas: collection([]),
+    bays: collection([]),
+    straits: collection([]),
+    locations: collection([]),
     rivers: collection([]),
     theWall: collection([]),
     barrierCrossings: [],
@@ -359,9 +375,13 @@ function emptyRoutingGeodata(): RoutingGeodata {
         swamps: collection([]),
         mountains: collection([]),
         lakes: collection([]),
+        seas: collection([]),
+        bays: collection([]),
+        straits: collection([]),
+        locations: collection([]),
         rivers: collection([]),
         theWall: collection([]),
-    barrierCrossings: [],
+        barrierCrossings: [],
     };
 }
 
@@ -690,7 +710,7 @@ describe('planRoutes with roadNetwork', () => {
         const plan = planRoutes([0, 0], [10, 0], emptyRoutingGeodata(), roadNetwork);
 
         expect(plan.foot).not.toBeNull();
-        expect(plan.legs.map(leg => leg.kind)).toEqual(['grid']);
+        expect(plan.foot.legs.map(leg => leg.kind)).toEqual(['grid']);
         expect(plan.foot.path.every(([, lat]) => lat < 1)).toBe(true);
     });
 
@@ -795,6 +815,30 @@ describe('simplifyPath', () => {
     });
 });
 
+describe('simplifyPath with a passability test', () => {
+    const CELL = 0.5;
+    const index = buildRoutingIndex({ ...emptyRoutingGeodata(), lakes: collection([rect([4, -1], 2, 2)]) });
+    const DETOUR: [number, number][] = [[0, 0], [3, 0], [3, 1.5], [7, 1.5], [7, 0], [10, 0]];
+
+    it('collapses the detour when only the geometry is considered', () => {
+        expect(simplifyPath(DETOUR, 2)).toEqual([[0, 0], [10, 0]]);
+    });
+
+    it('keeps the detour when the shortcut it would leave behind is impassable', () => {
+        const simplified = simplifyPath(DETOUR, 2, getGroundClearance(index, CELL));
+        const isClear = getGroundClearance(index, CELL);
+
+        expect(simplified.length).toBeGreaterThan(2);
+        expect(simplified.every((point, at) => at === 0 || isClear(simplified[at - 1], point))).toBe(true);
+    });
+
+    it('terminates on a path it cannot fix, rather than splitting for ever', () => {
+        const throughTheLake: [number, number][] = [[0, 0], [5, 0], [10, 0]];
+
+        expect(simplifyPath(throughTheLake, 2, getGroundClearance(index, CELL))).toEqual(throughTheLake);
+    });
+});
+
 describe('pullTautPath', () => {
     const CELL = 0.5;
 
@@ -802,7 +846,7 @@ describe('pullTautPath', () => {
         const index = buildRoutingIndex(emptyRoutingGeodata());
         const path: [number, number][] = [[0, 0], [1, 0], [2, 1], [3, 1], [4, 2]];
 
-        expect(pullTautPath(path, index, CELL)).toEqual([[0, 0], [4, 2]]);
+        expect(pullTautPath(path, getGroundPassability(index, CELL))).toEqual([[0, 0], [4, 2]]);
     });
 
     it('keeps a detour around an obstacle instead of cutting through it', () => {
@@ -817,7 +861,7 @@ describe('pullTautPath', () => {
             [7, 0], [8, 0], [9, 0], [10, 0],
         ];
 
-        const taut = pullTautPath(path, index, CELL);
+        const taut = pullTautPath(path, getGroundPassability(index, CELL));
 
         expect(taut[0]).toEqual([0, 0]);
         expect(taut[taut.length - 1]).toEqual([10, 0]);
@@ -826,7 +870,266 @@ describe('pullTautPath', () => {
 
     it('returns paths shorter than 3 points unchanged', () => {
         const index = buildRoutingIndex(emptyRoutingGeodata());
-        expect(pullTautPath([[0, 0]], index, CELL)).toEqual([[0, 0]]);
-        expect(pullTautPath([[0, 0], [1, 1]], index, CELL)).toEqual([[0, 0], [1, 1]]);
+        expect(pullTautPath([[0, 0]], getGroundPassability(index, CELL))).toEqual([[0, 0]]);
+        expect(pullTautPath([[0, 0], [1, 1]], getGroundPassability(index, CELL))).toEqual([[0, 0], [1, 1]]);
+    });
+});
+
+
+// The sea fixtures are laid out inside the map bounds, since the sea grid always spans the whole map:
+// a wide stretch of painted water, with land only where a test needs something to sail around.
+const TEST_WATER = rect([0, 0], 40, 30);
+const TEST_ISLAND = square([18, 13], 4);
+
+function seaGeodata(land: Feature<Polygon>[] = [], water = [TEST_WATER]): RoutingGeodata {
+    return {
+        ...emptyRoutingGeodata(),
+        continents: collection([]),
+        islands: collection(land),
+        seas: collection(water),
+    };
+}
+
+function port([lng, lat]: [number, number], type = 'city', isPort = true): Feature<Point> {
+    return {
+        type: 'Feature',
+        properties: { id: `${type}-${lng}-${lat}`, type, isPort },
+        geometry: { type: 'Point', coordinates: [lng, lat] },
+    };
+}
+
+describe('classifySeaCell', () => {
+    const CELL = 0.1;
+    const index = buildRoutingIndex(seaGeodata([TEST_ISLAND]));
+
+    it('classifies open water at full speed', () => {
+        expect(classifySeaCell([5, 5], index, CELL)).toBe(WaterK.Default);
+    });
+
+    it('refuses a point on an island the water is painted over', () => {
+        expect(classifySeaCell([20, 15], index, CELL)).toBeNull();
+    });
+
+    it('refuses a point no water polygon covers', () => {
+        expect(classifySeaCell([45, 15], index, CELL)).toBeNull();
+    });
+
+    it('refuses a point outside the map, water or not', () => {
+        expect(classifySeaCell([1, MapBounds.North + 1], index, CELL)).toBeNull();
+    });
+
+    it('charges the Smoking Sea ten times over', () => {
+        const smoking = buildRoutingIndex(seaGeodata([], [
+            rect([0, 0], 40, 30, { id: 'sea-the-smoking-sea' }),
+        ]));
+
+        expect(classifySeaCell([5, 5], smoking, CELL)).toBe(WaterK.SmokingSea);
+    });
+
+    it('penalises water within the clearance threshold of land, the more the closer to the shore', () => {
+        const halfway = classifySeaCell([20, 13 - getSeaClearanceThreshold(CELL) / 2], index, CELL);
+        const almostAshore = classifySeaCell([20, 12.999], index, CELL);
+
+        expect(halfway).toBeGreaterThan(0);
+        expect(halfway).toBeLessThan(WaterK.Default);
+        expect(almostAshore).toBeGreaterThan(0);
+        expect(almostAshore).toBeLessThan(halfway / 1000);
+    });
+
+    it('leaves water beyond the threshold at full speed', () => {
+        const clear: Position = [20, 13 - getSeaClearanceThreshold(CELL) - 0.001];
+
+        expect(classifySeaCell(clear, index, CELL)).toBe(WaterK.Default);
+        expect(isOpenSea(clear, index)).toBe(true);
+    });
+});
+
+describe('isSeaEndpoint', () => {
+    const index = buildRoutingIndex({
+        ...seaGeodata([TEST_ISLAND]),
+        locations: collection([port([20, 13.05]), port([21, 14], 'castle', false)]),
+    });
+
+    it('accepts a port, even though it stands on land', () => {
+        expect(isSeaEndpoint([20, 13.05], index)).toBe(true);
+    });
+
+    it('accepts any point in water', () => {
+        expect(isSeaEndpoint([5, 5], index)).toBe(true);
+    });
+
+    it('refuses a location on land that is not a port', () => {
+        expect(isSeaEndpoint([21, 14], index)).toBe(false);
+    });
+
+    it('refuses a point that is neither water nor a port', () => {
+        expect(isSeaEndpoint([45, 15], index)).toBe(false);
+    });
+});
+
+describe('keepsSeaClearance', () => {
+    const index = buildRoutingIndex(seaGeodata([TEST_ISLAND]));
+
+    it('accepts a chord that stays as far from land as its ends', () => {
+        expect(keepsSeaClearance([5, 5], [35, 5], index)).toBe(true);
+    });
+
+    it('rejects a chord that passes closer to land than its ends do', () => {
+        const west: Position = [10, 15];
+        const east: Position = [30, 15];
+
+        expect(getDistanceToLand(west, index)).toBe(SEA_CLEARANCE);
+        expect(getDistanceToLand(east, index)).toBe(SEA_CLEARANCE);
+        expect(keepsSeaClearance(west, east, index)).toBe(false);
+    });
+});
+
+describe('sea routes', () => {
+    const index = buildRoutingIndex({
+        ...seaGeodata([TEST_ISLAND]),
+        locations: collection([port([20, 13.05])]),
+    });
+
+    it('plans a route between two points in water, timed at the speed of a ship', () => {
+        const plan = planRoutesWithIndex([5, 15], [35, 15], index);
+
+        expect(plan.ship).not.toBeNull();
+        expect(plan.ship.timeHours).toBeCloseTo(plan.ship.distanceKm / SpeedKmH.ship, 6);
+        expect(plan.ship.legs.map(leg => leg.kind)).toEqual(['sea']);
+        expect(plan.foot).toBeNull();
+    });
+
+    it('sails around an island rather than over it', () => {
+        const plan = planRoutesWithIndex([5, 15], [35, 15], index);
+
+        expect(plan.ship.path.every(point => classifySeaCell(point, index, SEA_CELL_SIZE) !== null)).toBe(true);
+        expect(plan.ship.path.some(([, lat]) => Math.abs(lat - 15) > 2)).toBe(true);
+    });
+
+    it('keeps every vertex of the drawn route clear of land', () => {
+        const plan = planRoutesWithIndex([5, 15], [35, 15], index);
+
+        expect(plan.ship.path.every(point => isOpenSea(point, index))).toBe(true);
+    });
+
+    it('finds no route when land runs across the water from edge to edge', () => {
+        const walled = buildRoutingIndex(seaGeodata([rect([19, -5], 2, 40)]));
+
+        expect(planRoutesWithIndex([5, 15], [35, 15], walled).ship).toBeNull();
+    });
+
+    it('finds no route from a point that is neither water nor a port', () => {
+        expect(planRoutesWithIndex([45, 15], [35, 15], index).ship).toBeNull();
+    });
+
+    it('leaves a port on land by a stub into the coastal water', () => {
+        const plan = planRoutesWithIndex([20, 13.05], [35, 15], index);
+
+        expect(plan.ship).not.toBeNull();
+        expect(plan.ship.path[0]).toEqual([20, 13.05]);
+        expect(isOpenSea(plan.ship.path[1], index)).toBe(false);
+    });
+
+    it('still answers with a dragon route where no ship route exists', () => {
+        const plan = planRoutesWithIndex([45, 15], [46, 16], index);
+
+        expect(plan.ship).toBeNull();
+        expect(plan.dragon.distanceKm).toBeGreaterThan(0);
+    });
+});
+
+// Two long thin islands with open water between them: thin so that every port sits on a coast, long so
+// that the walk to one end differs from the walk to the other by as much as a test needs.
+const WEST_ISLE = rect([2, 10], 10, 2);
+const EAST_ISLE = rect([30, 10], 6, 2);
+const PORTLESS_ISLE = rect([30, 20], 4, 2);
+
+const WEST_POINT: Position = [7, 11];
+const EAST_POINT: Position = [33, 11];
+const PORTLESS_POINT: Position = [32, 21];
+
+const EAST_PORT = port([30.2, 11]);
+
+function combinedIndex(westPorts: Feature<Point>[], islands = [WEST_ISLE, EAST_ISLE]) {
+    return buildRoutingIndex({
+        ...seaGeodata(islands),
+        locations: collection([...westPorts, EAST_PORT]),
+    });
+}
+
+describe('combined routes', () => {
+    const index = combinedIndex([port([2.2, 11])]);
+
+    it('walks to a port, sails, and walks on when there is no ground route', () => {
+        const plan = planRoutesWithIndex(WEST_POINT, EAST_POINT, index);
+
+        expect(plan.foot).toBeNull();
+        expect(plan.footShip).not.toBeNull();
+        expect(plan.footShip.legs.map(leg => leg.kind)).toContain('sea');
+        expect(plan.footShip.legs.filter(leg => leg.kind !== 'sea').length).toBeGreaterThan(0);
+        expect(plan.footShip.ports).toEqual({ fromId: 'city-2.2-11', toId: 'city-30.2-11' });
+    });
+
+    it('reports the same route to a rider, only faster, since only the land legs speed up', () => {
+        const plan = planRoutesWithIndex(WEST_POINT, EAST_POINT, index);
+        const seaTime = (route: RouteResult) => route.legs
+            .filter(leg => leg.kind === 'sea')
+            .reduce((total, leg) => total + leg.timeHours, 0);
+
+        expect(plan.horseShip.timeHours).toBeLessThan(plan.footShip.timeHours);
+        expect(seaTime(plan.horseShip)).toBeCloseTo(seaTime(plan.footShip), 6);
+    });
+
+    it('sails on from a point already in water, boarding nothing', () => {
+        const plan = planRoutesWithIndex([20, 25], WEST_POINT, index);
+
+        expect(plan.foot).toBeNull();
+        expect(plan.ship).toBeNull();
+        expect(plan.footShip).not.toBeNull();
+        expect(plan.footShip.legs[0].kind).toBe('sea');
+        expect(plan.footShip.ports).toEqual({ fromId: null, toId: 'city-2.2-11' });
+    });
+
+    it('gives every leg its own distance and time, summing to the route', () => {
+        const { legs, distanceKm, timeHours } = planRoutesWithIndex(WEST_POINT, EAST_POINT, index).footShip;
+
+        expect(legs.reduce((total, leg) => total + leg.distanceKm, 0)).toBeCloseTo(distanceKm, 6);
+        expect(legs.reduce((total, leg) => total + leg.timeHours, 0)).toBeCloseTo(timeHours, 6);
+    });
+});
+
+describe('choosing a port by type', () => {
+    it('prefers the city when the walk to it is within the band of the nearest port', () => {
+        const index = combinedIndex([port([2.2, 11]), port([11.8, 11], 'castle')]);
+
+        expect(planRoutesWithIndex(WEST_POINT, EAST_POINT, index).footShip.ports.fromId).toBe('city-2.2-11');
+    });
+
+    it('takes the castle when it is nearer than the band allows the city to be', () => {
+        const index = combinedIndex([port([2.2, 11]), port([7.5, 10.2], 'castle')]);
+
+        expect(planRoutesWithIndex(WEST_POINT, EAST_POINT, index).footShip.ports.fromId)
+            .toBe('castle-7.5-10.2');
+    });
+
+    it('ranks a settlement above a castle and a castle above a ruin', () => {
+        const bySettlement = combinedIndex([port([2.2, 11], 'settlement'), port([11.8, 11], 'castle')]);
+        const byCastle = combinedIndex([port([2.2, 11], 'castle'), port([11.8, 11], 'ruin')]);
+
+        expect(planRoutesWithIndex(WEST_POINT, EAST_POINT, bySettlement).footShip.ports.fromId)
+            .toBe('settlement-2.2-11');
+        expect(planRoutesWithIndex(WEST_POINT, EAST_POINT, byCastle).footShip.ports.fromId)
+            .toBe('castle-2.2-11');
+    });
+});
+
+describe('landing where there is no port', () => {
+    it('enters an island with no port anywhere on its coast', () => {
+        const index = combinedIndex([port([2.2, 11])], [WEST_ISLE, EAST_ISLE, PORTLESS_ISLE]);
+        const plan = planRoutesWithIndex(WEST_POINT, PORTLESS_POINT, index);
+
+        expect(plan.foot).toBeNull();
+        expect(plan.footShip).not.toBeNull();
+        expect(plan.footShip.ports).toEqual({ fromId: 'city-2.2-11', toId: null });
     });
 });

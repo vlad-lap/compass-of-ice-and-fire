@@ -9,52 +9,77 @@
         @let currentPlan = plan();
         @let planLoading = loading();
 
-        <mat-tab-group
-            animationDuration="0ms"
-            [selectedIndex]="selectedIndex()"
-            (selectedIndexChange)="onTabChange($event)"
-        >
-            @for (mode of modes; track mode) {
-                <mat-tab>
-                    <ng-template mat-tab-label>
-                        @if (icons[mode]; as icon) {
-                            <mat-icon class="route-tab-icon">{{ icon }}</mat-icon>
-                        } @else if (svgIcons[mode]; as svgIcon) {
-                            <mat-icon class="route-tab-icon" [svgIcon]="svgIcon" />
-                        }
-                        <coiaf-skeleton-loader [loading]="planLoading" [width]="50">
-                            <span>{{ currentPlan?.[mode] | duration: '-' }}</span>
-                        </coiaf-skeleton-loader>
-                    </ng-template>
+        @if (currentPlan || planLoading) {
+            <mat-tab-group
+                animationDuration="0ms"
+                [selectedIndex]="selectedIndex()"
+                (selectedIndexChange)="onTabChange($event)"
+            >
+                @for (mode of modes(); track mode) {
+                    <mat-tab>
+                        <ng-template mat-tab-label>
+                            @for (modeIcon of modeIcons[mode]; track $index) {
+                                @if (modeIcon.icon) {
+                                    <mat-icon class="route-tab-icon">{{ modeIcon.icon }}</mat-icon>
+                                } @else {
+                                    <mat-icon class="route-tab-icon" [svgIcon]="modeIcon.svgIcon" />
+                                }
+                            }
+                            <coiaf-skeleton-loader class="route-tab-title-loader" [loading]="planLoading" [width]="50">
+                                <span class="route-tab-title">{{ currentPlan?.[mode] | duration: '-' }}</span>
+                            </coiaf-skeleton-loader>
+                        </ng-template>
 
-                    @if (currentPlan && !currentPlan[mode] && !planLoading) {
-                        <div class="route-placeholder">
-                            <mat-icon>not_listed_location</mat-icon>
-                            <span>{{ ui.routeNotFound }}</span>
-                        </div>
-                    } @else {
                         <div class="route-info">
-                            <div class="route-distance">
-                                <coiaf-skeleton-loader [loading]="planLoading" [width]="150">
-                                    @let distance = currentPlan?.[mode]?.distanceKm | number: '1.0-1';
+                                <div class="route-distance">
+                                    <coiaf-skeleton-loader [loading]="planLoading" [width]="150">
+                                        @let distance = currentPlan?.[mode]?.distanceKm | number: '1.0-1';
 
-                                    @if (distance) {
-                                        <span>{{ distance }} {{ ui.km }}</span>
-                                    } @else {
-                                        <span>-</span>
-                                    }
-                                </coiaf-skeleton-loader>
+                                        @if (distance) {
+                                            <span>{{ distance }} {{ ui.km }}</span>
+                                        } @else {
+                                            <span>-</span>
+                                        }
+                                    </coiaf-skeleton-loader>
+                                </div>
+                                @if (SpeedKmH[mode]) {
+                                    <div class="route-speed">
+                                        <coiaf-skeleton-loader [loading]="planLoading" [width]="100">
+                                            <mat-icon>speed</mat-icon>
+                                            <span>~{{ SpeedKmH[mode] }} {{ ui.km }}/{{ ui.hours }}</span>
+                                        </coiaf-skeleton-loader>
+                                    </div>
+                                }
+
+                                @let modeStretches = stretches()[mode] ?? [];
+                                @if (modeStretches.length > 1 && !planLoading) {
+                                    <ol class="route-stretches">
+                                        @for (stretch of modeStretches; track $index) {
+                                            @let stretchIcon = getStretchIcon(mode, stretch);
+                                            <li>
+                                                @if (stretchIcon.icon) {
+                                                    <mat-icon>{{ stretchIcon.icon }}</mat-icon>
+                                                } @else {
+                                                    <mat-icon [svgIcon]="stretchIcon.svgIcon" />
+                                                }
+                                                <span class="route-stretch-distance">
+                                                    {{ stretch.distanceKm | number: '1.0-0' }} {{ ui.km }}
+                                                </span>
+                                                <span class="route-stretch-time">{{ stretch | duration }}</span>
+                                            </li>
+                                        }
+                                    </ol>
+                                }
                             </div>
-                            <div class="route-speed">
-                                <coiaf-skeleton-loader [loading]="planLoading" [width]="100">
-                                    <mat-icon>speed</mat-icon>
-                                    <span>~{{ SpeedKmH[mode] }} {{ ui.km }}/{{ ui.hours }}</span>
-                                </coiaf-skeleton-loader>
-                            </div>
-                        </div>
-                    }
-                </mat-tab>
-            }
-        </mat-tab-group>
+                    </mat-tab>
+                }
+            </mat-tab-group>
+        } @else {
+            <div class="route-placeholder">
+                @let routeEndpoints = endpoints();
+                <mat-icon [ngClass]="routeEndpoints?.from ? 'icon-b' : 'icon-a'">add_location_alt</mat-icon>
+                <span>{{ routeEndpoints?.from ? ui.selectB :  ui.selectA }}</span>
+            </div>
+        }
     </div>
 </coiaf-card>

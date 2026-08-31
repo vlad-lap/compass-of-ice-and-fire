@@ -3,10 +3,11 @@
 Two jobs, in this order:
 
 1. **Index** the geodata once into a `RoutingIndex` — features grouped by what they mean for movement,
-   each with a bounding box, plus land grouped into landmasses.
-2. **Rasterise** a `Grid` into a `Float64Array` of terrain coefficients that the searches read.
+   each with a bounding box, plus land grouped into landmasses and its coastline hashed into buckets.
+2. **Rasterise** a `Grid` into a `Float64Array` of coefficients that the searches read — `rasterizeGrid`
+   for a traveller on land, `rasterizeSeaGrid` for a ship.
 
-Plus the point-level classifier the raster must agree with, connected-component labelling, and the
+Plus the point-level classifiers the rasters must agree with, connected-component labelling, and the
 small geometry helpers all of it rests on.
 
 Nothing here knows what a route is. Everything is either "what does the map say about this place" or
@@ -40,6 +41,67 @@ is water rather than open ground, so an unmapped gap can never become a free cor
 
 ---
 
+## The passability model at sea
+
+A separate model, in `classifySeaCell`, and not the inverse of the one above. Five rules:
+
+1. **Outside the mapped world is a wall**, exactly as on land.
+2. **Water is what the map draws.** A point outside every polygon of `seas`, `bays` and `straits` is
+   impassable. This is the deliberate opposite of the ground rule's phrasing, and for the same reason:
+   an unmapped region must not become a free corridor for either mode. "Not land" would have made every
+   unpainted patch inside the map navigable.
+3. **Land is a wall inside the water.** The water polygons have **no holes at all** — 0 inner rings
+   across all 35 — and the islands are drawn on top of them, so "inside a sea polygon" means "water *or*
+   an island". Navigable is `inside water ∧ not on land`, which is what rule 4 of the requirements asks
+   for.
+4. **The coefficient is 1 everywhere, except the Smoking Sea at 0.1**, matched by feature id
+   (`sea-the-smoking-sea`).
+5. **Within `getSeaClearanceThreshold` of land the coefficient collapses**, from `1` at the threshold
+   towards `0` at the shore. This is what keeps a ship 10 km off the coast; the section below is about
+   why it is a coefficient and not a wall.
+
+Barriers do not apply at sea: rivers and the Wall are no obstacle to a ship, and nothing else on the
+map is drawn as a line a ship may not cross. `index.barriers` is simply not consulted.
+
+### Clearance as a cost, not as a wall
+
+Requirement 9 says a route keeps at least 10 km from land, and requirement 10 says that where that is
+impossible — a strait under 20 km wide — it runs down the middle instead. Blocking the 10 km band
+outright satisfies the first and makes the second unsatisfiable: the strait closes, and so does every
+port, since a port stands on the coast by definition.
+
+So the band is priced instead of closed, and priced so steeply that using it is a last resort:
+
+```
+k = waterK × (d ≥ threshold ? 1 : COASTAL_K_FACTOR × (d / threshold)³)
+```
+
+- `COASTAL_K_FACTOR = 1e-4` makes a kilometre just inside the band cost about ten thousand kilometres
+  of open water. The map is ~200 coordinate units across, so **no detour the world can offer is as
+  expensive as touching the band** — the search takes the band only where there is no alternative at
+  all, which is exactly "where 10 km is impossible".
+- The **cube** is what puts the route in the *middle* of a passage rather than merely inside it. With a
+  linear falloff the cost ratio between 6 km and 13 km of clearance is only 2.2, and a shorter line
+  along one shore could still win; cubed it is 10, and it does not. This was measured: on a linear
+  falloff the route out of Meereen ran 5–6 km off the south shore of Slaver's Bay where 13–18 km was
+  available.
+- `getSeaClearanceThreshold(cellSize) = SEA_CLEARANCE + cellSize × SEA_MARGIN_FACTOR` — the rule's
+  10 km plus **half a cell diagonal**. The margin is not slack, it is what makes the rule true of the
+  *drawn line*: the route is a chain of cell centers, and a point on the segment between two adjacent
+  centers is up to half a diagonal from the nearer one, so cell centers held to 10 km alone would draw
+  a line dipping under it. Held to 10 km + half a diagonal, they cannot. Measured before the margin
+  existed: dips to 9.5 km, all along chords between compliant centers.
+
+Because the threshold moves with `cellSize`, `classifySeaCell` takes the cell size as an argument, just
+as `classifyCell` does for its river band.
+
+The reported cost of a route must not include any of this, since requirement 6 puts water at `k = 1`
+and requirement 7 puts a ship at 10 km/h. `rasterizeSeaGrid` therefore returns **two** arrays: `k`,
+which the search minimises, and `costK`, which the distance and time are measured against. They differ
+only inside the band.
+
+---
+
 ## Constants
 
 | Constant | Value | Why |
@@ -54,6 +116,12 @@ is water rather than open ground, so an unmapped gap can never become a free cor
 | `NO_COMPONENT` | `-1` | Fill value for `labelComponents`; also the label an impassable cell keeps. |
 | `LANDMASS_BUCKET_SIZE` | `0.25` | Spatial hash cell for the landmass edge index. |
 | `LANDMASS_BUCKET_ROW_STRIDE` | `100_000` | Packs a bucket's `(col, row)` into one integer key as `col * stride + row`. Safe because bucket rows stay far below the stride: the mapped world is ~350 buckets tall. |
+| `WaterK` | `SmokingSea 0.1`, `Default 1` | Water coefficients, per requirement 6. |
+| `SEA_CLEARANCE_KM` / `SEA_CLEARANCE` | `10 km` / `0.117` | Requirement 9's distance, in kilometres and in coordinate units. `SEA_CLEARANCE` is also the cap `getDistanceToLand` answers with: no decision needs a larger number, and capping is what keeps the query to a couple of buckets. |
+| `SEA_MARGIN_FACTOR` | `√2 / 2 ≈ 0.707` | Half a cell diagonal, added to the clearance the *search* demands so that the *drawn* line meets the rule. Same constant as `RIVER_BAND_FACTOR` and for the same underlying reason — half a diagonal is the worst a single 8-connected step can hide — but a different rule, so a separate name. |
+| `COASTAL_K_FACTOR` | `1e-4` | Coefficient at the outer edge of the coastal band. Chosen to exceed any detour the map can offer, so the band is used only where there is no alternative. |
+| `COASTAL_K_FALLOFF` | `3` | Exponent of the falloff inside the band. Cubed rather than linear so that clearance beats distance and the route takes the middle of a passage. |
+| `PORT_MATCH_DISTANCE` | `1e-6` | How exactly an endpoint must coincide with a port to count as one. Endpoints arrive either as a location's own coordinates or as a coordinate pair from the URL, so this is an equality test with room for float noise, not a radius. |
 | `LANDMASS_JOIN_DISTANCE` | `MIN_CELL_SIZE × √2` (≈2.4 km) | Two land polygons closer than this are one landmass. Chosen as exactly what two diagonally adjacent cells of the *finest* grid span, so the geometric rule is never **stricter** than the raster it guards: whatever the finest raster would join, the geometry joins too. On the current map the threshold is inert — at 0 km the data yields 599 landmasses out of 600 polygons, at 2 km 598, and merges only start appearing at 5 km. The map has no accidental hairline gaps. |
 
 ---
@@ -73,8 +141,16 @@ for movement and attaches a bounding box to each:
 - `lakes` — the non-dry lakes only, with `k = null`, which `fillAreas` paints as `IMPASSABLE`.
 - `barriers` — size 2/3 rivers and the Wall, each carrying **its own** crossings (see
   `indexBarrier`).
+- `water` — `seas`, `bays` and `straits` in one layer, `k = 1` except the Smoking Sea. Used **only** by
+  the sea model; ground passability never consults it, for the reason given above.
+- `ports` — every location with `isPort`, 74 of them, each with its `id`, its `type` and the landmass
+  it stands on. The planner is handed two positions and nothing else, so this list is how it recognises
+  that a point on land is a harbour; the type ranks ports against each other (rule 5) and the landmass
+  is how a combined route finds the ports it may board at. All 74 stand on land, and 49 are cities,
+  9 settlements, 11 castles and 5 ruins.
+- `coastline` — every land ring edge, hashed into buckets (see `indexCoastline`).
 
-There is deliberately no `seas` layer; see the passability model above.
+There is deliberately no sea layer in the *ground* passability model; see above.
 
 ### `indexArea(feature, k): IndexedArea`
 
@@ -115,6 +191,22 @@ ids are therefore arbitrary polygon indices, meaningful only by equality.
 On the current map: 600 polygons → 596 landmasses, 34 of which hold locations, and all 285 locations
 sit on one.
 
+### `indexCoastline(land): Coastline`
+
+Every edge of every land ring, pushed into a `Map` keyed by the same `0.25°` spatial hash the landmass
+join uses, under every bucket its own bounding box touches.
+
+This exists because "how far is this point from land" is asked constantly — for every cell of the
+coastal band, for every chord the taut pass considers, for every sample the harness takes — and the
+naive answer is a scan of the nearest land polygon's ring. The bounding box of Westeros covers most of
+the Narrow Sea, so *every* point out there paid a walk over ~10 000 vertices. Bucketed, a query reads
+two to four buckets. On the real map the index is ~26 500 edges over ~40 000 bucket entries, and it cut
+the worst sea route from 200 ms to 121 ms.
+
+Correctness of the bucket query: a segment within `margin` of the query box must intersect the box
+expanded by `margin`, so its own bounding box overlaps one of the buckets that box covers. Hence
+edges may be stored without any margin, and only the *query* expands.
+
 ### `findRoot(roots, index)` / `join(roots, a, b)`
 
 Textbook union-find. `findRoot` halves the path as it walks (`roots[root] = roots[roots[root]]`).
@@ -146,11 +238,57 @@ than inside a hole in it.
 `pointInPolygon` runs only for pairs that pass it and are not already joined. Containment is judged by
 a single representative vertex (`rings[0][0]`), and the *outer* polygon's holes are respected.
 
-### `forEachBucketNearSegment(from, to, visit)`
+### `forEachBucketNearSegment(from, to, visit)` / `forEachBucketInBBox(bbox, visit)`
 
-Visits every spatial-hash key a segment's bounding box touches after expansion by
-`LANDMASS_JOIN_DISTANCE` — the expansion is what lets a *proximity* test work on a hash built for
-*overlap*.
+`forEachBucketInBBox` visits every spatial-hash key a box touches; `forEachBucketNearSegment` is that
+box grown by `LANDMASS_JOIN_DISTANCE` — the expansion is what lets a *proximity* test work on a hash
+built for *overlap*. Both the landmass join and the coastline queries go through the same two.
+
+### `getDistanceToLand(point, index, cap = SEA_CLEARANCE): number`
+
+Distance from a point to the nearest land ring edge, **capped**: it returns `cap` when nothing is
+closer. Every caller compares against a threshold rather than wanting a true distance, so the cap costs
+nothing and keeps the bucket query small. Callers that do want a number over a wider range — the
+harness measuring how much room a passage has — pass a larger `cap` explicitly.
+
+### `getSegmentDistanceToLand(from, to, index, cap = SEA_CLEARANCE): number`
+
+The same for a whole segment, via `segmentToSegmentDistance` against each nearby coast edge. Exact, and
+that is the point: sampling a chord at intervals misses the headland that sits between two samples, and
+this is what decides whether the taut pass may draw that chord.
+
+### `keepsSeaClearance(from, to, index): boolean`
+
+Whether a straight chord comes no closer to land than **its own endpoints already are**, both capped at
+`SEA_CLEARANCE`.
+
+The cap is what makes one rule serve two situations. Between two points in open water it reads as the
+full 10 km, so no shortcut may cut a corner into the coast. Inside a port approach, where the endpoints
+are already 4 km off land, it reads as 4 km, so the approach may be straightened without pretending
+the rule was met there — the route may never be made *worse* by smoothing, only by the search deciding
+it had to be.
+
+### `isNavigable(point, index): boolean`
+
+Inside the map, inside painted water, off every landmass. The bare geometric question, with no
+clearance and no coefficients.
+
+### `isOpenSea(point, index): boolean`
+
+Navigable **and** at least `SEA_CLEARANCE` from land: the rule as stated, with none of the search's
+half-diagonal margin. This is what the harness measures against, so that what is checked is the
+requirement and not the implementation's own working threshold.
+
+### `isSeaEndpoint(point, index): boolean`
+
+Requirement 1: a sea route may begin and end only in water or at a port. A port qualifies although it
+stands on land — all 74 do.
+
+### `findPort(point, ports): IndexedPort | undefined`
+
+The port at a point, within `PORT_MATCH_DISTANCE`. An equality test with room for float noise, not a
+radius: an endpoint arrives either as a location's own coordinates or as a coordinate pair from the
+URL, so a point is a port only if it *is* one.
 
 ### `getLandmass(point, land): number | null`
 
@@ -170,27 +308,53 @@ off the north of Westeros, around the outside of the map, and back in through ea
 
 ### `classifyCell(point, index, cellSize): number | null`
 
-The terrain coefficient at a point, or `null` for impassable. The one authority on passability; the
-raster is required to reproduce it exactly.
-
-`cellSize` enters because two thresholds scale with resolution: the blocked band around a barrier
-(`cellSize × RIVER_BAND_FACTOR`) and the gate radius (`getCrossingGateRadius`). A barrier blocks the
-point when the point is inside the barrier's bounding box expanded by the band, within the band of the
-line itself, **and** not within the gate radius of a crossing declared for that same barrier.
+The terrain coefficient at a point, or `null` for impassable: `isPassablePoint`, then
+`classifyLandscape`. The one authority on passability; the raster is required to reproduce it exactly.
 
 Cost: roughly 32 µs per call — it is a linear scan over the layers with bounding-box prefilters. That
 is why the search reads a pre-painted raster instead of calling this per cell, and why the harness
 checks the equivalence on a few tens of thousands of cells rather than millions.
+
+### `isPassablePoint(point, index, cellSize): boolean`
+
+Bounds, then barriers, then land, then lakes — and nothing else. Exactly the conditions under which
+`classifyCell` returns non-null, so the two are interchangeable wherever only passability is at stake,
+and the four terrain lookups that decide *which* coefficient are skipped.
+
+That is not a micro-optimisation: the smoothing passes ask this question thousands of times per route,
+and the saving is what made a validated `simplifyPath` cheaper than the unvalidated one it replaced
+(see [routing.md](routing.md)).
+
+`cellSize` enters because two thresholds scale with resolution: the blocked band around a barrier
+(`cellSize × RIVER_BAND_FACTOR`) and the gate radius (`getCrossingGateRadius`).
+
+### `isBlockedByBarrier(point, index, cellSize): boolean`
+
+A barrier blocks the point when the point is inside the barrier's bounding box expanded by the band,
+within the band of the line itself, **and** not within the gate radius of a crossing declared for that
+same barrier.
 
 ### `getCrossingGateRadius(cellSize)`
 
 `max(CROSSING_GATE_RADIUS, cellSize × CROSSING_GATE_FACTOR)` — absolute, with a floor in cells so that
 a coarse grid still finds a cell center inside the gate on each bank.
 
-### `classifyLandscape(point, index): number | null`
+### `classifyLandscape(point, index): number`
 
-Everything except bounds and barriers: land test, then lake test, then the terrain layers in priority
-order (mountains → swamps → deserts → forests), then `TerrainK.Default`.
+Which coefficient, given that the point is already known to be passable: the terrain layers in priority
+order (mountains → swamps → deserts → forests), then `TerrainK.Default`. It cannot fail — everything
+that makes a point impassable has been decided by then.
+
+### `classifySeaCell(point, index, cellSize): number | null`
+
+The sea counterpart, and the authority `rasterizeSeaGrid` must reproduce exactly: bounds, then water,
+then land, then `waterK × getClearanceFactor(...)`. Returns `null` rather than `0` when the product
+vanishes at the shoreline itself, so that "impassable" reaches callers as one value rather than two.
+
+### `getClearanceFactor(distanceToLand, threshold)`
+
+`1` at or beyond the threshold, `COASTAL_K_FACTOR × (d / threshold)³` inside it. Continuous at the
+threshold only in value, not in slope — the drop is the point.
 
 ---
 
@@ -221,6 +385,31 @@ Order matters and is the mirror image of `classifyLandscape`:
 The `rowMask` scratch buffer (one byte per column) is allocated once here and reused by every
 `fillPolygon` call.
 
+### `rasterizeSeaGrid(grid, index): { k, costK }`
+
+The sea counterpart of `rasterizeGrid`, and the same equivalence applies: cell for cell, `k` must equal
+`classifySeaCell` on every cell center, which `checkSeaRasterFaithfulness` asserts against real geodata.
+The check is stricter than the ground one, because what it compares is a distance-derived coefficient
+rather than a layer lookup: the raster's band pass and the geometric distance query have to agree to
+the last bit.
+
+1. Paint `water` — this is the only layer whose `k` survives, so the array starts at `0` rather than at
+   a default, and everything not painted stays impassable.
+2. Paint `land` over it as `IMPASSABLE`. Order matters and is the whole of rule 4: the islands are drawn
+   on top of the seas, so land has to be painted **after** the water it sits in.
+3. `blockOutsideMap`.
+4. Copy the result as `costK`, then apply the coastal grading to `k` (`applyCoastalClearance`).
+
+### `applyCoastalClearance(k, costK, grid, index, extent)`
+
+Walks every edge of every land ring whose bounding box comes within the threshold of the grid and, for
+each cell center within the threshold of that edge, lowers `k` to `costK × getClearanceFactor(distance)`.
+
+Taking the **minimum** over edges is the same as taking the minimum distance, because the factor rises
+monotonically with distance and `costK` is fixed per cell — so the pass never needs to store a distance
+field. Cells no edge comes near are never visited and keep the factor of 1 they started with, which is
+exactly what `getDistanceToLand`'s cap reports for the same point.
+
 ### `blockOutsideMap(k, grid)`
 
 Fills everything whose **cell center** falls outside `MapBounds` with `IMPASSABLE`, row by row: rows
@@ -237,9 +426,11 @@ within the gate radius of one of **that barrier's** crossings.
 
 ### `forEachCellNearSegment(grid, start, end, threshold, visit)`
 
-Iterates the segment's bounding box, expanded by `threshold`, and calls `visit(flatIndex, center)` for
-cells whose center is genuinely within `threshold` of the segment (`pointToSegmentDistance`). The
-center is passed along because the caller needs it for the gate test.
+Iterates the segment's bounding box, expanded by `threshold`, and calls
+`visit(flatIndex, center, distance)` for cells whose center is genuinely within `threshold` of the
+segment (`pointToSegmentDistance`). The center is passed along because `blockBarriers` needs it for the
+gate test, and the distance because `applyCoastalClearance` grades by it — recomputing either in the
+callback would double the cost of the innermost loop on the map.
 
 ### `fillAreas(grid, rowMask, areas, extent, write)`
 
@@ -325,6 +516,7 @@ not `NO_COMPONENT` if either cell might be impassable.
 | `isNearLineGeometry(point, geometry, threshold)` | Any part of the line within `threshold`. |
 | `isNearLine(point, line, threshold)` | Any segment of one part within `threshold`. |
 | `isNearAnyPoint(point, points, threshold)` | Used for the gate test against a barrier's crossings. |
+| `segmentToSegmentDistance(a, b, c, d)` | Zero if the segments cross (`segmentsCross`), otherwise the smallest of the four endpoint-to-segment distances — which is where the minimum always lies for two non-crossing segments. Used both to join touching landmasses and to price a sea chord against the coast. |
 | `pointToSegmentDistance(p, a, b)` | Distance to the **segment**, clamping the projection to `[0, 1]`, with the degenerate `a == b` case handled. Distance to the segment rather than to its vertices matters wherever a polyline is sampled sparsely: a segment can pass straight through a place while its nearest vertex sits tens of kilometres away — which is how a 24 km-away vertex once passed a 25 km threshold check. |
 
 All of these are pure and allocation-light; `findContaining` is a linear scan, which is fine at the

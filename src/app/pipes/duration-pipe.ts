@@ -1,7 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { LanguagesState } from '../store';
-import { RouteResult } from '../models';
 
 const MINUTES_PER_DAY = 24 * 60;
 const MINUTES_PER_WEEK = 7 * MINUTES_PER_DAY;
@@ -12,7 +11,7 @@ const MINUTES_PER_WEEK = 7 * MINUTES_PER_DAY;
 export class DurationPipe implements PipeTransform {
     constructor(private store: Store) {}
 
-    transform(routeResult: RouteResult, placeholder = '-'): string {
+    transform(routeResult: { timeHours: number }, placeholder = '-'): string {
         if (!routeResult) {
             return placeholder;
         }

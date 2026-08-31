@@ -17,7 +17,8 @@ Two consequences of nodes being raw vertices rather than junctions:
 
 - **Node density is high and uneven.** The 20 nearest nodes to a point are typically 20 consecutive
   vertices of the same road a few km apart, which is why the planner thins candidates by spacing
-  (`CANDIDATE_SPACING`) before doing anything expensive with them.
+  (`CANDIDATE_SPACING`) before doing anything expensive with them - and why `findCostedCandidates`
+  ranks by the cost of walking to a node rather than by how near it is.
 - **Edge length is the only cost.** A road leg costs its own length, i.e. it is travelled at `k = 1` —
   the fastest terrain there is. That is the mechanical form "roads take priority" takes; the planner's
   tolerance guard is what stops it from being abused.

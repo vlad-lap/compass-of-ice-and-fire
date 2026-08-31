@@ -8,9 +8,23 @@
                 "grid"
             ],
             "found": true,
-            "distanceKm": 6905.5,
+            "distanceKm": 6905.4,
             "timeHours": 1793.6,
-            "pathPoints": 541,
+            "pathPoints": 539,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
+            "footShipFound": true,
+            "footShipStructure": [
+                "grid",
+                "sea"
+            ],
+            "footShipPorts": "city-astapor -> city-morosh",
+            "footShipDistanceKm": 8874.4,
+            "footShipTimeHours": 1027.1,
+            "horseShipPorts": "city-astapor -> city-meereen",
+            "horseShipTimeHours": 873.3,
             "dragonKm": 2851.8
         },
         "King's Landing -> The Eyrie": {
@@ -22,6 +36,21 @@
             "distanceKm": 1146.2,
             "timeHours": 286.5,
             "pathPoints": 220,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
+            "footShipFound": true,
+            "footShipStructure": [
+                "sea",
+                "grid",
+                "road"
+            ],
+            "footShipPorts": "city-kings-landing -> city-gulltown",
+            "footShipDistanceKm": 1499.4,
+            "footShipTimeHours": 223.1,
+            "horseShipPorts": "city-kings-landing -> city-gulltown",
+            "horseShipTimeHours": 162.2,
             "dragonKm": 780.1
         },
         "Qohor -> Old Ghis": {
@@ -34,6 +63,21 @@
             "distanceKm": 7411,
             "timeHours": 1919.1,
             "pathPoints": 491,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
+            "footShipFound": true,
+            "footShipStructure": [
+                "grid",
+                "sea",
+                "grid"
+            ],
+            "footShipPorts": "city-tolos -> city-astapor",
+            "footShipDistanceKm": 2813.5,
+            "footShipTimeHours": 686.7,
+            "horseShipPorts": "city-tolos -> city-astapor",
+            "horseShipTimeHours": 374.4,
             "dragonKm": 2421.8
         },
         "Mantarys -> Old Ghis": {
@@ -46,6 +90,21 @@
             "distanceKm": 2341.4,
             "timeHours": 651.7,
             "pathPoints": 85,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
+            "footShipFound": true,
+            "footShipStructure": [
+                "road",
+                "sea",
+                "grid"
+            ],
+            "footShipPorts": "city-tolos -> city-astapor",
+            "footShipDistanceKm": 1531.7,
+            "footShipTimeHours": 359.5,
+            "horseShipPorts": "city-tolos -> city-astapor",
+            "horseShipTimeHours": 210.8,
             "dragonKm": 1188.5
         },
         "Pentos -> Vaes Dothrak": {
@@ -54,10 +113,25 @@
                 "road"
             ],
             "found": true,
-            "distanceKm": 4441.4,
-            "timeHours": 1110.3,
+            "distanceKm": 4468.2,
+            "timeHours": 1117,
             "pathPoints": 139,
-            "dragonKm": 4046.1
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
+            "footShipFound": true,
+            "footShipStructure": [
+                "sea",
+                "grid",
+                "road"
+            ],
+            "footShipPorts": "city-pentos -> city-new-ibbish",
+            "footShipDistanceKm": 6753.9,
+            "footShipTimeHours": 857.3,
+            "horseShipPorts": "city-pentos -> city-myr",
+            "horseShipTimeHours": 623.4,
+            "dragonKm": 4072.6
         },
         "Selhorys -> Volon Therys": {
             "note": "spec rivers 1",
@@ -67,9 +141,20 @@
                 "grid"
             ],
             "found": true,
-            "distanceKm": 571.9,
-            "timeHours": 143,
+            "distanceKm": 594.3,
+            "timeHours": 148.6,
             "pathPoints": 18,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
+            "footShipFound": false,
+            "footShipStructure": [],
+            "footShipPorts": null,
+            "footShipDistanceKm": null,
+            "footShipTimeHours": null,
+            "horseShipPorts": null,
+            "horseShipTimeHours": null,
             "dragonKm": 257.9
         },
         "Pennytree -> Stone Hedge": {
@@ -80,9 +165,20 @@
                 "grid"
             ],
             "found": true,
-            "distanceKm": 178.3,
-            "timeHours": 46.5,
-            "pathPoints": 13,
+            "distanceKm": 176.1,
+            "timeHours": 45.6,
+            "pathPoints": 15,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
+            "footShipFound": false,
+            "footShipStructure": [],
+            "footShipPorts": null,
+            "footShipDistanceKm": null,
+            "footShipTimeHours": null,
+            "horseShipPorts": null,
+            "horseShipTimeHours": null,
             "dragonKm": 74.4
         },
         "Saath -> Morosh": {
@@ -94,6 +190,19 @@
             "distanceKm": 236.4,
             "timeHours": 59.1,
             "pathPoints": 6,
+            "shipFound": true,
+            "shipDistanceKm": 292.9,
+            "shipTimeHours": 29.3,
+            "shipPathPoints": 7,
+            "footShipFound": true,
+            "footShipStructure": [
+                "sea"
+            ],
+            "footShipPorts": "city-saath -> city-morosh",
+            "footShipDistanceKm": 292.9,
+            "footShipTimeHours": 29.3,
+            "horseShipPorts": "city-saath -> city-morosh",
+            "horseShipTimeHours": 29.3,
             "dragonKm": 233.5
         },
         "The Sorrows (Chroyane) -> Volon Therys": {
@@ -105,6 +214,17 @@
             "distanceKm": 598.5,
             "timeHours": 149.6,
             "pathPoints": 25,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
+            "footShipFound": false,
+            "footShipStructure": [],
+            "footShipPorts": null,
+            "footShipDistanceKm": null,
+            "footShipTimeHours": null,
+            "horseShipPorts": null,
+            "horseShipTimeHours": null,
             "dragonKm": 560.1
         },
         "Maidenpool -> Saltpans": {
@@ -114,9 +234,23 @@
                 "grid"
             ],
             "found": true,
-            "distanceKm": 1313.5,
-            "timeHours": 328.4,
-            "pathPoints": 159,
+            "distanceKm": 1260.5,
+            "timeHours": 315.1,
+            "pathPoints": 145,
+            "shipFound": true,
+            "shipDistanceKm": 174.9,
+            "shipTimeHours": 17.5,
+            "shipPathPoints": 11,
+            "footShipFound": true,
+            "footShipStructure": [
+                "sea",
+                "grid"
+            ],
+            "footShipPorts": "city-maidenpool -> settlement-wickenden",
+            "footShipDistanceKm": 503.9,
+            "footShipTimeHours": 93.1,
+            "horseShipPorts": "city-maidenpool -> settlement-wickenden",
+            "horseShipTimeHours": 57.5,
             "dragonKm": 146.5
         },
         "Sarhoy -> Volon Therys": {
@@ -128,6 +262,17 @@
             "distanceKm": 214.3,
             "timeHours": 53.6,
             "pathPoints": 10,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
+            "footShipFound": false,
+            "footShipStructure": [],
+            "footShipPorts": null,
+            "footShipDistanceKm": null,
+            "footShipTimeHours": null,
+            "horseShipPorts": null,
+            "horseShipTimeHours": null,
             "dragonKm": 200.8
         },
         "Saath -> Vaes Graddakh (Sarys)": {
@@ -138,7 +283,21 @@
             "found": true,
             "distanceKm": 408,
             "timeHours": 102,
-            "pathPoints": 10,
+            "pathPoints": 14,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
+            "footShipFound": true,
+            "footShipStructure": [
+                "sea",
+                "grid"
+            ],
+            "footShipPorts": "city-saath -> city-morosh",
+            "footShipDistanceKm": 465.5,
+            "footShipTimeHours": 72.5,
+            "horseShipPorts": "city-saath -> city-morosh",
+            "horseShipTimeHours": 50.9,
             "dragonKm": 284
         },
         "King's Landing -> Winterfell": {
@@ -150,6 +309,21 @@
             "distanceKm": 2208.3,
             "timeHours": 552.1,
             "pathPoints": 195,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
+            "footShipFound": true,
+            "footShipStructure": [
+                "sea",
+                "grid",
+                "road"
+            ],
+            "footShipPorts": "city-kings-landing -> city-white-harbor",
+            "footShipDistanceKm": 3128.6,
+            "footShipTimeHours": 406,
+            "horseShipPorts": "city-kings-landing -> city-white-harbor",
+            "horseShipTimeHours": 328.5,
             "dragonKm": 2015.8
         },
         "King's Landing -> Pentos": {
@@ -159,7 +333,20 @@
             "distanceKm": null,
             "timeHours": null,
             "pathPoints": 0,
-            "dragonKm": 1114.8
+            "shipFound": true,
+            "shipDistanceKm": 1193.5,
+            "shipTimeHours": 119.3,
+            "shipPathPoints": 20,
+            "footShipFound": true,
+            "footShipStructure": [
+                "sea"
+            ],
+            "footShipPorts": "city-kings-landing -> city-pentos",
+            "footShipDistanceKm": 1193.5,
+            "footShipTimeHours": 119.3,
+            "horseShipPorts": "city-kings-landing -> city-pentos",
+            "horseShipTimeHours": 119.3,
+            "dragonKm": 1088.5
         },
         "Winterfell -> Craster's Keep": {
             "note": "beyond the Wall, must pass a gate",
@@ -168,9 +355,20 @@
                 "grid"
             ],
             "found": true,
-            "distanceKm": 1034.5,
-            "timeHours": 261.6,
+            "distanceKm": 1031.2,
+            "timeHours": 260.7,
             "pathPoints": 78,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
+            "footShipFound": false,
+            "footShipStructure": [],
+            "footShipPorts": null,
+            "footShipDistanceKm": null,
+            "footShipTimeHours": null,
+            "horseShipPorts": null,
+            "horseShipTimeHours": null,
             "dragonKm": 874.9
         },
         "Castle Black -> Dragonstone": {
@@ -180,6 +378,21 @@
             "distanceKm": null,
             "timeHours": null,
             "pathPoints": 0,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
+            "footShipFound": true,
+            "footShipStructure": [
+                "road",
+                "grid",
+                "sea"
+            ],
+            "footShipPorts": "castle-eastwatch-by-the-sea -> castle-dragonstone",
+            "footShipDistanceKm": 3092.2,
+            "footShipTimeHours": 341.4,
+            "horseShipPorts": "castle-eastwatch-by-the-sea -> castle-dragonstone",
+            "horseShipTimeHours": 316,
             "dragonKm": 2511
         },
         "King's Landing -> Pyke": {
@@ -189,7 +402,284 @@
             "distanceKm": null,
             "timeHours": null,
             "pathPoints": 0,
-            "dragonKm": 1258.7
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
+            "footShipFound": true,
+            "footShipStructure": [
+                "road",
+                "sea",
+                "grid"
+            ],
+            "footShipPorts": "castle-seagard -> settlement-lordsport",
+            "footShipDistanceKm": 1938.7,
+            "footShipTimeHours": 406,
+            "horseShipPorts": "castle-seagard -> settlement-lordsport",
+            "horseShipTimeHours": 231.8,
+            "dragonKm": 1242.9
+        },
+        "Lordsport -> Lannisport": {
+            "note": "sea: island port to the mainland across Ironman's Bay",
+            "structure": [],
+            "found": false,
+            "distanceKm": null,
+            "timeHours": null,
+            "pathPoints": 0,
+            "shipFound": true,
+            "shipDistanceKm": 844.4,
+            "shipTimeHours": 84.4,
+            "shipPathPoints": 15,
+            "footShipFound": true,
+            "footShipStructure": [
+                "sea"
+            ],
+            "footShipPorts": "settlement-lordsport -> city-lannisport",
+            "footShipDistanceKm": 844.4,
+            "footShipTimeHours": 84.4,
+            "horseShipPorts": "settlement-lordsport -> city-lannisport",
+            "horseShipTimeHours": 84.4,
+            "dragonKm": 504.3
+        },
+        "King's Landing -> Lannisport": {
+            "note": "sea: around Dorne, a detour no from-to box would hold",
+            "structure": [
+                "road"
+            ],
+            "found": true,
+            "distanceKm": 1271.4,
+            "timeHours": 317.8,
+            "pathPoints": 145,
+            "shipFound": true,
+            "shipDistanceKm": 5126.7,
+            "shipTimeHours": 512.7,
+            "shipPathPoints": 69,
+            "footShipFound": true,
+            "footShipStructure": [
+                "road",
+                "sea"
+            ],
+            "footShipPorts": "castle-casterly-rock -> city-lannisport",
+            "footShipDistanceKm": 1293.6,
+            "footShipTimeHours": 319.9,
+            "horseShipPorts": "castle-casterly-rock -> city-lannisport",
+            "horseShipTimeHours": 162.2,
+            "dragonKm": 1107.2
+        },
+        "Meereen -> Volantis": {
+            "note": "sea: past Valyria, where the Smoking Sea costs x10",
+            "structure": [
+                "road"
+            ],
+            "found": true,
+            "distanceKm": 1908.4,
+            "timeHours": 477.1,
+            "pathPoints": 9,
+            "shipFound": true,
+            "shipDistanceKm": 3609.3,
+            "shipTimeHours": 360.9,
+            "shipPathPoints": 48,
+            "footShipFound": true,
+            "footShipStructure": [
+                "sea"
+            ],
+            "footShipPorts": "city-meereen -> city-volantis",
+            "footShipDistanceKm": 3609.3,
+            "footShipTimeHours": 360.9,
+            "horseShipPorts": "city-meereen -> city-tolos",
+            "horseShipTimeHours": 272.5,
+            "dragonKm": 1876.4
+        },
+        "Oldtown -> Sunspear": {
+            "note": "sea: along a coast the whole way",
+            "structure": [
+                "grid"
+            ],
+            "found": true,
+            "distanceKm": 1873.4,
+            "timeHours": 739.7,
+            "pathPoints": 29,
+            "shipFound": true,
+            "shipDistanceKm": 2126.3,
+            "shipTimeHours": 212.6,
+            "shipPathPoints": 32,
+            "footShipFound": true,
+            "footShipStructure": [
+                "sea"
+            ],
+            "footShipPorts": "city-oldtown -> castle-sunspear",
+            "footShipDistanceKm": 2126.3,
+            "footShipTimeHours": 212.6,
+            "horseShipPorts": "city-oldtown -> castle-sunspear",
+            "horseShipTimeHours": 212.6,
+            "dragonKm": 1635.6
+        },
+        "Eastwatch-by-the-Sea -> Oldtown": {
+            "note": "sea: around all of Westeros",
+            "structure": [
+                "grid",
+                "road"
+            ],
+            "found": true,
+            "distanceKm": 4806.8,
+            "timeHours": 1201.7,
+            "pathPoints": 510,
+            "shipFound": true,
+            "shipDistanceKm": 6366,
+            "shipTimeHours": 636.6,
+            "shipPathPoints": 83,
+            "footShipFound": true,
+            "footShipStructure": [
+                "sea"
+            ],
+            "footShipPorts": "castle-eastwatch-by-the-sea -> city-oldtown",
+            "footShipDistanceKm": 6366,
+            "footShipTimeHours": 636.6,
+            "horseShipPorts": "castle-seagard -> city-oldtown",
+            "horseShipTimeHours": 531.4,
+            "dragonKm": 3756
+        },
+        "Braavos -> Pentos": {
+            "note": "sea: two ports a short hop apart",
+            "structure": [],
+            "found": false,
+            "distanceKm": null,
+            "timeHours": null,
+            "pathPoints": 0,
+            "shipFound": true,
+            "shipDistanceKm": 1290.1,
+            "shipTimeHours": 129,
+            "shipPathPoints": 24,
+            "footShipFound": true,
+            "footShipStructure": [
+                "sea"
+            ],
+            "footShipPorts": "city-braavos -> city-pentos",
+            "footShipDistanceKm": 1290.1,
+            "footShipTimeHours": 129,
+            "horseShipPorts": "city-braavos -> city-pentos",
+            "horseShipTimeHours": 129,
+            "dragonKm": 985.1
+        },
+        "Winterfell -> Oldtown": {
+            "note": "sea: Winterfell is no port, so there is no sea route",
+            "structure": [
+                "road"
+            ],
+            "found": true,
+            "distanceKm": 3820.5,
+            "timeHours": 955.1,
+            "pathPoints": 431,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
+            "footShipFound": true,
+            "footShipStructure": [
+                "road",
+                "sea"
+            ],
+            "footShipPorts": "castle-seagard -> city-oldtown",
+            "footShipDistanceKm": 3739.8,
+            "footShipTimeHours": 572.8,
+            "horseShipPorts": "castle-seagard -> city-oldtown",
+            "horseShipTimeHours": 408,
+            "dragonKm": 2904.4
+        },
+        "Ramsgate -> Braavos": {
+            "note": "combined: castle and city both close, the city wins",
+            "structure": [],
+            "found": false,
+            "distanceKm": null,
+            "timeHours": null,
+            "pathPoints": 0,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
+            "footShipFound": true,
+            "footShipStructure": [
+                "grid",
+                "sea"
+            ],
+            "footShipPorts": "city-white-harbor -> city-braavos",
+            "footShipDistanceKm": 1906.2,
+            "footShipTimeHours": 255.4,
+            "horseShipPorts": "city-white-harbor -> city-braavos",
+            "horseShipTimeHours": 202.6,
+            "dragonKm": 1062.9
+        },
+        "Castle Black -> Braavos": {
+            "note": "combined: the castle is far closer, so it wins",
+            "structure": [],
+            "found": false,
+            "distanceKm": null,
+            "timeHours": null,
+            "pathPoints": 0,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
+            "footShipFound": true,
+            "footShipStructure": [
+                "road",
+                "grid",
+                "sea"
+            ],
+            "footShipPorts": "castle-eastwatch-by-the-sea -> city-braavos",
+            "footShipDistanceKm": 2280.4,
+            "footShipTimeHours": 260.2,
+            "horseShipPorts": "castle-eastwatch-by-the-sea -> city-braavos",
+            "horseShipTimeHours": 234.8,
+            "dragonKm": 2027.6
+        },
+        "King's Landing -> Quiet Isle": {
+            "note": "combined: an island with no port, entered anywhere",
+            "structure": [],
+            "found": false,
+            "distanceKm": null,
+            "timeHours": null,
+            "pathPoints": 0,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
+            "footShipFound": true,
+            "footShipStructure": [
+                "road",
+                "sea",
+                "grid"
+            ],
+            "footShipPorts": "city-maidenpool -> coast",
+            "footShipDistanceKm": 552.9,
+            "footShipTimeHours": 125.9,
+            "horseShipPorts": "city-maidenpool -> coast",
+            "horseShipTimeHours": 68.2,
+            "dragonKm": 427.9
+        },
+        "Open water in the Narrow Sea -> Winterfell": {
+            "note": "combined: from a ship already at sea to an inland castle",
+            "structure": [],
+            "found": false,
+            "distanceKm": null,
+            "timeHours": null,
+            "pathPoints": 0,
+            "shipFound": false,
+            "shipDistanceKm": null,
+            "shipTimeHours": null,
+            "shipPathPoints": 0,
+            "footShipFound": true,
+            "footShipStructure": [
+                "sea",
+                "grid",
+                "road"
+            ],
+            "footShipPorts": "coast -> city-white-harbor",
+            "footShipDistanceKm": 2392,
+            "footShipTimeHours": 332.4,
+            "horseShipPorts": "coast -> city-white-harbor",
+            "horseShipTimeHours": 254.8,
+            "dragonKm": 1910.7
         }
     }
 }

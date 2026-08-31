@@ -16,9 +16,9 @@ import {
     syncLanguageDict,
 } from './language.mjs';
 import { getConsolePrefix, getConsoleStats } from './console-utils.mjs';
-import { getCentralPoint, getInteriorPoint, getMiddleMultiPoint } from './geometry-utils.mjs';
+import { getCentralPoint, getDistanceToShore, getInteriorPoint, getMiddleMultiPoint } from './geometry-utils.mjs';
 import { getCategory } from './get-category.mjs';
-import { LOCATION_LABEL_ANCHORS } from './constants.mjs';
+import { LOCATION_LABEL_ANCHORS, PORT_OVERRIDES } from './constants.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const QGIS = join(__dirname, '..', 'qgis');
@@ -230,6 +230,16 @@ const theFiveForts = processGeoJSON('got_five_forts.geojson', 'the-five-forts.js
     },
 });
 
+function isPort(feature) {
+    return (
+        PORT_OVERRIDES.includes(feature.properties.id) ||
+        (
+            ['city', 'settlement'].includes(feature.properties.type) &&
+            getDistanceToShore(feature.geometry.coordinates, [continents, islands]) <= 0.2
+        )
+    );
+}
+
 const locations = processGeoJSON('got_locations.geojson', 'locations.json', {
     mapFn: feature => {
         const category = getCategory(feature);
@@ -247,6 +257,7 @@ const locations = processGeoJSON('got_locations.geojson', 'locations.json', {
                 regionId: getContainingPolygonId(feature.geometry, region),
                 landscapeId: getContainingLandscapeId(feature),
                 islandId: getContainingPolygonId(feature.geometry, islands),
+                isPort: isPort(feature),
                 description: descriptions[feature.properties.id] ?? null,
                 nameVariant: nameVariants[feature.properties.id] ?? null,
                 labelAnchor: LOCATION_LABEL_ANCHORS[feature.properties.id],

@@ -24,10 +24,19 @@
 
 .tooltip-title {
     flex-grow: 1;
+
     h5 {
         font-size: 14px;
         color: variables.$black;
         margin: 0;
+
+        .mat-icon {
+            @include mixins.icon-size(12px);
+            height: 14px;
+            color: variables.$grey;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
     }
 }
 

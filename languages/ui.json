@@ -63,21 +63,13 @@
         "en": "Route",
         "ru": "Маршрут"
     },
-    "routeNotFound": {
-        "en": "Unable to find a route",
-        "ru": "Не удалось построить маршрут"
+    "selectA": {
+        "en": "Hold to select a starting point",
+        "ru": "Удерживайте, чтобы выбрать начальную точку"
     },
-    "foot": {
-        "en": "On foot",
-        "ru": "Пешком"
-    },
-    "horse": {
-        "en": "On horseback",
-        "ru": "На коне"
-    },
-    "dragon": {
-        "en": "By dragon",
-        "ru": "На драконе"
+    "selectB": {
+        "en": "Hold to select a destination point",
+        "ru": "Удерживайте, чтобы выбрать точку назначения"
     },
     "placeFrom": {
         "en": "From",

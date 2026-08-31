@@ -26,9 +26,7 @@ export class MapService {
         private bottomSheet: MatBottomSheet,
         private searchService: SearchService,
         private routeService: RouteService,
-    ) {
-
-    }
+    ) {}
 
     showTooltip(
         { target: map, lngLat }: MapLayerMouseEvent | MapMouseEvent | MapTouchEvent,
@@ -73,7 +71,7 @@ export class MapService {
         this.routeCardOpened.set(true);
         this.openCard(
             RouteCardComponent,
-            { height: 225 },
+            { minHeight: 136, height: 176 },
             () => {
                 this.routeService.routeEnabled.set(false);
                 this.routeCardOpened.set(false);
