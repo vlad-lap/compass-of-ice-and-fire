@@ -2,10 +2,6 @@
 
 Проект создан в образовательных и развлекательных целях и не связан с Джорджем Р. Р. Мартином, HBO или какими-либо иными правообладателями.
 
-Исходный код: https://github.com/vlad-lap/compass-of-ice-and-fire
-
-Telegram: [@enfant_miserable](https://t.me/enfant_miserable)
-
 Исходный код Compass of Ice and Fire распространяется по лицензии **Mozilla Public License 2.0 (MPL-2.0)**.
 
 ### Карта

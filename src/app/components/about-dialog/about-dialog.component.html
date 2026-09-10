@@ -18,6 +18,14 @@
 
     @if (about) {
         <div [innerHTML]="about"></div>
+        <div class="links">
+            @let linksList = links | keyvalue;
+            @for (link of linksList; track link.key) {
+                <a matIconButton [href]="link.value" target="_blank">
+                    <mat-icon [svgIcon]="link.key" />
+                </a>
+            }
+        </div>
     } @else {
         <div class="loader">
             <coiaf-spinner size="small" />

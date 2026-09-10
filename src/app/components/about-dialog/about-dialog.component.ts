@@ -13,6 +13,7 @@ import { Store } from '@ngxs/store';
 import { GetAboutText, LanguagesState, UserSettingsState } from '../../store';
 import { DomSanitizer } from '@angular/platform-browser';
 import { SpinnerComponent } from '../spinner/spinner.component';
+import { KeyValuePipe } from '@angular/common';
 
 @Component({
     selector: 'coiaf-about-dialog',
@@ -24,6 +25,7 @@ import { SpinnerComponent } from '../spinner/spinner.component';
         MatDialogClose,
         MatDialogContent,
         SpinnerComponent,
+        KeyValuePipe,
     ],
     templateUrl: './about-dialog.component.html',
     styleUrl: './about-dialog.component.scss',
@@ -36,6 +38,13 @@ export class AboutDialogComponent implements OnInit {
         const about = this.about();
         return this.mdToHtml(about);
     });
+
+    protected readonly links = {
+        github: 'https://github.com/vlad-lap/compass-of-ice-and-fire',
+        telegram: 'https://t.me/enfant_miserable',
+        threads: 'https://www.threads.com/@vlado.noodles',
+        linkedin: 'https://www.linkedin.com/in/vlapshov/',
+    };
 
     private converter = new Converter({
         simplifiedAutoLink: true,
