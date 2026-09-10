@@ -13,3 +13,10 @@
     align-items: center;
     overflow: hidden;
 }
+
+.links {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 16px;
+}
