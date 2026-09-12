@@ -1,0 +1,7 @@
+.cdk-overlay-pane.mat-mdc-dialog-panel.coiaf-house-dialog {
+    max-width: calc(100vw - 16px);
+
+    .mat-mdc-dialog-content {
+        max-height: unset;
+    }
+}

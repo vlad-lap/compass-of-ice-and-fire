@@ -6,6 +6,8 @@ import { AreaPipe, CoatOfArmsUrlPipe, LocalizePipe } from '../../pipes';
 import { MatIcon } from '@angular/material/icon';
 import { CommonModule, TitleCasePipe } from '@angular/common';
 import { SkeletonLoaderComponent } from '../skeleton-loader/skeleton-loader.component';
+import { MatDialog } from '@angular/material/dialog';
+import { HouseDialogComponent } from '../house-dialog/house-dialog.component';
 
 @Component({
     selector: 'coiaf-caption',
@@ -28,5 +30,15 @@ export class CaptionComponent {
     readonly coreUi = this.store.selectSignal(LanguagesState.coreUi);
     readonly loading = this.store.selectSignal(CoatsOfArmsState.loading);
 
-    constructor(private store: Store) {}
+    constructor(
+        private store: Store,
+        private dialog: MatDialog,
+    ) {}
+
+    openHouseDialog(): void {
+        this.dialog.open(HouseDialogComponent, {
+            data: this.location(),
+            panelClass: 'coiaf-house-dialog'
+        })
+    }
 }

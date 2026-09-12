@@ -49,3 +49,10 @@ a {
         bottom: 0;
     }
 }
+
+.dialog-header {
+    display: inline-flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}

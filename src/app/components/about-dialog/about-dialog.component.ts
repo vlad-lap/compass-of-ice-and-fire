@@ -4,6 +4,7 @@ import {
     computed,
     OnInit,
     SecurityContext,
+    ViewEncapsulation,
 } from '@angular/core';
 import { MatDialogClose, MatDialogContent, MatDialogTitle } from '@angular/material/dialog';
 import { MatIcon } from '@angular/material/icon';
@@ -29,6 +30,7 @@ import { KeyValuePipe } from '@angular/common';
     ],
     templateUrl: './about-dialog.component.html',
     styleUrl: './about-dialog.component.scss',
+    encapsulation: ViewEncapsulation.None,
 })
 export class AboutDialogComponent implements OnInit {
     readonly coreUi = this.store.selectSignal(LanguagesState.coreUi);

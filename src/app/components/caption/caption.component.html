@@ -39,12 +39,17 @@
                 [rounded]="true"
             >
                 @if (coatOfArms) {
-                    <div class="coat-of-arms">
+                    <div
+                        class="coat-of-arms"
+                        tabindex="-1"
+                        (click)="openHouseDialog()"
+                        (keydown.enter)="openHouseDialog()"
+                    >
                         <img
                             [attr.src]="coatOfArms"
                             height="40"
                             alt=""
-                        >
+                        />
                     </div>
                 } @else {
                     <mat-icon class="claimed-by-icon">shield</mat-icon>

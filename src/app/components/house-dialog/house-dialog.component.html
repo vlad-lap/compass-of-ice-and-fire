@@ -1,0 +1,23 @@
+@let ui = coreUi();
+
+<div mat-dialog-title>
+    <div class="dialog-header">
+        <div>{{ data | localize: 'ClaimedBy' }}</div>
+        <button
+            matIconButton
+            mat-dialog-close
+            [aria-label]="ui.close"
+        >
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
+</div>
+
+<mat-dialog-content>
+    @let coatOfArms = data | coatOfArmsUrl | async;
+    <img
+        [attr.src]="coatOfArms"
+        height="300"
+        alt=""
+    >
+</mat-dialog-content>

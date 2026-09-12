@@ -55,9 +55,13 @@
 
     h3 {
         margin: 0;
+        font-size: 20px;
+        font-weight: normal;
 
         .mat-icon {
             @include mixins.icon-size(20px);
+            height: 24px;
+            line-height: 24px;
             color: variables.$grey;
             margin-left: 4px;
             vertical-align: sub;
