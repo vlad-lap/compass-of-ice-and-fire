@@ -11,7 +11,26 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA = join(__dirname, '..', 'data');
 const LANGUAGES = join(__dirname, '..', 'languages');
 
-export function addFeatureLanguageProperties(feature, namesFileName) {
+function getClaimedBy({ properties: { id, ClaimedBy } }, lang) {
+    const dictName = 'claimed-by.json';
+    const dict = readJSON(join(DATA, dictName));
+    const langDict = readJSON(join(LANGUAGES, lang, dictName));
+
+    if (dict[id]) {
+        return {
+            ClaimedBy: dict[id],
+            [`ClaimedBy_${lang}`]: langDict[id] ?? null,
+        };
+    }
+
+    if (ClaimedBy) {
+        return { [`ClaimedBy_${lang}`]: langDict[id] ?? null };
+    }
+
+    return {};
+}
+
+function addFeatureLanguageProperties(feature, namesFileName) {
     const properties = AVAILABLE_LANGUAGES
         .filter(lang => lang !== DEFAULT_LANGUAGE)
         .reduce((props, lang) => {
@@ -19,7 +38,6 @@ export function addFeatureLanguageProperties(feature, namesFileName) {
             const typesDict = readJSON(join(LANGUAGES, lang, 'types.json'));
             const descriptionsDict = readJSON(join(LANGUAGES, lang, 'descriptions.json'));
             const nameVariantsDict = readJSON(join(LANGUAGES, lang, 'name-variants.json'));
-            const claimedByDict = readJSON(join(LANGUAGES, lang, 'claimed-by.json'));
             const categoriesDict = readJSON(join(LANGUAGES, lang, 'categories.json'));
 
             const category = getCategory(feature);
@@ -34,10 +52,7 @@ export function addFeatureLanguageProperties(feature, namesFileName) {
                     ? { [`type_${lang}`]: typesDict[feature.properties.type] ?? null }
                     : {}
                 ),
-                ...(feature.properties.ClaimedBy
-                    ? { [`ClaimedBy_${lang}`]: claimedByDict[feature.properties.id] ?? null }
-                    : {}
-                ),
+                ...getClaimedBy(feature, lang)
             };
             
         }, feature.properties);
