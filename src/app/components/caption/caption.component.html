@@ -25,8 +25,37 @@
 </div>
 
 @if (locationData.ClaimedBy) {
-    <div class="claimed-by">
-        <mat-icon class="claimed-by-icon" [ngClass]="iconSize()">groups</mat-icon>
-        <span>{{ locationData | localize: 'ClaimedBy' }}</span>
-    </div>
+    @if (variant() === 'full') {
+        @let coatOfArms = locationData | coatOfArmsUrl | async;
+
+        <div
+            class="claimed-by-full"
+            [class.has-coat-of-arms]="coatOfArms"
+        >
+            <coiaf-skeleton-loader
+                [loading]="loading()"
+                [width]="40"
+                [height]="40"
+                [rounded]="true"
+            >
+                @if (coatOfArms) {
+                    <div class="coat-of-arms">
+                        <img
+                            [attr.src]="coatOfArms"
+                            height="40"
+                            alt=""
+                        >
+                    </div>
+                } @else {
+                    <mat-icon class="claimed-by-icon">shield</mat-icon>
+                }
+            </coiaf-skeleton-loader>
+        <div class="claimed-by-house">{{ locationData | localize: 'ClaimedBy' }}</div>
+        </div>
+    } @else {
+        <div class="claimed-by-short">
+            <mat-icon class="claimed-by-icon">groups</mat-icon>
+            <span class="claimed-by-house">{{ locationData | localize: 'ClaimedBy' }}</span>
+        </div>
+    }
 }

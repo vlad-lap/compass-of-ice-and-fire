@@ -6,3 +6,5 @@ export * from './user-settings/user-settings.state';
 export * from './user-settings/user-settings.actions';
 export * from './history/history.state';
 export * from './history/history.actions';
+export * from './coats-of-arms/coats-of-arms.state';
+export * from './coats-of-arms/coats-of-arms.actions';

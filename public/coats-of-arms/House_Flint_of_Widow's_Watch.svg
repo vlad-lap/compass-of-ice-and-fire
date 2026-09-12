@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="660" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs>
+  <radialGradient id="rg" gradientUnits="userSpaceOnUse" cx="220" cy="220" r="405">
+    <stop style="stop-color:#fff;stop-opacity:.3" offset="0" />
+    <stop style="stop-color:#fff;stop-opacity:.2" offset="0.2" />
+    <stop style="stop-color:#666;stop-opacity:.1" offset="0.6" />
+    <stop style="stop-color:#000;stop-opacity:.13" offset="1" />
+  </radialGradient>
+  <linearGradient id="cap" gradientUnits="objectBoundingBox" x1="0%" y1="5%" x2="0%" y2="99%">
+    <stop style="stop-color:#fff;" offset="0" />
+    <stop style="stop-color:#00f;" offset="1" />
+  </linearGradient>
+  <clipPath id="clip-shield">
+    <path id="shield" d="m 2 2 v 257 c 0 286 298 398 298 398 c 0 0 298 -112 298 -398 V 2 Z" />
+  </clipPath>
+  <path id="wave" d="m -135,665 v -5 c 21.6578,0 41.289469,-8.78946 55.5,-23 14.118486,-14.21061 26.315497,-23 48,-23 6.06622,0 23.25,3 24.5,17 -3,-3 -7.334,-5 -12,-5 -4.667,0 -9,2 -12,5 -3,3 -5,7.334 -5,12 0,4.667 2,9 5,12 3,3 7.334,5 12,5 21.657799,0 41.289469,-8.78946 55.5,-23 14.118486,-14.21061 26.315497,-23 48,-23 6.06622,0 23.25,3 24.5,17 -3,-3 -7.334,-5 -12,-5 -4.667,0 -9,2 -12,5 -3,3 -5,7.334 -5,12 0,4.667 2,9 5,12 3,3 7.334,5 12,5 21.6578,0 41.28947,-8.78946 55.5,-23 14.11849,-14.21061 26.3155,-23 48,-23 6.06622,0 23.25,3 24.5,17 -3,-3 -7.334,-5 -12,-5 -4.667,0 -9,2 -12,5 -3,3 -5,7.334 -5,12 0,4.667 2,9 5,12 3,3 7.334,5 12,5 21.6578,0 41.28947,-8.78946 55.5,-23 14.11849,-14.21061 26.3155,-23 48,-23 6.06622,0 23.25,3 24.5,17 -3,-3 -7.334,-5 -12,-5 -4.667,0 -9,2 -12,5 -3,3 -5,7.334 -5,12 0,4.667 2,9 5,12 3,3 7.334,5 12,5 21.6578,0 41.28947,-8.78946 55.5,-23 14.11849,-14.21061 26.3155,-23 48,-23 6.06622,0 23.25,3 24.5,17 -3,-3 -7.334,-5 -12,-5 -4.667,0 -9,2 -12,5 -3,3 -5,7.334 -5,12 0,4.667 2,9 5,12 3,3 7.334,5 12,5 21.6578,0 41.28947,-8.78946 55.5,-23 14.11849,-14.21061 26.3155,-23 48,-23 6.06622,0 23.25,3 24.5,17 -3,-3 -7.334,-5 -12,-5 -4.667,0 -9,2 -12,5 -3,3 -5,7.334 -5,12 0,4.667 2,9 5,12 3,3 7.334,5 12,5 21.6578,0 41.28947,-8.78946 55.5,-23 14.11849,-14.21061 26.3155,-23 48,-23 6.06622,0 23.25,3 24.5,17 -3,-3 -7.334,-5 -12,-5 -4.667,0 -9,2 -12,5 -3,3 -5,7.334 -5,12 0,4.667 2,9 5,12 3,3 7.334,5 12,5 v 5"/>
+  <g id="eye">
+    <path style="fill:#fff;stroke:#00f;stroke-width:2;" d="m 300,50 c -35,0 -66,16 -84,40 18,24 49,40 84,40 35,0 66,-16 84,-40 -18,-24 -49,-40 -84,-40 z"/>
+    <circle style="fill:#00f;" r="35" cx="300" cy="90"/>
+    <circle style="fill:#000;" r="15" cx="300" cy="90"/>
+  </g>
+</defs>
+<use id="background" fill="#00f" xlink:href="#shield" />
+<path id="chief" fill="#ff0" d="M 2 2 L 2 200 L 598 200 L 598 2 L 2 2 z "/>
+<g clip-path="url(#clip-shield)">
+	<use xlink:href="#wave" fill="#00f" y="-460"/>
+	<use xlink:href="#wave" fill="url(#cap)" y="-414" x="58"/>
+	<use xlink:href="#wave" fill="url(#cap)" y="-368"/>
+	<use xlink:href="#wave" fill="url(#cap)" y="-322" x="58"/>
+	<use xlink:href="#wave" fill="url(#cap)" y="-276"/>
+	<use xlink:href="#wave" fill="url(#cap)" y="-230" x="58"/>
+	<use xlink:href="#wave" fill="url(#cap)" y="-184"/>
+	<use xlink:href="#wave" fill="url(#cap)" y="-138" x="58"/>
+	<use xlink:href="#wave" fill="url(#cap)" y="-92"/>
+	<use xlink:href="#wave" fill="url(#cap)" y="-46" x="58"/>
+	<use xlink:href="#wave" fill="url(#cap)"/>
+</g>
+<use xlink:href="#eye" x="-150"/>
+<use xlink:href="#eye" x="150"/>
+<use id="shine" fill="url(#rg)" stroke="#000" stroke-width="3" xlink:href="#shield" />
+</svg>

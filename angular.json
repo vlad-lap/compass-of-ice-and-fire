@@ -33,6 +33,11 @@
                             },
                             {
                                 "glob": "**/*",
+                                "input": "public/coats-of-arms",
+                                "output": "coats-of-arms"
+                            },
+                            {
+                                "glob": "**/*",
                                 "input": "geodata",
                                 "output": "geodata"
                             },

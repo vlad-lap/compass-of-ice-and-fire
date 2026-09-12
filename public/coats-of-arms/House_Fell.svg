@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="660">
+<defs>
+  <radialGradient id="rg" gradientUnits="userSpaceOnUse" cx="220" cy="220" r="405">
+    <stop style="stop-color:#fff;stop-opacity:.3" offset="0"/>
+    <stop style="stop-color:#fff;stop-opacity:.2" offset=".2"/>
+    <stop style="stop-color:#666;stop-opacity:.1" offset=".6"/>
+    <stop style="stop-color:#000;stop-opacity:.13" offset="1"/>
+  </radialGradient>
+  <clipPath id="clip-shield">
+    <path id="shield" d="m2,2v257c0,286 298,398 298,398c0,0 298-112 298-398V2z"/>
+  </clipPath>
+</defs>
+<use id="field" xlink:href="#shield" fill="#000"/>
+<path clip-path="url(#clip-shield)" fill="#080" d="m0,360 36,-42 -24,3 36,-42 -24,3 36,-42 36,42 -24,-3 36,42 -24,-3 36,42 36,-42 -24,3 36,-42 -24,3 36,-42 36,42 -24,-3 36,42 -24,-3 36,42 36,-42 -24,3 36,-42 -24,3 36,-42 36,42 -24,-3 36,42 -24,-3 36,42 36,-42 -24,3 36,-42 -24,3 36,-42 36,42 -24,-3 36,42 -24,-3 36,42 36,-42 -24,3 36,-42 -24,3 36,-42 36,42 -24,-3 36,42 -24,-3 36,42V660H0z"/>
+<circle cx="150" cy="150" r="80" fill="#fff"/>
+<circle cx="120" cy="140" r="70" fill="#000"/>
+<use id="shine" xlink:href="#shield" fill="url(#rg)" stroke="#000" stroke-width="3"/>
+</svg>

@@ -1,7 +1,9 @@
 {
     "buildCommand": "npm run build",
     "outputDirectory": "dist/compass-of-ice-and-fire/browser",
-    "rewrites": [
-        { "source": "/(.*)", "destination": "/index.html" }
+    "routes": [
+        { "handle": "filesystem" },
+        { "src": "^/coats-of-arms/.*$", "status": 404 },
+        { "src": "/(.*)", "dest": "/index.html" }
     ]
 }

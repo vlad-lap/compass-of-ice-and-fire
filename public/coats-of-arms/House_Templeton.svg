@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="660">
+<defs>
+  <radialGradient id="rg" gradientUnits="userSpaceOnUse" cx="220" cy="220" r="405">
+    <stop style="stop-color:#fff;stop-opacity:.3" offset="0"/>
+    <stop style="stop-color:#fff;stop-opacity:.2" offset=".2"/>
+    <stop style="stop-color:#666;stop-opacity:.1" offset=".6"/>
+    <stop style="stop-color:#000;stop-opacity:.13" offset="1"/>
+  </radialGradient>
+  <path id="shield" d="m2,2v257c0,286 298,398 298,398c0,0 298-112 298-398V2z"/>
+  <g id="star7" transform="translate(300,300)scale(95)">
+	<path style="fill:#000000;" d="M0,-1 L-0.43388,0.90097 L0.78183,-0.62349 L-0.97493,0.22252 L0.97493,0.22252 L-0.78183,-0.62349 L0.43388,0.90097z"/>
+	<path id="triangle7" style="fill:#ffffff;opacity:0.1;" d="m 0,0 -0.1543,-0.3223 0.1543,-0.6777"/>
+	<use xlink:href="#triangle7" transform="rotate(51.428571429)"/>
+	<use xlink:href="#triangle7" transform="rotate(102.857142857)"/>
+	<use xlink:href="#triangle7" transform="rotate(154.285714286)"/>
+	<use xlink:href="#triangle7" transform="rotate(-154.285714286)"/>
+	<use xlink:href="#triangle7" transform="rotate(-102.857142857)"/>
+	<use xlink:href="#triangle7" transform="rotate(-51.428571429)"/>
+  </g>
+  <g id="star6" transform="translate(300,300)scale(40)rotate(45)">
+	<path style="fill:#000000;" d="M 0 -1 L -0.17382812 -0.30273438 L -0.86523438 -0.5 L -0.34960938 0 L -0.86523438 0.5 L -0.17382812 0.30273438 L 0 1 L 0.17382812 0.30273438 L 0.86523438 0.5 L 0.34960938 0 L 0.86523438 -0.5 L 0.17382812 -0.30273438 L 0 -1 z"/>
+	<path id="triangle6" style="fill:#ffffff;opacity:0.15;" d="m 0,-1 -0.1738,0.6973 0.1738,0.3027 z"/>
+	<use xlink:href="#triangle6" transform="rotate(60)"/>
+	<use xlink:href="#triangle6" transform="rotate(120)"/>
+	<use xlink:href="#triangle6" transform="rotate(180)"/>
+	<use xlink:href="#triangle6" transform="rotate(-120)"/>
+	<use xlink:href="#triangle6" transform="rotate(-60)"/>
+  </g>
+  <use id="star6b" xlink:href="#star6" transform="rotate(90,300,300)"/>
+</defs>
+<use id="background" xlink:href="#shield" fill="#000"/>
+<path id="saltire" style="fill:#ffdd00;" d="M 2 2 L 2 108.06641 L 193.93359 300 L 49.828125 444.10547 C 76.245639 491.3178 110.69904 529.84669 145.55664 560.50977 L 300 406.06641 L 454.44336 560.50977 C 489.30096 529.84669 523.75436 491.3178 550.17188 444.10547 L 406.06641 300 L 598 108.06641 L 598 2 L 491.93359 2 L 300 193.93359 L 108.06641 2 L 2 2 z"/>
+<use xlink:href="#star7"/>
+<use xlink:href="#star6b" x="-120" y="-120"/>
+<use xlink:href="#star6" x="120" y="-120"/>
+<use xlink:href="#star6" x="-100" y="100"/>
+<use xlink:href="#star6b" x="100" y="100"/>
+<use xlink:href="#star6b" x="-200" y="-200"/>
+<use xlink:href="#star6" x="200" y="-200"/>
+<use xlink:href="#star6" x="-165" y="165"/>
+<use xlink:href="#star6b" x="165" y="165"/>
+<use id="shine" xlink:href="#shield" fill="url(#rg)" stroke="#000" stroke-width="3"/>
+</svg>
