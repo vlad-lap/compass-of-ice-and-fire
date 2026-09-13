@@ -10,6 +10,7 @@ import {
     LanguagesState,
     HistoryState,
     CoatsOfArmsState,
+    MottosState,
 } from './store';
 import { withNgxsStoragePlugin } from '@ngxs/storage-plugin';
 
@@ -19,7 +20,7 @@ export const appConfig: ApplicationConfig = {
         provideRouter(routes),
         provideHttpClient(),
         provideStore(
-            [UserSettingsState, GeodataState, LanguagesState, HistoryState, CoatsOfArmsState],
+            [UserSettingsState, GeodataState, LanguagesState, HistoryState, CoatsOfArmsState, MottosState],
             withNgxsStoragePlugin({ keys: [UserSettingsState, HistoryState] }),
         ),
     ],

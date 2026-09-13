@@ -1,4 +1,4 @@
-import { Language } from '../../models';
+import { Language } from '../../../models';
 import { CenterZoomBearing } from 'maplibre-gl';
 
 export class SetLanguage {

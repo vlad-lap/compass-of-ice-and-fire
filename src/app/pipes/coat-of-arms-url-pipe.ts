@@ -28,11 +28,6 @@ export class CoatOfArmsUrlPipe implements PipeTransform {
             'castle-new-barrel': '/coats-of-arms/House_Fossoway_of_New_Barrel.svg',
             'castle-widows-watch': "/coats-of-arms/House_Flint_of_Widow's_Watch.svg",
             'castle-flints-finger': "/coats-of-arms/House_Flint_of_Flint's_Finger.svg",
-            'castle-shatterstone': null,
-            'castle-crow-spike-keep': null,
-            'castle-downdelving': null,
-            'castle-corpse-lake': null,
-            'castle-dyre-den': null,
         };
 
         const url = overrides[id] ?? `/coats-of-arms/House_${ClaimedBy}.svg`;

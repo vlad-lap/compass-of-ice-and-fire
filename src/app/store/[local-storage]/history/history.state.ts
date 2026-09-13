@@ -1,8 +1,8 @@
 import { Action, State, StateContext, StateToken } from '@ngxs/store';
-import { FeatureData } from '../../models';
+import { FeatureData } from '../../../models';
 import { Injectable } from '@angular/core';
 import { AddHistoryItem } from './history.actions';
-import { buildLocalizedSearchKeys } from '../../utils';
+import { buildLocalizedSearchKeys } from '../../../utils';
 import { insertItem, removeItem } from '@ngxs/store/operators';
 
 const HISTORY_LIMIT = 10;

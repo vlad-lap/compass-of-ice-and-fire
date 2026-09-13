@@ -23,7 +23,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 const MAX_CARD_HEIGHT_VIEWPORT_RATIO = 0.8;
 
-const CARD_HEIGHT_ABOVE_HEADER = 28;
+const CARD_HEIGHT_ABOVE_HEADER = 24;
 
 export interface CardData {
     height?: number;

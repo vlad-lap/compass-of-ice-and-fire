@@ -71,7 +71,7 @@ export class MapService {
         this.routeCardOpened.set(true);
         this.openCard(
             RouteCardComponent,
-            { minHeight: 136, height: 176 },
+            { minHeight: 128, height: 176 },
             () => {
                 this.routeService.routeEnabled.set(false);
                 this.routeCardOpened.set(false);

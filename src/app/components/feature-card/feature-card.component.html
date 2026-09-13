@@ -3,7 +3,7 @@
 <coiaf-card>
     <div coiafCardTitle>
         <h3>
-            <span>{{ data | localize: 'name' }}</span>
+            <span>{{ data | localize: 'name' }}&nbsp;</span>
 
             @if (data.isPort) {
                 <mat-icon>anchor</mat-icon>
@@ -27,7 +27,8 @@
     </div>
 
     <div coiafCardBody>
-        <coiaf-caption [location]="data" variant="full" class="card-caption" />
+        <coiaf-house-preview [location]="data" />
+        <coiaf-caption [location]="data" class="card-caption" />
         <div class="description">{{ data | localize: 'description' }}</div>
     </div>
 </coiaf-card>

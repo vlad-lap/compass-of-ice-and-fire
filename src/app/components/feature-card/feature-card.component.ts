@@ -19,6 +19,7 @@ import {
     CardTitleDirective,
 } from '../card/card.component';
 import { RouteService, SearchService } from '../../services';
+import { HousePreviewComponent } from '../house-preview/house-preview.component';
 
 @Component({
     selector: 'coiaf-feature-card',
@@ -32,6 +33,7 @@ import { RouteService, SearchService } from '../../services';
         CardTitleDirective,
         CardBodyDirective,
         CardActionsDirective,
+        HousePreviewComponent,
     ],
     templateUrl: './feature-card.component.html',
 })
@@ -45,7 +47,7 @@ export class FeatureCardComponent implements OnDestroy {
     readonly canBuildRoute = computed<boolean>(() => {
         const { geometry } = this.feature();
         return geometry.type === 'Point' || geometry.type === 'MultiPoint';
-    })
+    });
 
     constructor(
         @Inject(MAT_BOTTOM_SHEET_DATA) protected data: FeatureData,

@@ -1,0 +1,37 @@
+@let locationData = location();
+
+@if (locationData.ClaimedBy) {
+    @let coatOfArms = locationData | coatOfArmsUrl | async;
+
+    <div
+        class="house-preview"
+        [class.clickable]="clickable()"
+        matRipple
+        [matRippleDisabled]="!clickable()"
+        tabindex="-1"
+        (click)="openHouseDialog()"
+        (keydown.enter)="openHouseDialog()"
+    >
+        <coiaf-skeleton-loader
+            [loading]="loading()"
+            [width]="40"
+            [height]="40"
+            [rounded]="true"
+        >
+            @if (coatOfArms) {
+                <div class="coat-of-arms">
+                    <img
+                        [attr.src]="coatOfArms"
+                        height="40"
+                        alt=""
+                    />
+                </div>
+            } @else {
+                <mat-icon class="coat-of-arms-placeholder">shield</mat-icon>
+            }
+        </coiaf-skeleton-loader>
+        @if (coreUi()) {
+            <div class="house-name">{{ locationData | localize: 'ClaimedBy' }}</div>
+        }
+    </div>
+}

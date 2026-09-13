@@ -1,7 +1,7 @@
-import { Language } from '../../models';
+import { Language } from '../../../models';
 import { CenterZoomBearing } from 'maplibre-gl';
 import { Action, NgxsOnInit, Selector, State, StateContext } from '@ngxs/store';
-import { AVAILABLE_LANGUAGES, DEFAULT_LANGUAGE } from '../../constants';
+import { AVAILABLE_LANGUAGES, DEFAULT_LANGUAGE } from '../../../constants';
 import { SetLanguage, SetPosition } from './user-settings.actions';
 import { Injectable } from '@angular/core';
 

@@ -2,7 +2,10 @@
 
 <div mat-dialog-title>
     <div class="dialog-header">
-        <div>{{ data | localize: 'ClaimedBy' }}</div>
+        <div>
+            <div>{{ data | localize: 'ClaimedBy' }}</div>
+            <div class="motto">{{ motto() }}</div>
+        </div>
         <button
             matIconButton
             mat-dialog-close

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Inject, ViewEncapsulation } from '@angular/core';
-import { LanguagesState } from '../../store';
+import { LanguagesState, MottosState } from '../../store';
 import { Store } from '@ngxs/store';
 import { MAT_DIALOG_DATA, MatDialogClose, MatDialogContent, MatDialogTitle, } from '@angular/material/dialog';
 import { MatIcon } from '@angular/material/icon';
@@ -27,7 +27,7 @@ import { AsyncPipe } from '@angular/common';
 })
 export class HouseDialogComponent {
     readonly coreUi = this.store.selectSignal(LanguagesState.coreUi);
-    readonly about = this.store.selectSignal(LanguagesState.about);
+    readonly motto = this.store.selectSignal(MottosState.byHouse(this.data.ClaimedBy));
 
     constructor(
         @Inject(MAT_DIALOG_DATA) protected data: FeatureData,

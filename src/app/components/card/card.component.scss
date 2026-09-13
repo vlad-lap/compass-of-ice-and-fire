@@ -44,7 +44,7 @@
     align-items: start;
     margin: {
         top: 4px;
-        bottom: 12px;
+        bottom: 4px;
         left: 12px;
     }
 
@@ -55,21 +55,21 @@
 
     h3 {
         margin: 0;
-        font-size: 20px;
+        font-size: 24px;
         font-weight: normal;
 
         .mat-icon {
             @include mixins.icon-size(20px);
-            height: 24px;
-            line-height: 24px;
+            height: 28px;
+            line-height: 28px;
             color: variables.$grey;
-            margin-left: 4px;
             vertical-align: sub;
         }
     }
 
     .card-subtitle {
         color: variables.$grey;
+        margin-bottom: 8px;
     }
 
     .mat-icon.share-icon {

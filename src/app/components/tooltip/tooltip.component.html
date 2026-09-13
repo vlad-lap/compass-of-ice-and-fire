@@ -29,6 +29,14 @@
         }
     </div>
 
+    @if (locationData.ClaimedBy) {
+        <div class="tooltip-caption house">
+            <mat-icon>groups</mat-icon>
+            <span>{{ locationData | localize: 'ClaimedBy' }}</span>
+        </div>
+
+    }
+
     <coiaf-caption [location]="locationData" class="tooltip-caption" />
 
     @if (tooltipOptions?.showDetailsLink) {

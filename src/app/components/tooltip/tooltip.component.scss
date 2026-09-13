@@ -46,6 +46,12 @@
     color: variables.$grey;
 }
 
+.house {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+}
+
 .tooltip-subtitle {
     margin-bottom: 8px;
     font-weight: bold;

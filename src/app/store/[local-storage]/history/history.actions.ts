@@ -1,4 +1,4 @@
-import { FeatureData } from '../../models';
+import { FeatureData } from '../../../models';
 
 export class AddHistoryItem {
     static readonly type = '[History] Add item';
