@@ -1,0 +1,23 @@
+@use '../../../../mixins';
+
+.mat-icon {
+    &.small {
+        @include mixins.icon-size(48px);
+    }
+
+    &.medium {
+        @include mixins.icon-size(96px);
+    }
+
+    &::ng-deep .star {
+        transform-box: fill-box;
+        transform-origin: center 53.6%;
+        animation: spin 3s linear infinite;
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

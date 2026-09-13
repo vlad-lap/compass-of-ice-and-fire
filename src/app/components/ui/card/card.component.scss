@@ -1,0 +1,113 @@
+@use '../../../../variables';
+@use '../../../../mixins';
+
+.coiaf-card {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    overflow: hidden;
+
+    &.resizing,
+    &.resizing * {
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+    }
+}
+
+.card-resize-area {
+    height: 20px;
+    padding: 8px;
+    box-sizing: border-box;
+    align-self: center;
+    flex-grow: 0;
+    flex-shrink: 0;
+    cursor: ns-resize;
+    touch-action: none;
+
+    &:hover .card-resize-control {
+        opacity: .8;
+    }
+}
+
+.card-resize-control {
+    height: 4px;
+    width: 64px;
+    background-color: variables.$grey;
+    border-radius: 2px;
+    opacity: .4;
+}
+
+.card-header {
+    display: flex;
+    gap: 4px;
+    align-items: start;
+    margin: {
+        top: 4px;
+        bottom: 4px;
+        left: 12px;
+    }
+
+    .card-title {
+        flex-grow: 1;
+        margin-top: 8px;
+    }
+
+    h3 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: normal;
+
+        .mat-icon {
+            @include mixins.icon-size(20px);
+            height: 28px;
+            line-height: 28px;
+            color: variables.$grey;
+            vertical-align: sub;
+        }
+    }
+
+    .card-subtitle {
+        color: variables.$grey;
+        margin-bottom: 8px;
+    }
+
+    .mat-icon.share-icon {
+        bottom: 2px;
+    }
+}
+
+.card-actions {
+    display: contents;
+}
+
+.mat-icon.share-icon {
+    bottom: 2px;
+}
+
+.card-caption {
+    font-size: 14px;
+    color: variables.$grey;
+    margin-bottom: 12px;
+}
+
+.card-body {
+    max-width: 100%;
+    overflow: {
+        x: hidden;
+        y: auto;
+    }
+    touch-action: pan-y;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: {
+        left: 12px;
+        right: 12px;
+    }
+    margin-bottom: 12px;
+    flex-grow: 1;
+
+    @media (min-width: 960px) {
+        max-width: 640px;
+    }
+}

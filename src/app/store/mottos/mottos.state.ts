@@ -1,7 +1,7 @@
 import { LanguageDict } from '../../models';
 import { Action, createSelector, Selector, State, StateContext } from '@ngxs/store';
 import { Injectable } from '@angular/core';
-import { UserSettingsState, UserSettingsStateModel } from '../[local-storage]';
+import { UserSettingsState, UserSettingsStateModel } from '../local-storage';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { GetMottos } from './mottos.actions';

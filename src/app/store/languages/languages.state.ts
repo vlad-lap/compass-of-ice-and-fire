@@ -5,7 +5,7 @@ import { GetAboutText, GetCoreUI, GetOptionGroups } from './languages.actions';
 import { Observable, of, tap } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { mapValues } from 'lodash';
-import { UserSettingsState, UserSettingsStateModel } from '../[local-storage]';
+import { UserSettingsState, UserSettingsStateModel } from '../local-storage';
 
 interface LanguagesStateModel {
     coreUi: UiConfig<LanguageDict>;

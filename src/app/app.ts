@@ -9,7 +9,7 @@ import {
 } from '@angular/router';
 import { filter } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { SpinnerComponent } from './components/spinner/spinner.component';
+import { SpinnerComponent } from './components/ui';
 import { MatIconRegistry } from '@angular/material/icon';
 import { SVG_ICONS } from './svg-icons';
 import { DomSanitizer } from '@angular/platform-browser';

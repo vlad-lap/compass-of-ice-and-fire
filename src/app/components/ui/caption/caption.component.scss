@@ -1,0 +1,47 @@
+@use 'sass:map';
+@use '../../../../theme';
+@use '../../../../mixins';
+
+:host {
+    display: block;
+}
+
+.bullet {
+    margin: 0 4px;
+}
+
+.claimed-by-full {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    padding: 8px;
+
+    .claimed-by-house {
+        color: map.get(theme.$primary-palette, 10);
+        font-weight: bold;
+    }
+
+    .coat-of-arms {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .claimed-by-icon {
+        @include mixins.icon-size(40px);
+        color: map.get(theme.$primary-palette, 80);
+    }
+}
+
+.claimed-by-short {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+
+    .claimed-by-icon {
+        @include mixins.icon-size(12px);
+    }
+}
