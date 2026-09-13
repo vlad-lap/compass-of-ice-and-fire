@@ -43,7 +43,7 @@ interface RouteForm {
         MatIconButton,
     ],
     templateUrl: './route-control.component.html',
-    styleUrls: ['../../../form-field.scss', './route-control.component.scss'],
+    styleUrls: ['../form-field.scss', './route-control.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RouteControlComponent implements OnInit {

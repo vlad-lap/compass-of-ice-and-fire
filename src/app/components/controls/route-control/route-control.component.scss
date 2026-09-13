@@ -1,20 +1,18 @@
-@use '../../../../mixins';
-@use '../../../../variables';
+@use 'mixins';
+@use 'tailwind';
 
 .route-prefix-icon {
     @include mixins.icon-size(16px);
 
     &.from {
-        color: variables.$red;
+        @apply text-red;
     }
 
     &.to {
-        color: variables.$green;
+        @apply text-green;
     }
 }
 
 .swap-button {
-    position: absolute;
-    right: 8px;
-    top: calc(50% - 20px);
+    @apply absolute right-2 top-[calc(50%-20px)];
 }

@@ -1,11 +1,8 @@
-@use '../../../../variables';
-@use '../../../../mixins';
+@use 'mixins';
+@use 'tailwind';
 
 .coiaf-card {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    overflow: hidden;
+    @apply flex flex-col items-stretch overflow-hidden;
 
     &.resizing,
     &.resizing * {
@@ -16,98 +13,60 @@
 }
 
 .card-resize-area {
-    height: 20px;
-    padding: 8px;
-    box-sizing: border-box;
-    align-self: center;
-    flex-grow: 0;
-    flex-shrink: 0;
-    cursor: ns-resize;
-    touch-action: none;
+    @apply h-2.5 p-2 box-border self-center grow-0 shrink-0 cursor-ns-resize touch-none;
 
     &:hover .card-resize-control {
-        opacity: .8;
+        @apply opacity-80;
     }
 }
 
 .card-resize-control {
-    height: 4px;
-    width: 64px;
-    background-color: variables.$grey;
-    border-radius: 2px;
-    opacity: .4;
+    @apply h-1 w-16 bg-grey rounded-xs opacity-40;
 }
 
 .card-header {
-    display: flex;
-    gap: 4px;
-    align-items: start;
-    margin: {
-        top: 4px;
-        bottom: 4px;
-        left: 12px;
-    }
+    @apply flex gap-1 items-start my-1 ml-3;
 
     .card-title {
-        flex-grow: 1;
-        margin-top: 8px;
+        @apply grow mt-1;
     }
 
     h3 {
-        margin: 0;
-        font-size: 24px;
-        font-weight: normal;
+        @apply m-0 text-xl font-bold;
 
         .mat-icon {
             @include mixins.icon-size(20px);
-            height: 28px;
-            line-height: 28px;
-            color: variables.$grey;
-            vertical-align: sub;
+            @apply h-6 leading-6 text-grey align-sub;
         }
     }
 
     .card-subtitle {
-        color: variables.$grey;
-        margin-bottom: 8px;
+        @apply text-base text-grey font-bold mb-2;
     }
 
     .mat-icon.share-icon {
-        bottom: 2px;
+        @apply bottom-0.5;
     }
 }
 
 .card-actions {
-    display: contents;
+    @apply contents;
 }
 
 .mat-icon.share-icon {
-    bottom: 2px;
+    @apply bottom-0.5;
 }
 
 .card-caption {
-    font-size: 14px;
-    color: variables.$grey;
-    margin-bottom: 12px;
+    @apply text-sm text-grey mb-3;
 }
 
 .card-body {
-    max-width: 100%;
-    overflow: {
-        x: hidden;
-        y: auto;
-    }
-    touch-action: pan-y;
+    @apply max-w-[100%] overflow-x-hidden overflow-y-auto touch-pan-y px-3 mb-3 grow;
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
-    padding: {
-        left: 12px;
-        right: 12px;
-    }
-    margin-bottom: 12px;
-    flex-grow: 1;
 
     @media (min-width: 960px) {
-        max-width: 640px;
+        @apply max-w-[640px];
     }
 }

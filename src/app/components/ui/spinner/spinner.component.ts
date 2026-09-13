@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { NgClass } from '@angular/common';
 
@@ -8,6 +8,7 @@ import { NgClass } from '@angular/common';
     imports: [MatIcon, NgClass],
     template: '<mat-icon svgIcon="spinner" [ngClass]="size()" />',
     styleUrl: './spinner.component.scss',
+    encapsulation: ViewEncapsulation.None,
 })
 export class SpinnerComponent {
     size = input<'small' | 'medium'>('medium');

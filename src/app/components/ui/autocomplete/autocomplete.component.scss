@@ -1,12 +1,11 @@
-@use '../../../../variables';
-@use '../../../../mixins';
+@use 'mixins';
+@use 'tailwind';
 
 .coiaf-autocomplete .mat-mdc-option {
-    flex-direction: row-reverse;
+    @apply flex-row-reverse;
 
     .mat-icon {
         @include mixins.icon-size(16px);
-        color: variables.$grey;
-        margin-right: 0;
+        @apply text-grey mr-0;
     }
 }

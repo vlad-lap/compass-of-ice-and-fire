@@ -1,4 +1,4 @@
-@use '../../../../variables';
+@use 'tailwind';
 
 .cdk-overlay-pane.mat-mdc-dialog-panel.coiaf-house-dialog {
     max-width: calc(100vw - 16px);
@@ -9,8 +9,9 @@
 }
 
 .motto {
-    font-size: 14px;
-    line-height: 20px;
-    color: variables.$grey;
-    max-width: 240px;
+    @apply text-sm text-grey font-normal max-w-[240px];
+}
+
+.coat-of-arms {
+    @apply h-[300px];
 }

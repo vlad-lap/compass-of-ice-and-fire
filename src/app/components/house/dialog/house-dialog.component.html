@@ -2,7 +2,7 @@
 
 <div mat-dialog-title>
     <div class="dialog-header">
-        <div>
+        <div class="mt-2">
             <div>{{ data | localize: 'ClaimedBy' }}</div>
             <div class="motto">{{ motto() }}</div>
         </div>
@@ -20,7 +20,7 @@
     @let coatOfArms = data | coatOfArmsUrl | async;
     <img
         [attr.src]="coatOfArms"
-        height="300"
+        class="coat-of-arms"
         alt=""
     >
 </mat-dialog-content>

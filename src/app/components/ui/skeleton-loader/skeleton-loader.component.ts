@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@angular/core';
 
 @Component({
     selector: 'coiaf-skeleton-loader',
@@ -6,7 +6,9 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     template: '<ng-content />',
     styleUrl: './skeleton-loader.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    encapsulation: ViewEncapsulation.None,
     host: {
+        class: 'skeleton-loader',
         '[class.loading]': 'loading()',
         '[class.rounded]': 'rounded()',
         '[style.width.px]': 'width()',

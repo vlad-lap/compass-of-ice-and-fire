@@ -1,8 +1,8 @@
 @use 'sass:map';
 @use '@angular/material' as mat;
-@use '../../../../variables';
-@use '../../../../mixins';
-@use '../../../../theme';
+@use 'mixins';
+@use 'theme';
+@use 'tailwind';
 
 :host {
     @include mat.tabs-overrides((
@@ -16,49 +16,35 @@
 }
 
 .route-tab-title, .route-tab-title-loader {
-    margin-left: 8px;
+    @apply ml-2;
 }
 
 .route-placeholder {
-    width: 100%;
-    height: 100%;
-    margin-top: 8px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: map.get(theme.$primary-palette, 50);
-    font-size: 12px;
+    @apply h-full w-full mt-2 flex flex-col justify-center items-center text-grey text-xs;
 
     .mat-icon {
         @include mixins.icon-size(20px);
 
         &.icon-a {
-            color: variables.$red;
+            @apply text-red;
         }
 
         &.icon-b {
-            color: variables.$green;
+            @apply text-green;
         }
     }
 }
 
 .route-info {
-    margin-top: 16px;
+    @apply mt-4;
 }
 
 .route-distance {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 12px;
+    @apply text-2xl font-bold mb-2;
 }
 
 .route-speed {
-    color: variables.$grey;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
+    @apply text-grey text-sm flex gap-1 items-center;
 
     .mat-icon {
         @include mixins.icon-size(16px);
@@ -66,29 +52,22 @@
 }
 
 ::ng-deep .mdc-tab.mat-mdc-tab {
-    padding: 0 12px;
+    @apply px-3;
 }
 
 .route-stretches {
-    list-style: none;
-    margin: 16px 0 0;
-    padding: 0;
-    color: variables.$grey;
-    font-size: 13px;
+    @apply list-none p-0 text-grey text-sm;
 
     li {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        padding: 3px 0;
+        @apply flex items-center gap-2 py-1;
     }
 
     .mat-icon {
         @include mixins.icon-size(14px);
-        flex: none;
+        @apply flex-none;
     }
 
     .route-stretch-distance {
-        flex: 1;
+        @apply grow;
     }
 }

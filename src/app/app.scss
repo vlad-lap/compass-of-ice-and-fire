@@ -1,7 +1,5 @@
+@use 'tailwind';
+
 .loader {
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    @apply w-full h-screen flex justify-center items-center;
 }

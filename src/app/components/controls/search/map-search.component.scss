@@ -1,10 +1,9 @@
 @use '@angular/material' as mat;
-@use '../../../../variables';
+@use 'tailwind';
+@use 'variables';
 
 .search-suffix {
-    display: flex;
-    align-items: center;
-    margin-right: 8px;
+    @apply flex items-center mr-2;
 }
 
 .language-button {
@@ -12,5 +11,5 @@
     @include mat.icon-button-overrides((
         icon-color: variables.$grey,
     ));
-    font-size: 14px;
+    @apply text-sm;
 }

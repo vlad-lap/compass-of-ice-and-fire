@@ -1,39 +1,30 @@
 @use 'sass:map';
-@use '../../../variables';
-@use '../../../theme';
+@use 'theme';
+@use 'tailwind';
 
 :host {
-    position: relative;
-    display: block;
-    width: 100%;
-    height: 100vh;
+    @apply relative block w-full h-screen;
 }
 
 .map {
-    display: block;
-    width: 100%;
-    height: 100%;
+    @apply block w-full h-full;
 }
 
 .map-menu, .about-button, .map-scale {
-    position: absolute;
-    z-index: 1;
+    @apply absolute z-1;
     touch-action: pan-x pan-y;
 }
 
 .map-menu, .about-button {
-    right: 16px;
+    @apply right-4;
 }
 
 .about-button {
-    bottom: 20px;
+    @apply bottom-5;
 }
 
 .map-menu {
-    bottom: 80px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    @apply bottom-16 flex flex-col gap-2;
 
     button.mdc-fab {
         &.active {
@@ -42,47 +33,43 @@
         }
 
         &:not(.active) {
-            opacity: .75;
+            @apply opacity-75;
         }
     }
 }
 
 .map-scale {
-    left: 16px;
-    bottom: 20px;
+    @apply left-4 bottom-5;
 }
 
 ::ng-deep {
     .maplibregl-ctrl-attrib {
-        display: none;
+        @apply hidden;
     }
 
     .maplibregl-marker {
-        cursor: grab;
+        @apply cursor-grab;
     }
 
     .coiaf-map-popup {
         .maplibregl-popup-content {
-            background-color: variables.$white;
-            padding: 12px 16px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+            @apply bg-white px-4 py-3 rounded-lg shadow-md;
         }
 
         &.maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
-            border-top-color: variables.$white;
+            @apply border-t-white;
         }
 
         &.maplibregl-popup-anchor-top .maplibregl-popup-tip {
-            border-bottom-color: variables.$white;
+            @apply border-b-white;
         }
 
         &.maplibregl-popup-anchor-left .maplibregl-popup-tip {
-            border-right-color: variables.$white;
+            @apply border-r-white;
         }
 
         &.maplibregl-popup-anchor-right .maplibregl-popup-tip {
-            border-left-color: variables.$white;
+            @apply border-l-white;
         }
     }
 }

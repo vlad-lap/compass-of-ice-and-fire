@@ -1,9 +1,10 @@
 @use '@angular/material' as mat;
-@use '../../../../variables';
-@use '../../../../mixins';
+@use 'variables';
+@use 'mixins';
+@use 'tailwind';
 
 .tooltip {
-    max-width: 180px;
+    @apply max-w-45;
 
     @include mat.icon-button-overrides((
         icon-size: 14px,
@@ -16,52 +17,36 @@
 }
 
 .tooltip-header {
-    display: flex;
-    gap: 16px;
-    justify-content: space-between;
-    align-items: flex-start;
+    @apply flex gap-4 justify-between items-start;
 }
 
 .tooltip-title {
-    flex-grow: 1;
+    @apply grow mt-0.5;
 
     h5 {
-        font-size: 14px;
-        color: variables.$black;
-        margin: 0;
+        @apply text-sm text-black font-bold m-0;
 
         .mat-icon {
             @include mixins.icon-size(12px);
-            height: 14px;
-            color: variables.$grey;
-            margin-left: 4px;
-            vertical-align: middle;
+            @apply h-3.5 text-grey ml-1 align-middle;
         }
     }
 }
 
 .tooltip-subtitle, .tooltip-caption {
-    font-size: 11px;
-    line-height: 14px;
-    color: variables.$grey;
+    @apply text-xs text-grey;
 }
 
 .house {
-    display: inline-flex;
-    gap: 4px;
-    align-items: center;
+    @apply inline-flex gap-1 items-center font-bold;
 }
 
 .tooltip-subtitle {
-    margin-bottom: 8px;
-    font-weight: bold;
+    @apply font-bold mb-2;
 }
 
 .details-link {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    margin-top: 4px;
+    @apply flex items-center cursor-pointer mt-1;
 
     .mat-icon {
         @include mixins.icon-size(14px);

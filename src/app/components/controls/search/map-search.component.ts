@@ -39,7 +39,7 @@ import { isFeatureData } from '../../../utils';
         AutocompleteTriggerDirective,
     ],
     templateUrl: './map-search.component.html',
-    styleUrls: ['../../../form-field.scss', './map-search.component.scss'],
+    styleUrls: ['../form-field.scss', './map-search.component.scss'],
 })
 export class MapSearchComponent implements OnInit {
     readonly applySearch = output<FeatureData>();

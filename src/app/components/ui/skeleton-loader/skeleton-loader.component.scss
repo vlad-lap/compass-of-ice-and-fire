@@ -1,27 +1,17 @@
-@use '../../../../variables';
+@use 'tailwind';
 
-:host {
-    display: contents;
+.skeleton-loader {
+    @apply contents;
 
     &.loading {
-        display: block;
-        background-color: variables.$light-grey;
-        border-radius: 4px;
-        animation: pulse 2s cubic-bezier(.4, 0, .6, 1) infinite;
-        opacity: .8;
+        @apply block animate-pulse bg-light-grey rounded opacity-80;
 
         &.rounded {
-            border-radius: 50%;
+            @apply rounded-full;
         }
 
-        ::ng-deep * {
-            visibility: hidden;
+        * {
+            @apply invisible;
         }
-    }
-}
-
-@keyframes pulse {
-    50% {
-        opacity: .5;
     }
 }
