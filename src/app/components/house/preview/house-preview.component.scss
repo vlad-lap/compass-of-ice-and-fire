@@ -6,7 +6,7 @@
 }
 
 .house-preview {
-    @apply flex gap-4 items-center mb-1 p-2 select-none;
+    @apply flex gap-4 items-center mb-2 p-2 select-none;
 
     .house-name {
         @apply text-black font-bold;
