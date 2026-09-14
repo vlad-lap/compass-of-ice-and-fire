@@ -3,7 +3,12 @@
 
 <ng-container [formGroup]="form">
     <mat-form-field appearance="outline" subscriptSizing="dynamic">
-        <mat-icon matPrefix class="route-prefix-icon from">place</mat-icon>
+        <mat-icon
+            matPrefix
+            class="route-prefix-icon from"
+            fontSet="material-symbols-outlined"
+            >location_on</mat-icon
+        >
         <input
             #fromInput
             matInput
@@ -22,7 +27,12 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline" subscriptSizing="dynamic">
-        <mat-icon matPrefix class="route-prefix-icon to">place</mat-icon>
+        <mat-icon
+            matPrefix
+            class="route-prefix-icon to"
+            fontSet="material-symbols-outlined"
+            >location_on</mat-icon
+        >
         <input
             #toInput
             matInput

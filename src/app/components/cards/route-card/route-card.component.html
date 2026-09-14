@@ -77,7 +77,10 @@
         } @else {
             <div class="route-placeholder">
                 @let routeEndpoints = endpoints();
-                <mat-icon [ngClass]="routeEndpoints?.from ? 'icon-b' : 'icon-a'">add_location_alt</mat-icon>
+                <mat-icon
+                    [ngClass]="routeEndpoints?.from ? 'icon-b' : 'icon-a'"
+                    fontSet="material-symbols-outlined"
+                >add_location_alt</mat-icon>
                 <span>{{ routeEndpoints?.from ? ui.selectB :  ui.selectA }}</span>
             </div>
         }
