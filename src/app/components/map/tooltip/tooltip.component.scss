@@ -1,0 +1,54 @@
+@use '@angular/material' as mat;
+@use 'variables';
+@use 'mixins';
+@use 'tailwind';
+
+.tooltip {
+    @apply max-w-45;
+
+    @include mat.icon-button-overrides((
+        icon-size: 14px,
+        state-layer-size: 22px,
+    ));
+}
+
+.mat-icon {
+    @include mixins.icon-size(14px);
+}
+
+.tooltip-header {
+    @apply flex gap-4 justify-between items-start;
+}
+
+.tooltip-title {
+    @apply grow mt-0.5;
+
+    h5 {
+        @apply text-sm text-black font-bold m-0;
+
+        .mat-icon {
+            @include mixins.icon-size(12px);
+            @apply h-3.5 text-grey ml-1 align-middle;
+        }
+    }
+}
+
+.tooltip-subtitle, .tooltip-caption {
+    @apply text-xs text-grey;
+}
+
+.house {
+    @apply inline-flex gap-1 items-center font-bold;
+}
+
+.tooltip-subtitle {
+    @apply font-bold mb-2;
+}
+
+.details-link {
+    @apply flex items-center cursor-pointer mt-1;
+
+    .mat-icon {
+        @include mixins.icon-size(14px);
+    }
+}

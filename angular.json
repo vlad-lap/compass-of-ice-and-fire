@@ -33,6 +33,11 @@
                             },
                             {
                                 "glob": "**/*",
+                                "input": "public/coats-of-arms",
+                                "output": "coats-of-arms"
+                            },
+                            {
+                                "glob": "**/*",
                                 "input": "geodata",
                                 "output": "geodata"
                             },
@@ -50,20 +55,23 @@
                         "styles": [
                             "node_modules/maplibre-gl/dist/maplibre-gl.css",
                             "src/styles.scss"
-                        ]
+                        ],
+                        "stylePreprocessorOptions": {
+                            "includePaths": ["src"]
+                        }
                     },
                     "configurations": {
                         "production": {
                             "budgets": [
                                 {
                                     "type": "initial",
-                                    "maximumWarning": "500kB",
-                                    "maximumError": "1MB"
+                                    "maximumWarning": "1MB",
+                                    "maximumError": "1.5MB"
                                 },
                                 {
                                     "type": "anyComponentStyle",
-                                    "maximumWarning": "4kB",
-                                    "maximumError": "8kB"
+                                    "maximumWarning": "10kB",
+                                    "maximumError": "20kB"
                                 }
                             ],
                             "outputHashing": "all"

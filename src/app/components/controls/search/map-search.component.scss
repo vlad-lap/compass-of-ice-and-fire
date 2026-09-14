@@ -1,0 +1,15 @@
+@use '@angular/material' as mat;
+@use 'tailwind';
+@use 'variables';
+
+.search-suffix {
+    @apply flex items-center mr-2;
+}
+
+.language-button {
+    // it is made an icon button on purpose: otherwise text is not centered vertically on mobile devices
+    @include mat.icon-button-overrides((
+        icon-color: variables.$grey,
+    ));
+    @apply text-sm;
+}

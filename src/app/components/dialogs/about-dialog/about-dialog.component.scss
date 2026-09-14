@@ -1,0 +1,19 @@
+@use 'tailwind';
+
+.loader {
+    @apply w-full h-[50vh] flex justify-center items-center;
+}
+
+.links {
+    @apply flex gap-2 justify-center mt-4;
+}
+
+.mat-mdc-dialog-content {
+    h3 {
+        @apply text-sm font-bold mb-3;
+    }
+
+    p {
+        @apply mb-3;
+    }
+}

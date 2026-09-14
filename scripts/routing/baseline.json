@@ -413,10 +413,10 @@
                 "grid"
             ],
             "footShipPorts": "castle-seagard -> settlement-lordsport",
-            "footShipDistanceKm": 1938.7,
-            "footShipTimeHours": 406,
+            "footShipDistanceKm": 2027.9,
+            "footShipTimeHours": 433.1,
             "horseShipPorts": "castle-seagard -> settlement-lordsport",
-            "horseShipTimeHours": 231.8,
+            "horseShipTimeHours": 248.5,
             "dragonKm": 1242.9
         },
         "Lordsport -> Lannisport": {
@@ -427,7 +427,7 @@
             "timeHours": null,
             "pathPoints": 0,
             "shipFound": true,
-            "shipDistanceKm": 844.4,
+            "shipDistanceKm": 843.5,
             "shipTimeHours": 84.4,
             "shipPathPoints": 15,
             "footShipFound": true,
@@ -435,11 +435,11 @@
                 "sea"
             ],
             "footShipPorts": "settlement-lordsport -> city-lannisport",
-            "footShipDistanceKm": 844.4,
+            "footShipDistanceKm": 843.5,
             "footShipTimeHours": 84.4,
             "horseShipPorts": "settlement-lordsport -> city-lannisport",
             "horseShipTimeHours": 84.4,
-            "dragonKm": 504.3
+            "dragonKm": 508.7
         },
         "King's Landing -> Lannisport": {
             "note": "sea: around Dorne, a detour no from-to box would hold",

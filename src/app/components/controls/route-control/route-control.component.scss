@@ -1,0 +1,18 @@
+@use 'mixins';
+@use 'tailwind';
+
+.route-prefix-icon {
+    @include mixins.icon-size(16px);
+
+    &.from {
+        @apply text-red;
+    }
+
+    &.to {
+        @apply text-green;
+    }
+}
+
+.swap-button {
+    @apply absolute right-2 top-[calc(50%-20px)];
+}

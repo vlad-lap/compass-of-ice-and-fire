@@ -20,9 +20,13 @@ function buildSearchKeys(name: string): string[] {
 export function buildLocalizedSearchKeys(feature: FeatureData): string[] {
     const nameKeys = [
         'name',
-        ...AVAILABLE_LANGUAGES
-            .filter(lang => lang !== DEFAULT_LANGUAGE)
-            .map(lang => `name_${lang}`),
+        'ClaimedBy',
+        ...flatten(
+            AVAILABLE_LANGUAGES.filter(lang => lang !== DEFAULT_LANGUAGE).map(lang => [
+                `name_${lang}`,
+                `ClaimedBy_${lang}`,
+            ]),
+        ),
     ];
 
     return flatten(nameKeys.map(key => buildSearchKeys(feature[key])));

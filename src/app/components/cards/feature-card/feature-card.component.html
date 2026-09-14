@@ -1,0 +1,34 @@
+@let ui = coreUi();
+
+<coiaf-card>
+    <div coiafCardTitle>
+        <h3>
+            <span>{{ data | localize: 'name' }}&nbsp;</span>
+
+            @if (data.isPort) {
+                <mat-icon>anchor</mat-icon>
+            }
+        </h3>
+        @if (data.nameVariant) {
+            <div class="card-subtitle">{{ data | localize: 'nameVariant' }}</div>
+        }
+    </div>
+
+    <div coiafCardActions>
+        @if (canBuildRoute()) {
+            <button
+                matIconButton
+                [aria-label]="ui.route"
+                (click)="setRouteEndpoint();"
+            >
+                <mat-icon>directions</mat-icon>
+            </button>
+        }
+    </div>
+
+    <div coiafCardBody>
+        <coiaf-house-preview [location]="data" />
+        <coiaf-caption [location]="data" class="card-caption" />
+        <div class="description">{{ data | localize: 'description' }}</div>
+    </div>
+</coiaf-card>

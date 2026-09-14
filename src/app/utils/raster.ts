@@ -22,7 +22,7 @@ import {
     NEIGHBOR_OFFSETS,
     toFlatIndex,
 } from './grid';
-import { KM_PER_COORD_UNIT, MapBounds } from '../components/map-page/constants';
+import { KM_PER_COORD_UNIT, MapBounds } from '../components/map/constants';
 
 export const MOUNTAIN_K_BY_HEIGHT: Record<number, number> = { 1: 0.5, 2: 0.35, 3: 0.2 };
 

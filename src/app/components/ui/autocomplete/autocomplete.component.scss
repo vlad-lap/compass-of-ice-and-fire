@@ -1,0 +1,11 @@
+@use 'mixins';
+@use 'tailwind';
+
+.coiaf-autocomplete .mat-mdc-option {
+    @apply flex-row-reverse;
+
+    .mat-icon {
+        @include mixins.icon-size(16px);
+        @apply text-grey mr-0;
+    }
+}

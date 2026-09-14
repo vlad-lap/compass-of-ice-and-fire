@@ -10,7 +10,6 @@ import { buildRoadNetwork } from './build-road-network.mjs';
 import { buildBarrierCrossings } from './build-barrier-crossings.mjs';
 import { readJSON, writeJSON } from './json-utils.mjs';
 import {
-    addFeatureLanguageProperties,
     addLanguageProperties,
     syncDictionary,
     syncLanguageDict,
@@ -97,15 +96,13 @@ const islands = processGeoJSON('got_islands.geojson', 'islands.json', {
     mapFn: feature => addContinentId(feature, continents)
 });
 const kingdoms = processGeoJSON('got_political.geojson', 'kingdoms.json', {
-    // TODO add language properties while writing, not reading, to avoid such duplicate calls
-    mapFn: feature => addFeatureLanguageProperties({
+    mapFn: feature => ({
         ...feature,
         properties: {
             ...feature.properties,
-            type: 'kingdom',
             description: descriptions[feature.properties.id] ?? null,
         },
-    }, 'kingdoms.json'),
+    }),
 });
 
 const borders = buildKingdomBorders(kingdoms, continents, islands);

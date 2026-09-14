@@ -1,0 +1,72 @@
+@use 'mixins';
+@use 'tailwind';
+
+.coiaf-card {
+    @apply flex flex-col items-stretch overflow-hidden;
+
+    &.resizing,
+    &.resizing * {
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+    }
+}
+
+.card-resize-area {
+    @apply h-2.5 p-2 box-border self-center grow-0 shrink-0 cursor-ns-resize touch-none;
+
+    &:hover .card-resize-control {
+        @apply opacity-80;
+    }
+}
+
+.card-resize-control {
+    @apply h-1 w-16 bg-grey rounded-xs opacity-40;
+}
+
+.card-header {
+    @apply flex gap-1 items-start my-1 ml-3;
+
+    .card-title {
+        @apply grow mt-1;
+    }
+
+    h3 {
+        @apply m-0 text-xl font-bold;
+
+        .mat-icon {
+            @include mixins.icon-size(20px);
+            @apply h-6 leading-6 text-grey align-sub;
+        }
+    }
+
+    .card-subtitle {
+        @apply text-base text-grey font-bold mb-2;
+    }
+
+    .mat-icon.share-icon {
+        @apply bottom-0.5;
+    }
+}
+
+.card-actions {
+    @apply contents;
+}
+
+.mat-icon.share-icon {
+    @apply bottom-0.5;
+}
+
+.card-caption {
+    @apply text-sm text-grey mb-3;
+}
+
+.card-body {
+    @apply max-w-[100%] overflow-x-hidden overflow-y-auto touch-pan-y px-3 mb-3 grow;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+
+    @media (min-width: 960px) {
+        @apply max-w-[640px];
+    }
+}

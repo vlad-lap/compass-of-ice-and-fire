@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="660" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs>
+  <radialGradient id="rg" gradientUnits="userSpaceOnUse" cx="220" cy="220" r="405">
+    <stop style="stop-color:#fff;stop-opacity:.3" offset="0" />
+    <stop style="stop-color:#fff;stop-opacity:.2" offset="0.2" />
+    <stop style="stop-color:#666;stop-opacity:.1" offset="0.6" />
+    <stop style="stop-color:#000;stop-opacity:.13" offset="1" />
+  </radialGradient>
+  <clipPath id="clip-shield">
+    <path id="shield" d="m 2 2 v 257 c 0 286 298 398 298 398 c 0 0 298 -112 298 -398 V 2 Z" />
+  </clipPath>
+  <pattern id="fret" patternUnits="userSpaceOnUse" x="50" width="100" height="100">
+    <path fill="#080" d="M 39.3945 0 L 85.8594 46.4648 L 96.4648 35.8594 L 60.6055 0 L 39.3945 0 Z M 35.8594 3.53516 L 0 39.3945 L 0 60.6055 L 46.4648 14.1406 L 35.8594 3.53516 Z M 100 39.3945 L 53.5352 85.8594 L 64.1406 96.4648 L 100 60.6055 L 100 39.3945 Z M 14.1406 53.5352 L 3.53516 64.1406 L 39.3945 100 L 60.6055 100 L 14.1406 53.5352 Z" />
+  </pattern>
+</defs>
+<use id="background" fill="#fd0" xlink:href="#shield" />
+<use id="background" fill="url(#fret)" xlink:href="#shield" />
+<path fill="#080" d="m 225.99609,2 c 17.83393,36.000069 17.51075,71.999931 -0.99609,108 -18.84952,36.66667 -18.84952,73.33333 0,110 18.84952,36.66667 18.84952,73.33333 0,110 -18.84952,36.66667 -18.84952,73.33333 0,110 18.84952,36.66667 18.84952,73.33333 0,110 -10.27051,19.97852 -14.93141,39.95703 -14.00977,59.93555 49.88654,32.34926 89.00977,47.06445 89.00977,47.06445 0,0 26.13144,-9.82486 62.91406,-31.07422 -4.95011,-25.30858 -0.92464,-50.6172 12.08594,-75.92578 18.84952,-36.66667 18.84952,-73.33333 0,-110 -18.84952,-36.66667 -18.84952,-73.33333 0,-110 18.84952,-36.66667 18.84952,-73.33333 0,-110 -18.84952,-36.66667 -18.84952,-73.33333 0,-110 18.50684,-36.000069 18.83002,-71.999931 0.99609,-108 z"/>
+<use id="shine" fill="url(#rg)" stroke="#000" stroke-width="3" xlink:href="#shield" />
+</svg>

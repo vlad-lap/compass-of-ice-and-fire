@@ -1,0 +1,13 @@
+@use 'tailwindcss';
+@use 'variables';
+
+@theme {
+    --font-sans: Roboto, "Helvetica Neue", Arial, sans-serif;
+    --color-black: #{variables.$black};
+    --color-white: #{variables.$white};
+    --color-grey: #{variables.$grey};
+    --color-light-grey: #{variables.$light-grey};
+    --color-red: #{variables.$red};
+    --color-green: #{variables.$green};
+    --animate-spin: spin 3s linear infinite;
+}

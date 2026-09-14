@@ -1,0 +1,75 @@
+@use 'sass:map';
+@use 'theme';
+@use 'tailwind';
+
+:host {
+    @apply relative block w-full h-screen;
+}
+
+.map {
+    @apply block w-full h-full;
+}
+
+.map-menu, .about-button, .map-scale {
+    @apply absolute z-1;
+    touch-action: pan-x pan-y;
+}
+
+.map-menu, .about-button {
+    @apply right-4;
+}
+
+.about-button {
+    @apply bottom-5;
+}
+
+.map-menu {
+    @apply bottom-16 flex flex-col gap-2;
+
+    button.mdc-fab {
+        &.active {
+            background: map.get(theme.$primary-palette, 30);
+            color: map.get(theme.$primary-palette, 90);
+        }
+
+        &:not(.active) {
+            @apply opacity-75;
+        }
+    }
+}
+
+.map-scale {
+    @apply left-4 bottom-5;
+}
+
+::ng-deep {
+    .maplibregl-ctrl-attrib {
+        @apply hidden;
+    }
+
+    .maplibregl-marker {
+        @apply cursor-grab;
+    }
+
+    .coiaf-map-popup {
+        .maplibregl-popup-content {
+            @apply bg-white px-4 py-3 rounded-lg shadow-md;
+        }
+
+        &.maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
+            @apply border-t-white;
+        }
+
+        &.maplibregl-popup-anchor-top .maplibregl-popup-tip {
+            @apply border-b-white;
+        }
+
+        &.maplibregl-popup-anchor-left .maplibregl-popup-tip {
+            @apply border-r-white;
+        }
+
+        &.maplibregl-popup-anchor-right .maplibregl-popup-tip {
+            @apply border-l-white;
+        }
+    }
+}

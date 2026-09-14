@@ -1,6 +1,6 @@
 import { Feature, FeatureCollection, LineString, MultiPolygon, Point, Polygon, Position } from 'geojson';
 import { BarrierCrossing, BarrierCrossingKind, Grid, RoadNetwork, RouteResult, RoutingGeodata } from '../models';
-import { KM_PER_COORD_UNIT, MapBounds } from '../components/map-page/constants';
+import { KM_PER_COORD_UNIT, MapBounds } from '../components/map/constants';
 import { buildGrid, cellCount, getCellCenter, getCellIndexAt, toFlatIndex } from './grid';
 import {
     buildRoutingIndex,

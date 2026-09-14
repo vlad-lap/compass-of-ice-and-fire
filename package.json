@@ -26,11 +26,14 @@
         "@maplibre/ngx-maplibre-gl": "21.0.2",
         "@ngxs/storage-plugin": "^21.0.0",
         "@ngxs/store": "^21.0.0",
+        "@tailwindcss/postcss": "4.3.3",
         "@types/lodash": "^4.17.24",
         "lodash": "^4.18.1",
         "maplibre-gl": "5.24.0",
+        "postcss": "8.5.28",
         "rxjs": "~7.8.0",
         "showdown": "2.1.0",
+        "tailwindcss": "4.3.3",
         "tslib": "^2.3.0"
     },
     "devDependencies": {

@@ -1,0 +1,17 @@
+@use 'tailwind';
+
+.cdk-overlay-pane.mat-mdc-dialog-panel.coiaf-house-dialog {
+    max-width: calc(100vw - 16px);
+
+    .mat-mdc-dialog-content {
+        max-height: unset;
+    }
+}
+
+.motto {
+    @apply text-sm text-grey font-normal max-w-[240px];
+}
+
+.coat-of-arms {
+    @apply h-[300px];
+}

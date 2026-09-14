@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="660">
+<defs>
+  <radialGradient id="rg" gradientUnits="userSpaceOnUse" cx="220" cy="220" r="405">
+    <stop style="stop-color:#fff;stop-opacity:.3" offset="0"/>
+    <stop style="stop-color:#fff;stop-opacity:.2" offset=".2"/>
+    <stop style="stop-color:#666;stop-opacity:.1" offset=".6"/>
+    <stop style="stop-color:#000;stop-opacity:.13" offset="1"/>
+  </radialGradient>
+  <clipPath id="clip-shield">
+    <path id="shield" d="m2,2v257c0,286 298,398 298,398c0,0 298-112 298-398V2z"/>
+  </clipPath>
+  <g id="sun" transform="translate(300,508)scale(0.5)translate(-300,-300)" style="stroke-width:1;stroke-linecap:round;stroke-linejoin:round;">
+    <g id="wavy-rays" transform="rotate(22.5,300,300)">
+      <g id="wavy-ray">
+        <path style="fill:#ffffff;stroke:none;" d="m 295.71673,70.37585 c -2.38477,5.976283 -6.7925,17.205125 -9.21187,29.4824 -2.48155,13.19766 -2.69547,27.57144 -1.27552,43.82304 v 2e-5 c 0.9165,13.14114 2.36127,26.69187 0.2801,36.94871 -1.5238,9.64131 -6.37028,19.49065 -11.65569,30.465 -6.48769,12.08882 -13.44166,26.83452 -16.40516,47.21637 -1.10448,16.24642 1.28913,30.23675 5.17828,41.68861 h 37.36937 l 18.02493,-120.0503 -18.02117,-59.97485 -2.71283,-29.987425 2.71283,-29.987425 c 0,0 -1.59954,3.650359 -4.28327,10.37585 z"/>
+        <path style="fill:#e0e0e0;stroke:none;" d="m 337.36561,300 c -1.98638,-5.85559 -4.36398,-11.09158 -6.86602,-15.53917 -1e-5,-4e-5 -0.0316,-0.0736 -0.0317,-0.0736 h 5e-5 v 0 c -3.60485,-8.37348 -8.77008,-17.39754 -8.83053,-22.69862 -1.56615,-6.81556 1.57439,-17.21075 4.50884,-32.78363 3.53396,-14.92204 5.36752,-31.99714 3.05631,-49.535 -2.90283,-17.45097 -9.21149,-31.54555 -14.4319,-43.05129 l -1e-5,-1e-5 c -6.10281,-13.8338 -10.29735,-24.63776 -12.38351,-36.17693 -1.99032,-10.56752 -2.15623,-22.657551 -2.24509,-28.944025 -0.10163,-7.188564 -0.14205,-11.197725 -0.14205,-11.197725 -2.575,13.3333 -5.316,26.6667 -5.554,40 -0.238,13.333 2.231,26.667 5.554,40 3.323,13.333 6.9715,26.66699 7.356,40 0.3845,13.33299 -2.815,26.667 -7.356,40 -4.541,13.333 -9.7555,26.66703 -10.457,40 -0.7015,13.33303 3.664,26.667 10.457,40"/>
+      </g>
+      <use xlink:href="#wavy-ray" transform="rotate(45,300,300)"/>
+      <use xlink:href="#wavy-ray" transform="rotate(90,300,300)"/>
+      <use xlink:href="#wavy-ray" transform="rotate(135,300,300)"/>
+      <use xlink:href="#wavy-ray" transform="rotate(180,300,300)"/>
+      <use xlink:href="#wavy-ray" transform="rotate(225,300,300)"/>
+      <use xlink:href="#wavy-ray" transform="rotate(270,300,300)"/>
+      <use xlink:href="#wavy-ray" transform="rotate(315,300,300)"/>
+    </g>
+    <g id="straight-rays">
+      <g id="straight-ray">
+        <path style="fill:#ffffff;stroke:none;" d="m 300,60 -30.61467,166.08964 30.61467,73.91036 15,-73.91036 z"/>
+        <path style="fill:#e0e0e0;stroke:none;" d="m 300,300 v -240 l 30.61467,166.08964 z"/>
+      </g>
+      <use xlink:href="#straight-ray" transform="rotate(45,300,300)"/>
+      <use xlink:href="#straight-ray" transform="rotate(90,300,300)"/>
+      <use xlink:href="#straight-ray" transform="rotate(135,300,300)"/>
+      <use xlink:href="#straight-ray" transform="rotate(180,300,300)"/>
+      <use xlink:href="#straight-ray" transform="rotate(225,300,300)"/>
+      <use xlink:href="#straight-ray" transform="rotate(270,300,300)"/>
+      <use xlink:href="#straight-ray" transform="rotate(315,300,300)"/>
+    </g>
+    <circle id="disk" style="fill:#ffffff;stroke:#e0e0e0;" cx="300" cy="300" r="80"/>
+  </g>
+</defs>
+<use id="background" xlink:href="#shield" style="fill:#ff8800;"/>
+<path style="fill:none;stroke:#ffffff;stroke-width:100;" clip-path="url(#clip-shield)" d="m 0,0 300,300, 300,-300"/>
+<use xlink:href="#sun"/>
+<use id="shine" xlink:href="#shield" style="fill:url(#rg);stroke:#000;stroke-width:3;"/>
+</svg>

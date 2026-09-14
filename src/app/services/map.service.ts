@@ -1,13 +1,13 @@
 import { ComponentRef, Injectable, signal, ViewContainerRef } from '@angular/core';
 import { LngLatLike, MapLayerMouseEvent, MapMouseEvent, MapTouchEvent, Popup } from 'maplibre-gl';
-import { TooltipComponent, TooltipOptions } from '../components/tooltip/tooltip.component';
+import { TooltipComponent, TooltipOptions } from '../components/map/tooltip/tooltip.component';
 import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { Feature } from 'geojson';
 import { FeatureData } from '../models';
-import { FeatureCardComponent } from '../components/feature-card/feature-card.component';
+import { FeatureCardComponent } from '../components/cards/feature-card/feature-card.component';
 import { ComponentType } from '@angular/cdk/portal';
 import { SearchService } from './search.service';
-import { RouteCardComponent } from '../components/route-card/route-card.component';
+import { RouteCardComponent } from '../components/cards/route-card/route-card.component';
 import { RouteService } from './route.service';
 
 @Injectable({
@@ -71,7 +71,7 @@ export class MapService {
         this.routeCardOpened.set(true);
         this.openCard(
             RouteCardComponent,
-            { minHeight: 136, height: 176 },
+            { minHeight: 128, height: 176 },
             () => {
                 this.routeService.routeEnabled.set(false);
                 this.routeCardOpened.set(false);

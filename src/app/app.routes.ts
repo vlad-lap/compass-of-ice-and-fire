@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import { mapResolver } from './resolvers';
 
 const loadMapPage = () =>
-    import('./components/map-page/map-page.component').then(m => m.MapPageComponent);
+    import('./components/map/map-page.component').then(m => m.MapPageComponent);
 
 export const routes: Routes = [
     {

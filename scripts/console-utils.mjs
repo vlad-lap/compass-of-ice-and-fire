@@ -2,9 +2,17 @@ const STYLE = {
     reset: '\x1b[0m',
     dim: '\x1b[2m',
     cyan: '\x1b[36m',
+    red: '\x1b[31m',
     green: '\x1b[32m',
     yellow: '\x1b[33m',
 };
+
+export function getConsoleStyle(text, ...styles) {
+    const allStyles = styles?.map(style => STYLE[style]).join('');
+    return allStyles
+        ? `${allStyles}${text}${STYLE.reset}`
+        : text;
+}
 
 export function getConsolePrefix(category, title) {
     return `${STYLE.cyan}[${category}]${STYLE.reset} ${STYLE.dim}${title}:${STYLE.reset}`;

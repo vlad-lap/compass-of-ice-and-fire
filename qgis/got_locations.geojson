@@ -303,7 +303,7 @@
 { "type": "Feature", "properties": { "id": 323, "name": "Downdelving", "size": 3, "confirmed": 0, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 4.217721052197009, 12.611650785128758 ] } },
 { "type": "Feature", "properties": { "id": 324, "name": "Corpse Lake", "size": 3, "confirmed": 0, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 4.962270164266578, 12.542790751642555 ] } },
 { "type": "Feature", "properties": { "id": 327, "name": "Iron Holt", "size": 3, "confirmed": 0, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 6.099536654812147, 12.003207832996758 ] } },
-{ "type": "Feature", "properties": { "id": 328, "name": "Lordsport", "size": 2, "confirmed": 0, "type": "settlement" }, "geometry": { "type": "Point", "coordinates": [ 6.075866018301265, 11.732071451144833 ] } },
+{ "type": "Feature", "properties": { "id": 328, "name": "Lordsport", "size": 2, "confirmed": 0, "type": "settlement" }, "geometry": { "type": "Point", "coordinates": [ 5.748776900695432, 11.799730306816128 ] } },
 { "type": "Feature", "properties": { "id": 329, "name": "Shatterstone", "size": 3, "confirmed": 0, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 5.324861278092365, 13.11303790395017 ] } },
 { "type": "Feature", "properties": { "id": 334, "name": "Grey Garden", "size": 3, "confirmed": 0, "type": "castle" }, "geometry": { "type": "Point", "coordinates": [ 7.639203966042715, 13.061392878835518 ] } },
 { "type": "Feature", "properties": { "id": 335, "name": "Harlaw Hall", "size": 3, "confirmed": 0, "type": "ruin" }, "geometry": { "type": "Point", "coordinates": [ 7.936162860451965, 12.562157636060547 ] } },

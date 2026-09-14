@@ -1,0 +1,18 @@
+@use 'mixins';
+@use 'tailwind';
+
+.mat-icon {
+    &.small {
+        @include mixins.icon-size(48px);
+    }
+
+    &.medium {
+        @include mixins.icon-size(96px);
+    }
+
+    .star {
+        transform-box: fill-box;
+        transform-origin: center 53.6%;
+        @apply animate-spin;
+    }
+}

@@ -1,0 +1,17 @@
+@use 'tailwind';
+
+.skeleton-loader {
+    @apply contents;
+
+    &.loading {
+        @apply block animate-pulse bg-light-grey rounded opacity-80;
+
+        &.rounded {
+            @apply rounded-full;
+        }
+
+        * {
+            @apply invisible;
+        }
+    }
+}

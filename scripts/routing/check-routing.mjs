@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync, existsSync, mkdtempSync } from 'fs';
 import { join, dirname } from 'path';
 import { tmpdir } from 'os';
 import { fileURLToPath, pathToFileURL } from 'url';
-import { getConsolePrefix } from '../console-utils.mjs';
+import { getConsolePrefix, getConsoleStyle } from '../console-utils.mjs';
 
 /**
  * Fails on a broken spec requirement and on any route whose result drifted from
@@ -1037,7 +1037,8 @@ function compareToBaseline(results) {
     for (const result of results) {
         const before = baseline.cases[result.name];
         if (!before) {
-            diffs.push(`${result.name}: missing from baseline`);
+            const diff = [getConsoleStyle(`${result.name}:`, 'dim'), 'missing from baseline'].join(' ');
+            diffs.push(diff);
             continue;
         }
         for (const field of [
@@ -1049,7 +1050,14 @@ function compareToBaseline(results) {
             const a = JSON.stringify(before[field]);
             const b = JSON.stringify(result[field]);
             if (a !== b) {
-                diffs.push(`${result.name}: ${field} ${a} -> ${b}`);
+                const diff = [
+                    getConsoleStyle(`${result.name}:`, 'cyan'),
+                    getConsoleStyle(`${field}:`, 'dim'),
+                    a,
+                    getConsoleStyle('->', 'dim'),
+                    getConsoleStyle(b, 'dim', b > a ? 'green' : 'red'),
+                ].join(' ');
+                diffs.push(diff);
             }
         }
     }
@@ -1103,8 +1111,11 @@ const results = [...CASES, ...SEA_CASES, ...COMBINED_CASES].map(testCase => {
     const viaSea = result.footShipFound
         ? `${String(result.footShipDistanceKm).padStart(7)}km ${String(result.footShipTimeHours).padStart(6)}h  ${result.footShipPorts}`
         : '     no route via sea';
+    const ms = `${String(result.ms).padStart(6)}ms`;
     console.log(
-        `${getConsolePrefix('routing', result.name.padEnd(30))} ${String(result.ms).padStart(6)}ms ${summary} ` +
+        `${getConsolePrefix('routing', result.name.padEnd(30))} ${
+            result.ms >= 1000 ? getConsoleStyle(ms, 'yellow') : ms
+        } ${summary} ` +
         `|${viaSea}`,
     );
     return result;
@@ -1117,159 +1128,169 @@ const byName = new Map(results.map(result => [result.name, result]));
 let failed = 0;
 let deferred = 0;
 
+function logSuccess(text) {
+    const OK = getConsoleStyle('OK', 'green');
+    console.log(`  ${OK}       ${getConsoleStyle(text, 'dim')}`);
+}
+
+function logFailure(text) {
+    const FAIL = getConsoleStyle('FAIL', 'red');
+    console.log(`  ${FAIL}     ${text}`);
+}
+
 for (const requirement of buildRequirements(casePoints)) {
     const result = byName.get(requirement.case);
     const ok = result && (requirement.groundRouteOptional || result.found) ? requirement.check(result) : false;
     if (ok) {
-        console.log(`  OK       ${requirement.label}`);
+        logSuccess(requirement.label)
     } else if (requirement.phase) {
         deferred++;
         console.log(`  PHASE ${requirement.phase}  ${requirement.label} - expected to fail until then`);
     } else {
         failed++;
-        console.log(`  FAIL     ${requirement.label} - got [${result?.structure.join('+') ?? 'no route'}]`);
+        logFailure(`${requirement.label} - got [${result?.structure.join('+') ?? 'no route'}]`);
     }
 }
 
 const guardOffenders = checkDetourGuard(routing, routingIndex, casePoints, results);
 if (guardOffenders.length) {
     failed++;
-    console.log('  FAIL     road-assisted routes detouring beyond what their road share earns:');
+    logFailure('road-assisted routes detouring beyond what their road share earns:');
     guardOffenders.forEach(offender => console.log(`             ${offender}`));
 } else {
-    console.log('  OK       every road-assisted route earns its detour by the share of road it carries');
+    logSuccess('every road-assisted route earns its detour by the share of road it carries');
 }
 
 const tooFast = checkEffectiveSpeed(results);
 if (tooFast.length) {
     failed++;
-    console.log('  FAIL     routes averaging more than the base speed:');
+    logFailure('routes averaging more than the base speed:');
     tooFast.forEach(offender => console.log(`             ${offender}`));
 } else {
-    console.log('  OK       no route averages more than its base speed, so distance and time agree: '
+    logSuccess('no route averages more than its base speed, so distance and time agree: '
         + `${Object.entries(BASE_SPEED_KMH).map(([mode, base]) => `${mode} ${base}`).join(' km/h, ')} km/h`);
 }
 
 const blockedLocations = checkLocationsPassable(routing, routingIndex, locations, routing.MIN_CELL_SIZE);
 if (blockedLocations.length) {
     failed++;
-    console.log(`  FAIL     ${blockedLocations.length} locations are impassable: ${blockedLocations.slice(0, 8).join(', ')}`);
+    logFailure(`${blockedLocations.length} locations are impassable: ${blockedLocations.slice(0, 8).join(', ')}`);
 } else {
-    console.log(`  OK       all ${locations.size} locations are passable, none blocked by water or a barrier`);
+    logSuccess(`all ${locations.size} locations are passable, none blocked by water or a barrier`);
 }
 
 const onWater = checkPathOnLand(routing, routingIndex, results);
 if (onWater.length) {
     failed++;
-    console.log('  FAIL     routes walking on water:');
+    logFailure('routes walking on water:');
     onWater.forEach(offender => console.log(`             ${offender}`));
 } else {
-    console.log('  OK       every grid leg stays on land, sampled every kilometre against the polygons');
+    logSuccess('every grid leg stays on land, sampled every kilometre against the polygons');
 }
 
 const legPartition = checkLegPartition(results);
 if (legPartition.length) {
     failed++;
-    console.log('  FAIL     legs do not partition the route:');
+    logFailure('legs do not partition the route:');
     legPartition.forEach(offender => console.log(`             ${offender}`));
 } else {
-    console.log('  OK       legs concatenate back into the drawn route, point for point');
+    logSuccess('legs concatenate back into the drawn route, point for point');
 }
 
 const outsideMap = checkMapBounds(results);
 if (outsideMap.length) {
     failed++;
-    console.log('  FAIL     routes leaving the mapped world:');
+    logFailure('routes leaving the mapped world:');
     outsideMap.forEach(offender => console.log(`             ${offender}`));
 } else {
-    console.log('  OK       no route leaves the mapped world');
+    logSuccess('no route leaves the mapped world');
 }
 
 const riverCheck = checkBarrierCrossings(geodata, results);
 if (riverCheck.offenders.length) {
     failed++;
-    console.log('  FAIL     routes crossing a barrier away from any declared crossing:');
+    logFailure('routes crossing a barrier away from any declared crossing:');
     riverCheck.offenders.slice(0, 5).forEach(offender => console.log(`             ${offender}`));
 } else {
-    console.log(`  OK       all ${riverCheck.crossingsFound} barrier crossings made by these routes are at declared crossings`);
+    logSuccess(`all ${riverCheck.crossingsFound} barrier crossings made by these routes are at declared crossings`);
 }
 
 const offWater = checkPathOnWater(routing, routingIndex, results);
 if (offWater.length) {
     failed++;
-    console.log('  FAIL     sea routes crossing land or leaving painted water:');
+    logFailure('sea routes crossing land or leaving painted water:');
     offWater.forEach(offender => console.log(`             ${offender}`));
 } else {
-    console.log('  OK       every sea route stays on painted water and off every landmass');
+    logSuccess('every sea route stays on painted water and off every landmass');
 }
 
 const tooClose = checkSeaClearance(routing, routingIndex, results);
 if (tooClose.offenders.length) {
     failed++;
-    console.log('  FAIL     sea routes closer to land than the water they cross required:');
+    logFailure('sea routes closer to land than the water they cross required:');
     tooClose.offenders.slice(0, 20).forEach(offender => console.log(`             ${offender}`));
 } else {
     const worst = tooClose.worst;
-    console.log(`  OK       every sea route keeps ${routing.SEA_CLEARANCE_KM} km off land, or the middle of a narrower `
+    logSuccess(`every sea route keeps ${routing.SEA_CLEARANCE_KM} km off land, or the middle of a narrower `
         + `passage${worst ? `, tightest ${worst.clearance.toFixed(1)} km of ${worst.best.toFixed(1)} km available` : ''}`);
-    console.log('  OK       every port approach reaches open water within '
+    logSuccess('every port approach reaches open water within '
         + `${MAX_APPROACH_KM} km, longest ${tooClose.longestApproachKm.toFixed(0)} km`);
 }
 
 const sag = checkSeaSag(routing, routingIndex, results);
 if (sag.offenders.length) {
     failed++;
-    console.log('  FAIL     sea routes whose drawn line loses more clearance than a cell-to-cell step can:');
+    logFailure('sea routes whose drawn line loses more clearance than a cell-to-cell step can:');
     sag.offenders.slice(0, 5).forEach(offender => console.log(`             ${offender}`));
 } else {
-    console.log(`  OK       the drawn line never cuts more than ${sag.worst.toFixed(1)} km inside the clearance its `
+    logSuccess(`the drawn line never cuts more than ${sag.worst.toFixed(1)} km inside the clearance its `
         + `vertices were owed, of the ${getMaxSagKm(routing).toFixed(1)} km one cell-to-cell step can lose`);
 }
 
 const stubs = checkSeaStubs(routing, results);
 if (stubs.offenders.length) {
     failed++;
-    console.log('  FAIL     sea routes whose port stub covers more than an entrance:');
+    logFailure('sea routes whose port stub covers more than an entrance:');
     stubs.offenders.forEach(offender => console.log(`             ${offender}`));
 } else {
-    console.log(`  OK       every port stub only bridges the gap to navigable water, longest ${stubs.longest.toFixed(1)} km`);
+    logSuccess(`every port stub only bridges the gap to navigable water, longest ${stubs.longest.toFixed(1)} km`);
 }
 
 const badPorts = checkCombinedPorts(routing, routingIndex, casePoints, results);
 if (badPorts.length) {
     failed++;
-    console.log('  FAIL     combined routes boarding or landing where they may not:');
+    logFailure('combined routes boarding or landing where they may not:');
     badPorts.forEach(offender => console.log(`             ${offender}`));
 } else {
-    console.log('  OK       every combined route boards and lands at a port of the right landmass');
+    logSuccess('every combined route boards and lands at a port of the right landmass');
 }
 
 const badEndpoints = checkSeaEndpoints(routing, routingIndex, casePoints, results);
 if (badEndpoints.length) {
     failed++;
-    console.log('  FAIL     sea routes starting or ending away from water and from any port:');
+    logFailure('sea routes starting or ending away from water and from any port:');
     badEndpoints.forEach(offender => console.log(`             ${offender}`));
 } else {
-    console.log('  OK       every sea route starts and ends in water or at a port');
+    logSuccess('every sea route starts and ends in water or at a port');
 }
 
 const raster = checkRasterFaithfulness(routing, routingIndex, casePoints);
 if (raster.mismatches.length) {
     failed++;
-    console.log(`  FAIL     raster != classifyCell: ${raster.mismatches.length}+ mismatches out of ${raster.cells} cells`);
+    logFailure(`raster != classifyCell: ${raster.mismatches.length}+ mismatches out of ${raster.cells} cells`);
     raster.mismatches.forEach(mismatch => console.log(`             ${mismatch}`));
 } else {
-    console.log(`  OK       raster == classifyCell on all ${raster.cells} cells of real geodata`);
+    logSuccess(`raster == classifyCell on all ${raster.cells} cells of real geodata`);
 }
 
 const seaRasterCheck = checkSeaRasterFaithfulness(routing, routingIndex, casePoints);
 if (seaRasterCheck.mismatches.length) {
     failed++;
-    console.log(`  FAIL     sea raster != classifySeaCell: ${seaRasterCheck.mismatches.length}+ mismatches `
+    logFailure(`sea raster != classifySeaCell: ${seaRasterCheck.mismatches.length}+ mismatches `
         + `out of ${seaRasterCheck.cells} cells`);
     seaRasterCheck.mismatches.forEach(mismatch => console.log(`             ${mismatch}`));
 } else {
-    console.log(`  OK       sea raster == classifySeaCell on all ${seaRasterCheck.cells} cells of real geodata`);
+    logSuccess(`sea raster == classifySeaCell on all ${seaRasterCheck.cells} cells of real geodata`);
 }
 
 const workerCheck = await checkWorkerProtocol(
@@ -1279,10 +1300,10 @@ const workerCheck = await checkWorkerProtocol(
     locations.get('The Eyrie'),
 );
 if (workerCheck.ok) {
-    console.log(`  OK       worker protocol: ${workerCheck.reason}`);
+    logSuccess(`worker protocol: ${workerCheck.reason}`);
 } else {
     failed++;
-    console.log(`  FAIL     worker protocol: ${workerCheck.reason}`);
+    logFailure(`worker protocol: ${workerCheck.reason}`);
 }
 
 console.log();
@@ -1303,5 +1324,9 @@ if (shouldUpdate) {
     }
 }
 
-console.log(`\nresult: ${failed} failures, ${deferred} deferred`);
+console.log(`\nresult: ${
+    getConsoleStyle(failed, failed ? 'red' : 'green')
+} failures, ${
+    getConsoleStyle(deferred, deferred ? 'yellow' : 'green')
+} deferred`);
 process.exit(failed ? 1 : 0);

@@ -49,7 +49,7 @@ import {
     NetworkAnchor,
     RoadNetworkPath,
 } from './road-network';
-import { KM_PER_COORD_UNIT, MapBounds } from '../components/map-page/constants';
+import { KM_PER_COORD_UNIT, MapBounds } from '../components/map/constants';
 
 export enum SpeedKmH {
     foot = 4,
