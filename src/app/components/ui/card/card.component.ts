@@ -5,7 +5,7 @@ import {
     Directive,
     ElementRef,
     Inject,
-    OnDestroy,
+    OnDestroy, output,
     signal,
     viewChild,
     ViewEncapsulation,
@@ -13,7 +13,6 @@ import {
 import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton } from '@angular/material/button';
-import { Subject } from 'rxjs';
 import { Store } from '@ngxs/store';
 import { LanguagesState } from '../../../store';
 import { isNil } from 'lodash';
@@ -70,8 +69,7 @@ export class CardBodyDirective {}
     },
 })
 export class CardComponent implements OnDestroy {
-    goToLocation$ = new Subject<void>();
-
+    readonly cardClosed = output<void>();
     readonly header = viewChild('header', { read: ElementRef });
     readonly coreUi = this.store.selectSignal(LanguagesState.coreUi);
 
@@ -101,7 +99,6 @@ export class CardComponent implements OnDestroy {
     ) {}
 
     ngOnDestroy(): void {
-        this.goToLocation$.complete();
         this.stopResize();
     }
 
@@ -131,6 +128,7 @@ export class CardComponent implements OnDestroy {
     }
 
     close(): void {
+        this.cardClosed.emit();
         this.bottomSheetRef.dismiss();
     }
 

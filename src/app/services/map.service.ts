@@ -63,7 +63,6 @@ export class MapService {
                 ...(feature.properties as FeatureData),
                 maxHeight: 320,
             },
-            () => this.searchService.selectedId.set(null),
         );
     }
 

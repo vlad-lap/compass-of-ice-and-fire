@@ -95,6 +95,7 @@ export const CLICKABLE_LAYER_IDS = [
     'kingdoms-fill',
     'countries-fill',
     'regions-fill',
+    'islands-fill'
 ];
 
 export enum FontStyle {

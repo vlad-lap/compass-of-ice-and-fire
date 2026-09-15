@@ -15,8 +15,18 @@
         }
     }
 
-    @for (areaPart of locationArea; track areaPart; let last = $last) {
-        <span>{{ areaPart }}</span>
+    @for (areaPart of locationArea; track areaPart.id; let last = $last) {
+        @if (clickable() && areaPart.hasCard) {
+            <a
+                (click)="setSelectedId(areaPart.id)"
+                (keydown.enter)="setSelectedId(areaPart.id)"
+                tabindex="0"
+            >
+                <span>{{ areaPart.name }}</span>
+            </a>
+        } @else {
+            <span>{{ areaPart.name }}</span>
+        }
 
         @if (!last) {
             <span>, </span>

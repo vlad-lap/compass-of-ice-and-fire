@@ -70,6 +70,10 @@ export class FeatureCardComponent implements OnDestroy {
         this.bottomSheetRef.dismiss();
     }
 
+    resetSelectedId(): void {
+        this.searchService.selectedId.set(null);
+    }
+
     async share(): Promise<void> {
         if (navigator.share) {
             const language = this.store.selectSnapshot(UserSettingsState.language);

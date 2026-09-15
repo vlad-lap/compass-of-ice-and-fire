@@ -1,6 +1,6 @@
 @let ui = coreUi();
 
-<coiaf-card>
+<coiaf-card (cardClosed)="resetSelectedId()">
     <div coiafCardTitle>
         <h3>
             <span>{{ data | localize: 'name' }}&nbsp;</span>
@@ -28,7 +28,7 @@
 
     <div coiafCardBody>
         <coiaf-house-preview [location]="data" />
-        <coiaf-caption [location]="data" class="card-caption" />
+        <coiaf-caption [location]="data" [clickable]="true" class="card-caption" />
         <div class="description">{{ data | localize: 'description' }}</div>
     </div>
 </coiaf-card>
