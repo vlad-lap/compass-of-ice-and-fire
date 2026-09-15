@@ -10,6 +10,7 @@ export interface FeatureData {
     isPort?: boolean;
     searchKeys?: string[];
     active?: boolean;
+    ruin?: boolean;
     continentId?: string;
     islandId?: string;
     kingdomId?: string;

@@ -8,7 +8,7 @@ const WALL_GATE_IDS = [
     'castle-castle-black',
     'castle-eastwatch-by-the-sea',
     'castle-shadow-tower',
-    'ruin-nightfort',
+    'castle-nightfort',
 ];
 
 // How close a location has to sit to a blocking river to count as a crossing on it. The data splits

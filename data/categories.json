@@ -7,7 +7,7 @@
     {
         "id": "rhoynar-cities",
         "name": "Rhoynar cities",
-        "locations": ["ruin-ghoyan-drohe", "ruin-ny-sar", "ruin-ar-noy", "ruin-the-sorrows-chroyane", "ruin-sar-mell", "ruin-sarhoy"]
+        "locations": ["city-ghoyan-drohe", "city-ny-sar", "city-ar-noy", "city-the-sorrows-chroyane", "city-sar-mell", "city-sarhoy"]
     },
     {
         "id": "slaver-cities",
@@ -17,6 +17,6 @@
     {
         "id": "qaathi-cities",
         "name": "Qaathi cities",
-        "locations": ["city-qarth", "city-qarkash", "city-port-yhos", "ruin-vaes-orvik", "ruin-vaes-shirosi", "ruin-vaes-qosar", "ruin-vaes-tolorro"]
+        "locations": ["city-qarth", "city-qarkash", "city-port-yhos", "city-vaes-orvik", "city-vaes-shirosi", "city-vaes-qosar", "city-vaes-tolorro"]
     }
 ]

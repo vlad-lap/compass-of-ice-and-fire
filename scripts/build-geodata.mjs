@@ -92,7 +92,11 @@ const nameVariants = readJSON(join(DATA, 'name-variants.json'));
 
 const continents = processGeoJSON('got_continents.geojson', 'continents.json');
 
-const islands = readGeoJSON('got_islands.geojson', 'islands.json', 'island');
+const islands = mapGeodata(
+    readGeoJSON('got_islands.geojson', 'islands.json', 'island'),
+    island => addContinentId(island, continents),
+);
+
 const kingdoms = processGeoJSON('got_political.geojson', 'kingdoms.json', {
     mapFn: feature => ({
         ...feature,
@@ -183,13 +187,14 @@ const { country, region } = splitAndProcess('got_regions.geojson', 'regions.json
 
 const islandsWithData = mapGeodata(islands, feature => {
     const interiorPoint = { type: 'Point', coordinates: getInteriorPoint(feature.geometry) };
-    const kingdomId = getContainingPolygonId(interiorPoint, kingdoms);
-    const countryId = getContainingPolygonId(interiorPoint, country);
-    const regionId = getContainingPolygonId(interiorPoint, region);
-    const withContinent = addContinentId(feature, continents);
     return {
-        ...withContinent,
-        properties: { ...withContinent.properties, kingdomId, countryId, regionId },
+        ...feature,
+        properties: {
+            ...feature.properties,
+            kingdomId: getContainingPolygonId(interiorPoint, kingdoms),
+            countryId: getContainingPolygonId(interiorPoint, country),
+            regionId: getContainingPolygonId(interiorPoint, region),
+        },
     };
 });
 writeGeoJSON('got_islands.geojson', islandsWithData);
@@ -244,6 +249,7 @@ function isPort(feature) {
         PORT_OVERRIDES.includes(feature.properties.id) ||
         (
             ['city', 'settlement'].includes(feature.properties.type) &&
+            !feature.properties.ruin &&
             getDistanceToShore(feature.geometry.coordinates, [continents, islands]) <= 0.2
         )
     );
