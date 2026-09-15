@@ -64,7 +64,7 @@ export enum LabelColor {
     Road = '#bd7c05',
     Wall = BLACK,
     Location = BLACK,
-    Ruin = GREY,
+    Ruin = '#959088',
     RedLake = '#9c2b2b',
 }
 

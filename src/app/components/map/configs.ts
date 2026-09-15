@@ -310,8 +310,8 @@ const POINT_SHADOW_RADIUS: DataDrivenPropertyValueSpecification<number> = [
 
 export const POINTS_PAINT: CircleLayerSpecification['paint'] = {
     'circle-radius': POINT_CIRCLE_RADIUS,
-    'circle-color': ['match', ['get', 'type'], 'ruin', LIGHT_GREY, WHITE],
-    'circle-stroke-color': ['match', ['get', 'type'], 'ruin', GREY, BLACK],
+    'circle-color': ['case', ['boolean', ['get', 'ruin']], LIGHT_GREY, WHITE],
+    'circle-stroke-color': ['case', ['boolean', ['get', 'ruin']], GREY, BLACK],
     'circle-stroke-width': 1,
 };
 
@@ -569,7 +569,7 @@ export const LABEL_PAINT: Partial<GeodataDict<SymbolLayerSpecification['paint']>
     theWall: { ...DEFAULT_LABEL_PAINT, 'text-color': LabelColor.Wall },
     locations: {
         ...DEFAULT_LABEL_PAINT,
-        'text-color': ['match', ['get', 'type'], 'ruin', LabelColor.Ruin, LabelColor.Location],
+        'text-color': ['case', ['boolean', ['get', 'ruin']], LabelColor.Ruin, LabelColor.Location],
     },
     theFiveForts: { ...DEFAULT_LABEL_PAINT, 'text-color': LabelColor.Location },
 };

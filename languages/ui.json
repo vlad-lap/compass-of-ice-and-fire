@@ -47,6 +47,10 @@
         "en": "Unknown",
         "ru": "Неизвестно"
     },
+    "ruin": {
+        "en": "ruin",
+        "ru": "руины"
+    },
     "formerly": {
         "en": "formerly",
         "ru": "в прошлом"

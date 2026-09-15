@@ -4,7 +4,17 @@
 
 <div>
     @if (locationData.type) {
-        <span>{{ locationData | localize: 'type' | titlecase }}</span>
+        @let type = locationData | localize: 'type' | titlecase;
+
+        @if (locationData.ruin) {
+            <span>{{ ui.ruin | titlecase }}</span>
+            @if (locationData.type !== 'other') {
+                <span class="mx-1">&bull;</span>
+                <span>{{ type }}</span>
+            }
+        } @else {
+            <span>{{ type }}</span>
+        }
 
         @if (locationData.active === false) {
             <span>&nbsp;({{ ui.formerly }})</span>

@@ -23,7 +23,6 @@ const OPTIONS_GROUP_ORDER: OptionGroup[] = [
     'city',
     'castle',
     'settlement',
-    'ruin',
     'other',
 
     'theWall',
