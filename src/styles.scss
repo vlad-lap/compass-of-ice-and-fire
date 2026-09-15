@@ -41,7 +41,12 @@ body {
 }
 
 a {
-    color: var(--mat-sys-on-primary-container);
+    color: var(--mat-sys-on-tertiary-container);
+    @apply cursor-pointer;
+
+    &:hover, &:focus {
+        @apply underline;
+    }
 }
 
 .coiaf-card-panel .mat-bottom-sheet-container {

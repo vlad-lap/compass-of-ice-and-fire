@@ -2,7 +2,12 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { FeatureData } from '../models';
 import { Store } from '@ngxs/store';
 import { GeodataState, LanguagesState, UserSettingsState } from '../store';
-import { uniq } from 'lodash';
+
+interface AreaPart {
+    id: string;
+    name: string;
+    hasCard: boolean;
+}
 
 @Pipe({
     name: 'area',
@@ -11,7 +16,7 @@ import { uniq } from 'lodash';
 export class AreaPipe implements PipeTransform {
     constructor(private store: Store) {}
 
-    transform(location: FeatureData): string[] {
+    transform(location: FeatureData): AreaPart[] {
         const category = this.getCategoryName(location);
         const areaKeys: (keyof FeatureData)[] = [
             'islandId',
@@ -22,11 +27,19 @@ export class AreaPipe implements PipeTransform {
             location.kingdomId ? null : 'continentId',
         ];
 
-        const areaParts = [
-            category,
-            ...areaKeys.map(key => this.featureNameById(location?.[key] as string)),
-        ].filter(Boolean);
-        return uniq(areaParts);
+        return [
+            { id: null, name: category, hasCard: false },
+            ...areaKeys.map(key => {
+                const id = location?.[key] as string;
+                return {
+                    id,
+                    name: this.featureNameById(id),
+                    hasCard: this.hasCard(id),
+                };
+            }),
+        ].filter((part, _, area) =>
+            !!part.name && !this.isDuplicatePart(part, area)
+        );
     }
 
     private getCategoryName(location: FeatureData): string {
@@ -41,5 +54,15 @@ export class AreaPipe implements PipeTransform {
         const ui = this.store.selectSnapshot(LanguagesState.coreUi);
 
         return feature?.properties.active === false ? `${name} (${ui.formerly})` : name;
+    }
+
+    private hasCard(id: string): boolean {
+        const feature = this.store.selectSnapshot(GeodataState.byId(id));
+        return !!feature?.properties.description || !!feature?.properties.ClaimedBy;
+    }
+
+    private isDuplicatePart(part: AreaPart, area: AreaPart[]): boolean {
+        const duplicate = area.find(p => p.id !== part.id && p.name === part.name);
+        return !part.hasCard && !!duplicate;
     }
 }

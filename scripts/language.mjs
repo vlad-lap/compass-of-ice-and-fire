@@ -30,7 +30,7 @@ function getClaimedBy({ properties: { id, ClaimedBy } }, lang) {
     return {};
 }
 
-function addFeatureLanguageProperties(feature, namesFileName) {
+function addFeatureLanguageProperties(feature, namesFileName, overrideType) {
     const properties = AVAILABLE_LANGUAGES
         .filter(lang => lang !== DEFAULT_LANGUAGE)
         .reduce((props, lang) => {
@@ -41,6 +41,7 @@ function addFeatureLanguageProperties(feature, namesFileName) {
             const categoriesDict = readJSON(join(LANGUAGES, lang, 'categories.json'));
 
             const category = getCategory(feature);
+            const type = overrideType ?? feature.properties.type;
 
             return {
                 ...props,
@@ -48,8 +49,8 @@ function addFeatureLanguageProperties(feature, namesFileName) {
                 [`description_${lang}`]: descriptionsDict[feature.properties.id] ?? null,
                 [`nameVariant_${lang}`]: nameVariantsDict[feature.properties.id] ?? null,
                 [`category_${lang}`]: categoriesDict[category?.id] ?? null,
-                ...(feature.properties.type
-                    ? { [`type_${lang}`]: typesDict[feature.properties.type] ?? null }
+                ...(type
+                    ? { type, [`type_${lang}`]: typesDict[type] ?? null }
                     : {}
                 ),
                 ...getClaimedBy(feature, lang)
@@ -60,8 +61,10 @@ function addFeatureLanguageProperties(feature, namesFileName) {
     return { ...feature, properties };
 }
 
-export function addLanguageProperties(collection, namesFileName) {
-    return mapGeodata(collection, feature => addFeatureLanguageProperties(feature, namesFileName));
+export function addLanguageProperties(collection, namesFileName, overrideType) {
+    return mapGeodata(collection, feature =>
+        addFeatureLanguageProperties(feature, namesFileName, overrideType),
+    );
 }
 
 export function syncLanguageDict(dataItems, fileName) {

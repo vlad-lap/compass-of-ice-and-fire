@@ -25,11 +25,11 @@ const GEODATA = join(__dirname, '..', 'geodata');
 const DATA = join(__dirname, '..', 'data');
 const RAW_DATA = join(DATA, 'raw');
 
-function readGeoJSON(fileName, languageFileName) {
+function readGeoJSON(fileName, languageFileName, overrideType) {
     const collection = readJSON(join(QGIS, fileName), 'utf8');
     const collectionWithIds = generateIds(collection);
     return languageFileName
-        ? addLanguageProperties(collectionWithIds, languageFileName)
+        ? addLanguageProperties(collectionWithIds, languageFileName, overrideType)
         : collectionWithIds;
 }
 
@@ -92,9 +92,7 @@ const nameVariants = readJSON(join(DATA, 'name-variants.json'));
 
 const continents = processGeoJSON('got_continents.geojson', 'continents.json');
 
-const islands = processGeoJSON('got_islands.geojson', 'islands.json', {
-    mapFn: feature => addContinentId(feature, continents)
-});
+const islands = readGeoJSON('got_islands.geojson', 'islands.json', 'island');
 const kingdoms = processGeoJSON('got_political.geojson', 'kingdoms.json', {
     mapFn: feature => ({
         ...feature,
@@ -182,6 +180,20 @@ const { country, region } = splitAndProcess('got_regions.geojson', 'regions.json
         };
     },
 });
+
+const islandsWithData = mapGeodata(islands, feature => {
+    const interiorPoint = { type: 'Point', coordinates: getInteriorPoint(feature.geometry) };
+    const kingdomId = getContainingPolygonId(interiorPoint, kingdoms);
+    const countryId = getContainingPolygonId(interiorPoint, country);
+    const regionId = getContainingPolygonId(interiorPoint, region);
+    const withContinent = addContinentId(feature, continents);
+    return {
+        ...withContinent,
+        properties: { ...withContinent.properties, kingdomId, countryId, regionId },
+    };
+});
+writeGeoJSON('got_islands.geojson', islandsWithData);
+syncLanguage(islandsWithData, 'islands.json');
 
 splitAndProcess('got_water.geojson', 'water.json');
 

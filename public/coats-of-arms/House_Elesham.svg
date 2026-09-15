@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="660">
+<defs>
+  <radialGradient id="rg" gradientUnits="userSpaceOnUse" cx="220" cy="220" r="405">
+    <stop style="stop-color:#fff;stop-opacity:.3" offset="0"/>
+    <stop style="stop-color:#fff;stop-opacity:.2" offset=".2"/>
+    <stop style="stop-color:#666;stop-opacity:.1" offset=".6"/>
+    <stop style="stop-color:#000;stop-opacity:.13" offset="1"/>
+  </radialGradient>
+    <clipPath id="clip-shield">
+      <path id="shield" d="m2,2v257c0,286 298,398 298,398c0,0 298-112 298-398V2z" />
+    </clipPath>
+</defs>
+<use id="shine" xlink:href="#shield" fill="#f77"/>
+<path fill="#555" opacity="0" d="M 150 160 L 36.330078 417.65234 C 114.68883 587.35069 300 657 300 657 C 300 657 485.31117 587.35069 563.66992 417.65234 L 450 160 L 300 500 L 150 160 z"/>
+<path id="pile" style="clip-path:url(#clip-shield);fill:#666;" d="M 150,100 0,660 H 300 z M 450,100 300,660 H 600 z" />
+<path fill="#000" transform="translate(300,150)scale(70)" d="M0,-1 L0.58779,0.80902 L-0.95106,-0.30902 L0.95106,-0.30902 L-0.58779,0.80902z"/>
+<use id="shine" xlink:href="#shield" fill="url(#rg)" stroke="#000" stroke-width="3"/>
+</svg>

@@ -694,7 +694,7 @@ export class MapPageComponent {
             { layers },
         );
         const feature = features.find(
-            geoJsonFeature => !this.isBelowLocationMinZoom(geoJsonFeature, zoom),
+            geoJsonFeature => !this.isBelowLocationMinZoom(geoJsonFeature, zoom) && this.hasCard(geoJsonFeature),
         );
 
         return feature
@@ -774,7 +774,7 @@ export class MapPageComponent {
     }
 
     private hasCard({ properties }: Feature): boolean {
-        return !!properties.description;
+        return !!properties.description || !!properties.ClaimedBy;
     }
 
     private buildGradientUrl(): string {
