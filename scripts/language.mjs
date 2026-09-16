@@ -98,6 +98,7 @@ export function syncDictionary(dataItems, key, keepNulls = true) {
         const dictFileNames = {
             description: 'descriptions.json',
             nameVariant: 'name-variants.json',
+            ClaimedBy: 'claimed-by.json',
         };
         const dictFileName = dictFileNames[key];
         const dictPath =

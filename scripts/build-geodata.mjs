@@ -293,6 +293,7 @@ const locationsData = getFeatureProperties(locations);
 const kingdomsData = getFeatureProperties(kingdoms);
 const countriesData = getFeatureProperties(country);
 const regionsData = getFeatureProperties(region);
+const islandsData = getFeatureProperties(islandsWithData);
 
 syncDictionary(
     [
@@ -306,6 +307,17 @@ syncDictionary(
     'description',
 );
 syncDictionary(locationsData, 'nameVariant', false);
+syncDictionary(
+    [
+        ...kingdomsData,
+        ...regionsData,
+        ...islandsData,
+        ...wallData,
+        ...locationsData,
+    ],
+    'ClaimedBy',
+    false,
+);
 
 
 
