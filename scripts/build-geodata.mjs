@@ -194,6 +194,7 @@ const islandsWithData = mapGeodata(islands, feature => {
             kingdomId: getContainingPolygonId(interiorPoint, kingdoms),
             countryId: getContainingPolygonId(interiorPoint, country),
             regionId: getContainingPolygonId(interiorPoint, region),
+            description: descriptions[feature.properties.id] ?? null,
         },
     };
 });
@@ -303,10 +304,11 @@ syncDictionary(
         ...kingdomsData,
         ...countriesData,
         ...regionsData,
+        ...islandsData,
     ],
     'description',
 );
-syncDictionary(locationsData, 'nameVariant', false);
+syncDictionary(locationsData, 'nameVariant');
 syncDictionary(
     [
         ...kingdomsData,
@@ -316,7 +318,6 @@ syncDictionary(
         ...locationsData,
     ],
     'ClaimedBy',
-    false,
 );
 
 

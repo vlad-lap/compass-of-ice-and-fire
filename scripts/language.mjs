@@ -83,7 +83,7 @@ export function syncLanguageDict(dataItems, fileName) {
     });
 }
 
-export function syncDictionary(dataItems, key, keepNulls = true) {
+export function syncDictionary(dataItems, key, keepNulls = false) {
     AVAILABLE_LANGUAGES.forEach(lang => {
         const descriptionKey = lang === DEFAULT_LANGUAGE ? key : `${key}_${lang}`;
         const dict = dataItems

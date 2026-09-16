@@ -389,10 +389,10 @@
                 "sea"
             ],
             "footShipPorts": "castle-eastwatch-by-the-sea -> castle-dragonstone",
-            "footShipDistanceKm": 3092.2,
-            "footShipTimeHours": 341.4,
+            "footShipDistanceKm": 3096.9,
+            "footShipTimeHours": 341.9,
             "horseShipPorts": "castle-eastwatch-by-the-sea -> castle-dragonstone",
-            "horseShipTimeHours": 316,
+            "horseShipTimeHours": 316.5,
             "dragonKm": 2511
         },
         "King's Landing -> Pyke": {
