@@ -2,7 +2,7 @@
 "type": "FeatureCollection",
 "name": "got_locations",
 "features": [
-{ "type": "Feature", "properties": { "id": 1, "name": "King's Landing", "size": 5, "confirmed": 1, "type": "city", "ruin": false }, "geometry": { "type": "Point", "coordinates": [ 18.432066083848635, 3.736014024094777 ] } },
+{ "type": "Feature", "properties": { "id": 1, "name": "King's Landing", "size": 5, "confirmed": 1, "type": "city", "ruin": false }, "geometry": { "type": "Point", "coordinates": [ 18.446808958800766, 3.702087130781798 ] } },
 { "type": "Feature", "properties": { "id": 2, "name": "Hayford Castle", "size": 3, "confirmed": 0, "type": "castle", "ruin": false }, "geometry": { "type": "Point", "coordinates": [ 18.306671191450057, 4.783014234685957 ] } },
 { "type": "Feature", "properties": { "id": 3, "name": "Rosby", "size": 3, "confirmed": 1, "type": "castle", "ruin": false }, "geometry": { "type": "Point", "coordinates": [ 19.111838395272535, 4.56899438074251 ] } },
 { "type": "Feature", "properties": { "id": 5, "name": "Brindlewood", "size": 2, "confirmed": 0, "type": "settlement", "ruin": false }, "geometry": { "type": "Point", "coordinates": [ 18.034196575636592, 5.489656880195262 ] } },
