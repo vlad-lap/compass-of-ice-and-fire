@@ -148,6 +148,36 @@ export function getMiddleMultiPoint(geometry) {
 }
 
 /**
+ * Point lying on the line, at (approximately) half its total length.
+ * @param {import('geojson').LineString} geometry
+ * @returns {import('geojson').Position}
+ */
+export function getMiddleLineString(geometry) {
+    const line = geometry.coordinates;
+    const segmentLengths = [];
+    let totalLength = 0;
+    for (let i = 0; i < line.length - 1; i++) {
+        const [lon1, lat1] = line[i];
+        const [lon2, lat2] = line[i + 1];
+        const segmentLength = Math.hypot(lon2 - lon1, lat2 - lat1);
+        segmentLengths.push(segmentLength);
+        totalLength += segmentLength;
+    }
+
+    let distanceRemaining = totalLength / 2;
+    for (let i = 0; i < segmentLengths.length; i++) {
+        if (distanceRemaining <= segmentLengths[i]) {
+            const [lon1, lat1] = line[i];
+            const [lon2, lat2] = line[i + 1];
+            const t = segmentLengths[i] === 0 ? 0 : distanceRemaining / segmentLengths[i];
+            return [lon1 + t * (lon2 - lon1), lat1 + t * (lat2 - lat1)];
+        }
+        distanceRemaining -= segmentLengths[i];
+    }
+    return line[line.length - 1];
+}
+
+/**
  * @param {import('geojson').Position} point
  * @param {import('geojson').Position} a
  * @param {import('geojson').Position} b

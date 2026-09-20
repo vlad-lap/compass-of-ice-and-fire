@@ -3,6 +3,11 @@ import { FeatureData } from './location';
 
 export type TravelMode = 'foot' | 'horse' | 'footShip' | 'horseShip' | 'ship' | 'dragon';
 
+export interface ModeIcon {
+    icon?: string;
+    svgIcon?: string;
+}
+
 export type RoutePointValue = FeatureData | Position | string;
 
 export interface RouteEndpoints {

@@ -9,7 +9,7 @@ import {
 } from 'geojson';
 import { flatten, flattenDepth } from 'lodash';
 
-export { getCentralPoint, getMiddleMultiPoint } from '../../../scripts/geometry-utils.mjs';
+export { getCentralPoint, getMiddleLineString, getMiddleMultiPoint } from '../../../scripts/geometry-utils.mjs';
 export { pointInPolygon } from '../../../scripts/point-in-polygon.mjs';
 
 export type HighlightableGeometry = Polygon | MultiPolygon | LineString | MultiLineString | Point | MultiPoint;

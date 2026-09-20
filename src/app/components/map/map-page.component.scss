@@ -72,4 +72,26 @@
             @apply border-l-white;
         }
     }
+
+    .coiaf-route-popup {
+        .maplibregl-popup-content {
+            @apply bg-blue text-white px-2 py-1 rounded-lg shadow-md;
+        }
+
+        &.maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
+            @apply border-t-blue;
+        }
+
+        &.maplibregl-popup-anchor-top .maplibregl-popup-tip {
+            @apply border-b-blue;
+        }
+
+        &.maplibregl-popup-anchor-left .maplibregl-popup-tip {
+            @apply border-r-blue;
+        }
+
+        &.maplibregl-popup-anchor-right .maplibregl-popup-tip {
+            @apply border-l-blue;
+        }
+    }
 }

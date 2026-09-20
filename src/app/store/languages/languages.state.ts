@@ -28,7 +28,12 @@ export class LanguagesState {
         { coreUi }: LanguagesStateModel,
         { language }: UserSettingsStateModel,
     ): UiConfig<string> {
-        return mapValues(coreUi, config => config[language]);
+        return mapValues(
+            coreUi,
+            (config, key) => key === 'modes'
+                ? mapValues(config, modeConfig => modeConfig[language])
+                : config[language]
+        );
     }
 
     @Selector([LanguagesState, UserSettingsState])
