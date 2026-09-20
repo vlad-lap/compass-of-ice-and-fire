@@ -36,7 +36,7 @@
 
         .mat-icon {
             @include mixins.icon-size(20px);
-            @apply h-6 leading-6 text-grey align-sub;
+            @apply h-6 leading-6;
         }
     }
 

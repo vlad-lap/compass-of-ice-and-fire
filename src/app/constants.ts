@@ -1,4 +1,4 @@
-import { GeodataDict, Language } from './models';
+import { GeodataDict, Language, ModeIcon, TravelMode } from './models';
 
 export const APP_TITLE = 'Compass of Ice and Fire';
 
@@ -38,3 +38,10 @@ export const GEODATA_URLS: GeodataDict<string> = {
 
 export const ROAD_NETWORK_URL = 'geodata/road-network.json';
 export const BARRIER_CROSSINGS_URL = 'geodata/barrier-crossings.json';
+
+export const MODE_ICONS: Partial<Record<TravelMode, ModeIcon>> = {
+    foot: { icon: 'directions_walk' },
+    horse: { svgIcon: 'horse' },
+    ship: { icon: 'sailing' },
+    dragon: { svgIcon: 'dragon' },
+};

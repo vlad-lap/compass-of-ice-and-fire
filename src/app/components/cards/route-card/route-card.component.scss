@@ -11,8 +11,20 @@
     ));
 }
 
-.route-tab-icon {
-    @include mixins.icon-size(14px);
+.route-tab-icons {
+    @apply inline-block;
+
+    .mat-icon {
+        @include mixins.icon-size(14px);
+    }
+}
+
+.header-icons {
+    @apply leading-none;
+
+    .mat-icon {
+        @include mixins.icon-size(20px);
+    }
 }
 
 .route-tab-title, .route-tab-title-loader {

@@ -32,6 +32,7 @@ import {
 import {
     Feature,
     FeatureCollection,
+    LineString,
     MultiPoint,
     MultiPolygon,
     Point,
@@ -112,7 +113,7 @@ import {
 } from './configs';
 import {
     buildMaskPolygon,
-    getGeometryPositions,
+    getGeometryPositions, getMiddleLineString,
     getMiddleMultiPoint,
     getRoundDistanceKm,
     HighlightableGeometry,
@@ -429,6 +430,18 @@ export class MapPageComponent {
                 this.searchHighlightFeature.set(null);
             } else {
                 this.mapService.closeCard();
+            }
+        });
+
+        effect(() => {
+            const routeLine = this.routeLine();
+            const line = routeLine.features[0]?.geometry as LineString;
+            if (line) {
+                const map = this.map().mapInstance;
+                const middlePoint = getMiddleLineString(line) as LngLatLike;
+                this.mapService.showRouteTooltip(map, middlePoint, this.routeService.plan(), this.routeService.selectedMode())
+            } else {
+                this.mapService.hideRouteTooltip();
             }
         });
     }

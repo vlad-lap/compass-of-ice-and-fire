@@ -102,5 +102,31 @@
     "minutes": {
         "en": "m",
         "ru": "мин"
+    },
+    "modes": {
+        "foot": {
+            "en": "Walk",
+            "ru": "Пешком"
+        },
+        "footShip": {
+            "en": "Walk + ship",
+            "ru": "Пешком + корабль"
+        },
+        "horse": {
+            "en": "Horse",
+            "ru": "Верхом"
+        },
+        "horseShip": {
+            "en": "Horse + ship",
+            "ru": "Верхом + корабль"
+        },
+        "ship": {
+            "en": "Ship",
+            "ru": "Корабль"
+        },
+        "dragon": {
+            "en": "Dragon",
+            "ru": "Дракон"
+        }
     }
 }

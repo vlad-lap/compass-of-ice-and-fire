@@ -1,3 +1,5 @@
+import { TravelMode } from './routing';
+
 export interface UiConfig<T> {
     searchPlaceholder: T;
     namePlaceholder: T;
@@ -25,4 +27,5 @@ export interface UiConfig<T> {
     days: T;
     hours: T;
     minutes: T;
+    modes: Record<TravelMode, T>;
 }

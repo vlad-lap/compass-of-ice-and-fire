@@ -1,14 +1,13 @@
 import { ComponentRef, Injectable, signal, ViewContainerRef } from '@angular/core';
-import { LngLatLike, MapLayerMouseEvent, MapMouseEvent, MapTouchEvent, Popup } from 'maplibre-gl';
+import { LngLatLike, Map, MapLayerMouseEvent, MapMouseEvent, MapTouchEvent, Popup } from 'maplibre-gl';
 import { TooltipComponent, TooltipOptions } from '../components/map/tooltip/tooltip.component';
 import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { Feature } from 'geojson';
-import { FeatureData } from '../models';
-import { FeatureCardComponent } from '../components/cards/feature-card/feature-card.component';
+import { FeatureData, RoutePlan, TravelMode } from '../models';
+import { FeatureCardComponent, RouteCardComponent } from '../components/cards';
 import { ComponentType } from '@angular/cdk/portal';
-import { SearchService } from './search.service';
-import { RouteCardComponent } from '../components/cards/route-card/route-card.component';
 import { RouteService } from './route.service';
+import { RouteTooltipComponent } from '../components/map/route-tooltip/route-tooltip.component';
 
 @Injectable({
     providedIn: 'root',
@@ -20,11 +19,14 @@ export class MapService {
 
     private popup: Popup;
     private tooltipRef: ComponentRef<TooltipComponent>;
+
+    private routePopup: Popup;
+    private routeTooltipRef: ComponentRef<RouteTooltipComponent>;
+
     private bottomSheetRef: MatBottomSheetRef;
 
     constructor(
         private bottomSheet: MatBottomSheet,
-        private searchService: SearchService,
         private routeService: RouteService,
     ) {}
 
@@ -54,28 +56,41 @@ export class MapService {
         this.tooltipRef = null;
     }
 
+    showRouteTooltip(map: Map, anchor: LngLatLike, plan: RoutePlan, mode: TravelMode): void {
+        this.hideRouteTooltip();
+        this.routePopup = new Popup({
+            closeButton: false,
+            closeOnClick: false,
+            focusAfterOpen: false,
+            className: 'coiaf-route-popup',
+        })
+            .setLngLat(anchor)
+            .setDOMContent(this.buildRouteTooltip(plan, mode))
+            .addTo(map);
+    }
+
+    hideRouteTooltip(): void {
+        this.routePopup?.remove();
+        this.routePopup = null;
+        this.routeTooltipRef?.destroy();
+        this.routeTooltipRef = null;
+    }
+
     openFeatureCard(feature: Feature): void {
         this.hideTooltip();
 
-        this.openCard(
-            FeatureCardComponent,
-            {
-                ...(feature.properties as FeatureData),
-                maxHeight: 320,
-            },
-        );
+        this.openCard(FeatureCardComponent, {
+            ...(feature.properties as FeatureData),
+            maxHeight: 320,
+        });
     }
 
     openRouteCard(): void {
         this.routeCardOpened.set(true);
-        this.openCard(
-            RouteCardComponent,
-            { minHeight: 128, height: 176 },
-            () => {
-                this.routeService.routeEnabled.set(false);
-                this.routeCardOpened.set(false);
-            },
-        );
+        this.openCard(RouteCardComponent, { height: 176 }, () => {
+            this.routeService.routeEnabled.set(false);
+            this.routeCardOpened.set(false);
+        });
     }
 
     closeCard(): void {
@@ -91,11 +106,15 @@ export class MapService {
         return this.tooltipRef.location.nativeElement;
     }
 
-    private openCard<T, D>(
-        component: ComponentType<T>,
-        data?: D,
-        onClose?: () => void,
-    ): void {
+    private buildRouteTooltip(plan: RoutePlan, mode: TravelMode): HTMLElement {
+        this.routeTooltipRef = this.viewContainerRef.createComponent(RouteTooltipComponent);
+        this.routeTooltipRef.setInput('plan', plan);
+        this.routeTooltipRef.setInput('mode', mode);
+        this.routeTooltipRef.changeDetectorRef.detectChanges();
+        return this.routeTooltipRef.location.nativeElement;
+    }
+
+    private openCard<T, D>(component: ComponentType<T>, data?: D, onClose?: () => void): void {
         const bottomSheetRef = (this.bottomSheetRef = this.bottomSheet.open(component, {
             hasBackdrop: false,
             panelClass: 'coiaf-card-panel',

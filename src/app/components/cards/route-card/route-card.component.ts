@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, viewChild } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Store } from '@ngxs/store';
 import { CommonModule } from '@angular/common';
@@ -12,22 +12,11 @@ import {
 } from '../../ui';
 import { DurationPipe } from '../../../pipes';
 import { LanguagesState } from '../../../store';
-import { RoutePlan, RouteResult, TravelMode } from '../../../models';
+import { ModeIcon, RoutePlan, RouteResult, TravelMode } from '../../../models';
 import { MatTab, MatTabGroup, MatTabLabel } from '@angular/material/tabs';
 import { RouteService } from '../../../services';
 import { SpeedKmH } from '../../../utils';
-
-export interface ModeIcon {
-    icon?: string;
-    svgIcon?: string;
-}
-
-const MODE_ICONS: Partial<Record<TravelMode, ModeIcon>> = {
-    foot: { icon: 'directions_walk' },
-    horse: { svgIcon: 'horse' },
-    ship: { icon: 'sailing' },
-    dragon: { svgIcon: 'dragon' },
-};
+import { MODE_ICONS } from '../../../constants';
 
 export type RouteStretchKind = 'land' | 'sea';
 
@@ -77,8 +66,16 @@ function toStretches(route: RouteResult): RouteStretch[] {
 })
 export class RouteCardComponent {
     readonly coreUi = this.store.selectSignal(LanguagesState.coreUi);
+    readonly card = viewChild(CardComponent);
+
+    protected readonly isCollapsed = computed<boolean>(() => {
+        const height = this.card().cardHeight();
+        const minHeight = this.card().minCardHeight();
+        return (height - minHeight) < 4;
+    })
 
     protected readonly plan = this.routeService.plan;
+    protected readonly selectedMode = this.routeService.selectedMode;
     protected readonly loading = this.routeService.loading;
 
     protected readonly selectedIndex = computed<number>(

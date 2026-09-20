@@ -73,17 +73,20 @@ export class CardComponent implements OnDestroy {
     readonly header = viewChild('header', { read: ElementRef });
     readonly coreUi = this.store.selectSignal(LanguagesState.coreUi);
 
-    protected readonly cardHeight = signal<number | null>(this.limitByViewport(this.data.height));
-    protected readonly maxCardHeight = computed<number>(() =>
-        this.limitByViewport(Math.max(this.cardHeight() ?? 0, this.data.maxHeight ?? 0)),
-    );
-    protected readonly isResizing = signal(false);
-    protected readonly minCardHeight = computed<number>(() => {
+    readonly cardHeight = signal<number | null>(this.limitByViewport(this.data.height));
+
+    readonly minCardHeight = computed<number>(() => {
         const headerHeight =
             parseInt(getComputedStyle(this.header()?.nativeElement).height) +
             CARD_HEIGHT_ABOVE_HEADER;
         return this.limitByViewport(Math.max(headerHeight, this.data.minHeight ?? 0));
     });
+
+    readonly maxCardHeight = computed<number>(() =>
+        this.limitByViewport(Math.max(this.cardHeight() ?? 0, this.data.maxHeight ?? 0)),
+    );
+
+    protected readonly isResizing = signal(false);
 
     private resizeStartY = 0;
     private resizeStartHeight = 0;

@@ -1,0 +1,5 @@
+@use 'mixins';
+
+.mat-icon {
+    @include mixins.icon-size(16px);
+}
