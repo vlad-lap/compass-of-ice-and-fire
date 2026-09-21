@@ -1,0 +1,7 @@
+@for (modeIcon of modeIcons[mode()]; track modeIcon.icon || modeIcon.svgIcon) {
+    @if (modeIcon.icon) {
+        <mat-icon>{{ modeIcon.icon }}</mat-icon>
+    } @else {
+        <mat-icon [svgIcon]="modeIcon.svgIcon" />
+    }
+}

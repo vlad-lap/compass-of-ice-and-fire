@@ -1,10 +1,5 @@
 @use 'tailwind';
-@use 'mixins';
 
 :host {
     @apply font-bold;
-}
-
-.mat-icon {
-    @include mixins.icon-size(16px);
 }

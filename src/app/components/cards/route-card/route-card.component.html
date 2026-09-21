@@ -4,21 +4,26 @@
 
 <coiaf-card>
     <div coiafCardTitle>
-        <h3>
-            @let mode = selectedMode();
-            @if (isCollapsed() && currentPlan) {
-                <div class="flex flex-wrap gap-2 items-center text-lg mt-1">
-                    <div class="header-icons">
-                        <ng-container *ngTemplateOutlet="modeIconsTmpl; context: { mode: mode }" />
+        <coiaf-skeleton-loader
+            class="mt-2"
+            [loading]="planLoading"
+            [width]="200"
+            [height]="20"
+        >
+            <h3>
+                @let mode = selectedMode();
+                @if (isCollapsed() && currentPlan) {
+                    <div class="flex flex-wrap gap-2 items-center text-lg mt-1">
+                        <coiaf-route-icons [mode]="mode" size="lg" />
+                        <ng-container *ngTemplateOutlet="distanceTmpl; context: { mode: mode }" />
+                        <span class="font-normal text-grey">&bull;</span>
+                        <span class="font-normal text-grey whitespace-nowrap">{{ currentPlan[mode] | duration }}</span>
                     </div>
-                    <ng-container *ngTemplateOutlet="distanceTmpl; context: { mode: mode }" />
-                    <span class="font-normal text-grey">&bull;</span>
-                    <span class="font-normal text-grey whitespace-nowrap">{{ currentPlan[mode] | duration }}</span>
-                </div>
-            } @else {
-                {{ ui.modes[mode] }}
-            }
-        </h3>
+                } @else {
+                    {{ ui.modes[mode] }}
+                }
+            </h3>
+        </coiaf-skeleton-loader>
     </div>
 
     <div coiafCardBody>
@@ -31,11 +36,9 @@
                 @for (mode of modes(); track mode) {
                     <mat-tab>
                         <ng-template mat-tab-label>
-                            <div class="route-tab-icons">
-                                <ng-container *ngTemplateOutlet="modeIconsTmpl; context: { mode: mode }" />
-                            </div>
-                            <coiaf-skeleton-loader class="route-tab-title-loader" [loading]="planLoading" [width]="50">
-                                <span class="route-tab-title">{{ currentPlan?.[mode] | duration: '-' }}</span>
+                            <coiaf-route-icons [mode]="mode" size="sm" />
+                            <coiaf-skeleton-loader class="ml-2" [loading]="planLoading" [width]="50">
+                                <span class="ml-2">{{ currentPlan?.[mode] | duration: '-' }}</span>
                             </coiaf-skeleton-loader>
                         </ng-template>
 
@@ -81,7 +84,7 @@
             <div class="route-placeholder">
                 @let routeEndpoints = endpoints();
                 <mat-icon
-                    [ngClass]="routeEndpoints?.from ? 'icon-b' : 'icon-a'"
+                    [ngClass]="routeEndpoints?.from ? '!text-green' : '!text-red'"
                     fontSet="material-symbols-outlined"
                 >add_location_alt</mat-icon>
                 <span>{{ routeEndpoints?.from ? ui.selectB :  ui.selectA }}</span>
@@ -89,16 +92,6 @@
         }
     </div>
 </coiaf-card>
-
-<ng-template #modeIconsTmpl let-mode="mode">
-    @for (modeIcon of modeIcons[mode]; track $index) {
-        @if (modeIcon.icon) {
-            <mat-icon>{{ modeIcon.icon }}</mat-icon>
-        } @else {
-            <mat-icon [svgIcon]="modeIcon.svgIcon" />
-        }
-    }
-</ng-template>
 
 <ng-template #distanceTmpl let-mode="mode">
     @let distance = currentPlan?.[mode]?.distanceKm | number: '1.0-1';
