@@ -58,6 +58,11 @@ export class MapService {
 
     showRouteTooltip(map: Map, anchor: LngLatLike, plan: RoutePlan, mode: TravelMode): void {
         this.hideRouteTooltip();
+
+        if (!map) {
+            return;
+        }
+
         this.routePopup = new Popup({
             closeButton: false,
             closeOnClick: false,
