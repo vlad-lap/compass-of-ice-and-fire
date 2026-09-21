@@ -8,6 +8,7 @@ import {
     CardBodyDirective,
     CardComponent,
     CardTitleDirective,
+    RouteIconsComponent,
     SkeletonLoaderComponent,
 } from '../../ui';
 import { DurationPipe } from '../../../pipes';
@@ -60,6 +61,7 @@ function toStretches(route: RouteResult): RouteStretch[] {
         MatTabLabel,
         DurationPipe,
         SkeletonLoaderComponent,
+        RouteIconsComponent,
     ],
     templateUrl: './route-card.component.html',
     styleUrl: './route-card.component.scss',
@@ -71,15 +73,15 @@ export class RouteCardComponent {
     protected readonly isCollapsed = computed<boolean>(() => {
         const height = this.card().cardHeight();
         const minHeight = this.card().minCardHeight();
-        return (height - minHeight) < 4;
-    })
+        return height - minHeight < 4;
+    });
 
     protected readonly plan = this.routeService.plan;
     protected readonly selectedMode = this.routeService.selectedMode;
     protected readonly loading = this.routeService.loading;
 
-    protected readonly selectedIndex = computed<number>(
-        () => this.modes().indexOf(this.routeService.selectedMode())
+    protected readonly selectedIndex = computed<number>(() =>
+        this.modes().indexOf(this.routeService.selectedMode()),
     );
 
     protected readonly endpoints = this.routeService.endpoints;
@@ -90,10 +92,11 @@ export class RouteCardComponent {
         }
 
         const plan = this.plan();
-        return (['foot', 'footShip', 'horse', 'horseShip', 'ship', 'dragon'] as TravelMode[])
-            .filter(mode => this.isCombinedMode(mode)
-                ? this.showCombinedRoute(plan, mode)
-                : plan?.[mode]);
+        return (
+            ['foot', 'footShip', 'horse', 'horseShip', 'ship', 'dragon'] as TravelMode[]
+        ).filter(mode =>
+            this.isCombinedMode(mode) ? this.showCombinedRoute(plan, mode) : plan?.[mode],
+        );
     });
 
     protected readonly SpeedKmH = SpeedKmH;
@@ -102,19 +105,11 @@ export class RouteCardComponent {
         const plan = this.plan();
 
         return this.modes().reduce(
-            (byMode, mode) => plan?.[mode] ? { ...byMode, [mode]: toStretches(plan[mode]) } : byMode,
+            (byMode, mode) =>
+                plan?.[mode] ? { ...byMode, [mode]: toStretches(plan[mode]) } : byMode,
             {},
         );
     });
-
-    protected readonly modeIcons: Record<TravelMode, ModeIcon[]> = {
-        foot: [MODE_ICONS.foot],
-        horse: [MODE_ICONS.horse],
-        footShip: [MODE_ICONS.foot, MODE_ICONS.ship],
-        horseShip: [MODE_ICONS.horse, MODE_ICONS.ship],
-        ship: [MODE_ICONS.ship],
-        dragon: [MODE_ICONS.dragon],
-    };
 
     constructor(
         private store: Store,
@@ -150,13 +145,14 @@ export class RouteCardComponent {
         return ['footShip', 'horseShip'].includes(mode);
     }
 
-    private showCombinedRoute(
-        plan: RoutePlan,
-        combinedRouteKey: TravelMode,
-    ): boolean {
+    private showCombinedRoute(plan: RoutePlan, combinedRouteKey: TravelMode): boolean {
         const combinedRoute = plan?.[combinedRouteKey];
         const landRouteKey = combinedRouteKey.replace('Ship', '') as TravelMode;
         const landRoute = plan?.[landRouteKey];
-        return !!combinedRoute && !plan?.ship && (!landRoute || combinedRoute.timeHours < landRoute.timeHours);
+        return (
+            !!combinedRoute &&
+            !plan?.ship &&
+            (!landRoute || combinedRoute.timeHours < landRoute.timeHours)
+        );
     }
 }

@@ -11,44 +11,12 @@
     ));
 }
 
-.route-tab-icons {
-    @apply inline-block;
-
-    .mat-icon {
-        @include mixins.icon-size(14px);
-    }
-}
-
-.header-icons {
-    @apply leading-none;
-
-    .mat-icon {
-        @include mixins.icon-size(20px);
-    }
-}
-
-.route-tab-title, .route-tab-title-loader {
-    @apply ml-2;
-}
-
 .route-placeholder {
     @apply h-full w-full mt-2 flex flex-col justify-center items-center text-grey text-xs;
 
     .mat-icon {
         @include mixins.icon-size(20px);
-
-        &.icon-a {
-            @apply text-red;
-        }
-
-        &.icon-b {
-            @apply text-green;
-        }
     }
-}
-
-.route-info {
-    @apply mt-4;
 }
 
 .route-distance {

@@ -2,14 +2,6 @@
 @let selectedMode = mode();
 
 <div class="flex gap-2 items-center">
-    <div class="leading-none">
-        @for (modeIcon of modeIcons[selectedMode]; track $index) {
-            @if (modeIcon.icon) {
-                <mat-icon>{{ modeIcon.icon }}</mat-icon>
-            } @else {
-                <mat-icon [svgIcon]="modeIcon.svgIcon" />
-            }
-        }
-    </div>
+    <coiaf-route-icons [mode]="selectedMode" />
     <div>{{ currentPlan[selectedMode] | duration }}</div>
 </div>

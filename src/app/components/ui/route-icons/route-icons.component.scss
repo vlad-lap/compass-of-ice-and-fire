@@ -1,0 +1,18 @@
+@use 'tailwind';
+@use 'mixins';
+
+:host {
+    @apply inline-block leading-none;
+
+    &.small .mat-icon {
+        @include mixins.icon-size(14px);
+    }
+
+    &.medium .mat-icon {
+        @include mixins.icon-size(16px);
+    }
+
+    &.large .mat-icon {
+        @include mixins.icon-size(20px);
+    }
+}
