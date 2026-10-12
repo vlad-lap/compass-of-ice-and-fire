@@ -141,7 +141,7 @@ Every specific in-universe name mentioned in the prose — not just the location
 - Verify the same way `localize-names` does: search `"<term>" 7kingdoms.ru` or `site:7kingdoms.ru/wiki "<candidate>"`, confirm the actual wiki page title/text, and use exactly that — don't guess from English etymology or translate it fresh.
 - This applies to anything with a specific in-universe identity: dragon names, character surnames/epithets, named weapons/artifacts, peoples/ethnicities, religious or military institutions, titles, and named historical wars/events/uprisings — not just the location card's own name (which already has its `name_ru` glossary from `localize-names`).
 - Confirmed past mistakes, so you don't reintroduce them:
-  - "Valyrian Freehold" → **Фригольд** (not "Вольный удел"/"Вольное государство")
+  - "Valyrian Freehold" → **Республика** (not "Вольный удел"/"Вольное государство")
   - dragon **Мераксес** (not "Мераксис"); dragon **Мелеис** (not "Мелис")
   - Durran **Богоборец** (not "Богоненавистник"); **Давос Сиворт** (not "Сиворот")
   - sword **Губитель Сердец**/Heartsbane (not "Разящее Сердце"); sword **Покинутая**/Lady Forlorn (not "Скорбный Клинок")
