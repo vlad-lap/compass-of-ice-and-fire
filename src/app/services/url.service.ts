@@ -1,6 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Location } from '@angular/common';
 
+export interface UrlParts {
+    path: string;
+    query: Record<string, string>;
+}
+
 @Injectable({
     providedIn: 'root',
 })
@@ -11,10 +16,7 @@ export class UrlService {
     }
 
     set path(path: string) {
-        this.location.go(
-            path ? `/${encodeURIComponent(path)}` : '/',
-            this.serializeQuery(this.query),
-        );
+        this.navigate(path, this.query);
     }
 
     get query(): Record<string, string> {
@@ -23,7 +25,7 @@ export class UrlService {
     }
 
     set query(query: Record<string, string>) {
-        this.location.go(this.path, query ? this.serializeQuery(query) : '');
+        this.navigate(this.path, query);
     }
 
     private get urlParts(): string[] {
@@ -31,6 +33,19 @@ export class UrlService {
     }
 
     constructor(private location: Location) {}
+
+    navigate(path: string, query: Record<string, string>): void {
+        const url = path ? `/${encodeURIComponent(path)}` : '/';
+        const serializedQuery = this.serializeQuery(query);
+
+        if (!this.location.isCurrentPathEqualTo(url, serializedQuery)) {
+            this.location.go(url, serializedQuery);
+        }
+    }
+
+    onHistoryNavigation(callback: (url: UrlParts) => void): void {
+        this.location.subscribe(() => callback({ path: this.path, query: this.query }));
+    }
 
     private parseQuery(query: string): Record<string, string> {
         if (!query) {
