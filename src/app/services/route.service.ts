@@ -14,16 +14,24 @@ import {
     TravelMode,
     FeatureData,
 } from '../models';
-import { AddHistoryItem, GEODATA_STATE_TOKEN, GeodataState, LanguagesState } from '../store';
+import {
+    AddHistoryItem,
+    GEODATA_STATE_TOKEN,
+    GeodataState,
+    LanguagesState,
+    UserSettingsState,
+} from '../store';
 import {
     getCentralPoint,
     getGeometryPositions,
     getMiddleMultiPoint,
     HighlightableGeometry,
-    isFeatureData,
+    isFeatureData, localizeProperty,
     planRoutes,
 } from '../utils';
-import { UrlService } from './url.service';
+import { UrlParts, UrlService } from './url.service';
+
+export const ROUTE_PATH = 'route';
 import { isNil, mapValues, omitBy, pickBy } from 'lodash';
 import { Title } from '@angular/platform-browser';
 import { APP_TITLE } from '../constants';
@@ -88,6 +96,7 @@ export class RouteService implements OnDestroy {
 
     private requestId = 0;
     private initializedGeodataState: unknown = null;
+    private pathBeforeRoute = '';
 
     constructor(
         private url: UrlService,
@@ -96,9 +105,21 @@ export class RouteService implements OnDestroy {
     ) {
         effect(() => {
             const routeEnabled = this.routeEnabled();
-            this.url.path = routeEnabled ? 'route' : '';
-            this.title.setTitle(routeEnabled ? `${this.coreUi().route} | ${APP_TITLE}` : APP_TITLE);
+            const endpoints = this.endpoints();
+
+            if (routeEnabled) {
+                if (this.url.path !== ROUTE_PATH) {
+                    this.pathBeforeRoute = this.url.path;
+                }
+
+                const query = mapValues(endpoints, point => this.getQueryParam(point));
+                this.url.navigate(ROUTE_PATH, omitBy(query, isNil));
+            } else if (this.url.path === ROUTE_PATH) {
+                this.url.navigate(this.pathBeforeRoute, null);
+            }
         });
+
+        effect(() => this.title.setTitle(this.buildTitle()));
 
         effect(() => {
             if (!this.routeEnabled()) {
@@ -108,10 +129,6 @@ export class RouteService implements OnDestroy {
 
         effect(() => {
             const endpoints = this.endpoints();
-
-            const query = mapValues(endpoints, point => this.getQueryParam(point));
-            this.url.query = omitBy(query, isNil);
-
             const pointFeatures = pickBy(endpoints, isFeatureData);
 
             Object.values(pointFeatures)
@@ -134,17 +151,8 @@ export class RouteService implements OnDestroy {
             }
         });
 
-        if (this.url.path === 'route') {
-            this.routeEnabled.set(true);
-
-            if (this.url.query) {
-                const endpoints = mapValues(
-                    this.url.query,
-                    param => this.getPointFromQueryParam(param),
-                );
-                this.endpoints.set(endpoints);
-            }
-        }
+        this.applyUrl({ path: this.url.path, query: this.url.query });
+        this.url.onHistoryNavigation(urlParts => this.applyUrl(urlParts));
 
         if (this.worker) {
             this.worker.onmessage = ({ data }: MessageEvent<RouteWorkerResponse>) => {
@@ -170,6 +178,49 @@ export class RouteService implements OnDestroy {
         this.plan.set(null);
         this.loading.set(false);
         this.selectedMode.set('foot');
+    }
+
+    private applyUrl({ path, query }: UrlParts): void {
+        const routeEnabled = path === ROUTE_PATH;
+        this.routeEnabled.set(routeEnabled);
+
+        if (routeEnabled) {
+            this.pathBeforeRoute = '';
+            this.endpoints.set(query ? mapValues(query, param => this.getPointFromQueryParam(param)) : null);
+        }
+    }
+
+    private buildTitle(): string {
+        const routeEnabled = this.routeEnabled();
+
+        if (!routeEnabled) {
+            return APP_TITLE;
+        }
+
+        const endpoints = this.endpoints();
+        const prefix = this.coreUi().route;
+
+        const endpointsTitle = [endpoints?.from, endpoints?.to]
+            .map(point => this.getEndpointTitle(point))
+            .filter(Boolean)
+            .join(' — ');
+
+        return endpointsTitle
+            ? `${prefix}: ${endpointsTitle} | ${APP_TITLE}`
+            : `${prefix} | ${APP_TITLE}`;
+    }
+
+    private getEndpointTitle(point: RoutePointValue): string {
+        if (isFeatureData(point)) {
+            const language = this.store.selectSnapshot(UserSettingsState.language);
+            return localizeProperty(point, language, 'name');
+        }
+
+        if (Array.isArray(point)) {
+            return point.join(', ');
+        }
+
+        return null;
     }
 
     private getQueryParam(point: RoutePointValue): string {

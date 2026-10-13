@@ -122,13 +122,14 @@ export class MapService {
     private openCard<T, D>(component: ComponentType<T>, data?: D, onClose?: () => void): void {
         const bottomSheetRef = (this.bottomSheetRef = this.bottomSheet.open(component, {
             hasBackdrop: false,
+            closeOnNavigation: false,
             panelClass: 'coiaf-card-panel',
             data,
         }));
 
         bottomSheetRef.afterDismissed().subscribe(() => {
             if (this.bottomSheetRef === bottomSheetRef) {
-                onClose();
+                onClose?.();
             }
         });
     }

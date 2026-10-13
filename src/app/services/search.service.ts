@@ -6,7 +6,7 @@ import { FeatureData } from '../models';
 import { AddHistoryItem, GeodataState, UserSettingsState } from '../store';
 import { APP_TITLE } from '../constants';
 import { getDisplayName } from '../utils';
-import { RouteService } from './route.service';
+import { ROUTE_PATH, RouteService } from './route.service';
 
 @Injectable({
     providedIn: 'root',
@@ -38,6 +38,10 @@ export class SearchService {
             if (featureData) {
                 this.store.dispatch(new AddHistoryItem(featureData));
             }
+        });
+
+        this.url.onHistoryNavigation(({ path }) => {
+            this.selectedId.set(path && path !== ROUTE_PATH ? path : null);
         });
 
         const id = this.url.path;
