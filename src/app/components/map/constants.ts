@@ -12,7 +12,7 @@ export enum ZoomLevel {
     Low = 3.9,
     Medium = 4.9,
     High = 5.9,
-    Max = 9,
+    Max = 19,
 }
 
 export const ZOOM_DURATION = 300;

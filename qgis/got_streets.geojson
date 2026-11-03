@@ -1,0 +1,9 @@
+{
+"type": "FeatureCollection",
+"name": "got_streets",
+"features": [
+{ "type": "Feature", "properties": { "id": 1, "name": "Kingsroad", "size": 2, "continent": "Westeros" }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 18.398911288000093, 3.693658615711043 ], [ 18.421036140060892, 3.698294298999973 ], [ 18.434732477050915, 3.701244279274746 ], [ 18.468077789799697, 3.687100177421591 ], [ 18.47387239391086, 3.684782335777127 ] ] ] } },
+{ "type": "Feature", "properties": { "id": 2, "name": "Goldroad", "size": 2, "continent": "Westeros" }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 18.434732477050915, 3.701244279274746 ], [ 18.427936986775102, 3.690524261669097 ], [ 18.41929775882755, 3.674931508788151 ] ] ] } },
+{ "type": "Feature", "properties": { "id": 3, "name": "Rosby Road", "size": 1, "continent": "Westeros" }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 18.434732477050915, 3.701244279274746 ], [ 18.448125914280563, 3.722776501369633 ], [ 18.458556201680658, 3.738579967127349 ] ] ] } }
+]
+}

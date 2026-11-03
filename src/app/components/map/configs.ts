@@ -192,6 +192,9 @@ export const POLYGONS_PAINT: GeodataDict<FillLayerSpecification['paint']> = {
     regions: {
         'fill-opacity': 0,
     },
+    detail: {
+        'fill-color': LandscapeColor.Wasteland,
+    },
 };
 
 const DEFAULT_LINE_LAYOUT: LineLayerSpecification['layout'] = {
@@ -201,17 +204,29 @@ const DEFAULT_LINE_LAYOUT: LineLayerSpecification['layout'] = {
 
 export const LINES_LAYOUT: GeodataDict<LineLayerSpecification['layout']> = {
     roads: DEFAULT_LINE_LAYOUT,
+    streets: DEFAULT_LINE_LAYOUT,
     theWall: DEFAULT_LINE_LAYOUT,
 };
 
 export const LINES_PAINT: GeodataDict<LineLayerSpecification['paint']> = {
     rivers: {
         'line-color': LandscapeColor.Water,
-        'line-width': ['match', ['get', 'size'], 1, 0.6, 2, 1.2, 3, 1.8, 1.2],
+        'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            ZoomLevel.High,
+            ['match', ['get', 'size'], 1, 0.6, 2, 1.2, 3, 1.8, 1.2],
+        ],
         'line-opacity': ['step', ['zoom'], ['match', ['get', 'size'], 1, 0, 1], ZoomLevel.Low, 1],
     },
     roads: {
         'line-color': LandscapeColor.Road,
+        'line-width': ['match', ['get', 'size'], 1, 0.4, 2, 0.8, 3, 1.2, 0.8],
+        'line-opacity': ['step', ['zoom'], 0, ZoomLevel.Low, 1],
+    },
+    streets: {
+        'line-color': GREY,
         'line-width': ['match', ['get', 'size'], 1, 0.4, 2, 0.8, 3, 1.2, 0.8],
         'line-opacity': ['step', ['zoom'], 0, ZoomLevel.Low, 1],
     },

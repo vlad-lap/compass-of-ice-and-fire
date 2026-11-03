@@ -122,9 +122,13 @@ processGeoJSON('got_lakes.geojson', 'lakes.json');
 const rivers = processGeoJSON('got_rivers.geojson', 'rivers.json');
 const roads = processGeoJSON('got_roads.geojson', 'roads.json');
 
+processGeoJSON('got_detail_locations.geojson');
+processGeoJSON('got_streets.geojson');
+
 const roadNetwork = buildRoadNetwork(roads);
 writeJSON(join(GEODATA, 'road-network.json'), roadNetwork);
 console.log(`${getConsolePrefix('geodata', 'road-network.json')} ${roadNetwork.nodes.length} nodes, ${roadNetwork.edges.length} edges, ${new Set(roadNetwork.nodeGroups).size} groups`);
+
 processGeoJSON('got_volcanoes.geojson', null, {
     mapFn: feature => ({
         ...feature,

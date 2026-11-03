@@ -17,9 +17,10 @@ export type PolygonGeodataType =
     | 'lakes'
     | 'seas'
     | 'bays'
-    | 'straits';
+    | 'straits'
+    | 'detail';
 
-export type LineGeodataType = 'rivers' | 'kingdomBorders' | 'roads' | 'theWall';
+export type LineGeodataType = 'rivers' | 'kingdomBorders' | 'roads' | 'streets' | 'theWall';
 
 export type PointGeodataType = 'locations' | 'theFiveForts' | 'volcanoes';
 

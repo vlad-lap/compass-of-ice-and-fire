@@ -192,8 +192,9 @@ export class MapPageComponent {
         'mountains',
         'forests',
         'lakes',
+        'detail',
     ];
-    protected readonly lineTypes: LineGeodataType[] = ['kingdomBorders', 'rivers', 'roads'];
+    protected readonly lineTypes: LineGeodataType[] = ['kingdomBorders', 'rivers', 'roads', 'streets'];
 
     protected readonly labeledTypes: GeodataType[] = [
         'continents',
