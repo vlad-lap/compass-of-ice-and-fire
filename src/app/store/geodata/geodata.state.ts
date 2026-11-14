@@ -36,7 +36,7 @@ const LABEL_POSITIONS: Record<string, Position> = {
     'country-kingdom-of-sarnor': [55.66, 8.37],
     'country-yi-ti': [105.38, -12.74],
     'country-ibben': [79.32, 25.23],
-    'country-kingdoms-of-the-ifeqevron': [75.73, 13.04],
+    'country-kingdoms-of-the-ifequevron': [75.73, 13.04],
     'country-jogos-nhai': [104.24, 2.76],
     'country-mossovy': [120.75, 8.19],
     'country-realm-of-jhogwin': [90.28, 12.11],
